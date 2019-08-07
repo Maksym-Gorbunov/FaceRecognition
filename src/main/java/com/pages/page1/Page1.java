@@ -1,5 +1,6 @@
 package com.pages.page1;
 
+import com.constants.Constants;
 import com.gui.Gui;
 import com.pages.Pages;
 import org.opencv.core.Mat;
@@ -46,7 +47,7 @@ public class Page1 extends JPanel implements Pages {
     ///////////////////////////////////////////////////////////////
 
     webcamPanel = new JPanel();
-    webcamPanel.setPreferredSize(new Dimension(640, 480));
+    webcamPanel.setPreferredSize(new Dimension(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT));
     mainPanel.add(webcamPanel);
 
     startButton = new JButton("Start");
@@ -131,7 +132,7 @@ public class Page1 extends JPanel implements Pages {
               Imgcodecs.imencode(".bmp", frame, mem);
               BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
               graphics = webcamPanel.getGraphics();
-              if (graphics.drawImage(buff, 0, 0, 640, 480, 0, 0, buff.getWidth(), buff.getHeight(), null))
+              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
                 if (runnable == false) {
                   System.out.println("Going to wait()");
                   this.wait();

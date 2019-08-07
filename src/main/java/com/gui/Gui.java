@@ -1,5 +1,6 @@
 package com.gui;
 
+import com.constants.Constants;
 import com.pages.page1.Page1;
 
 import java.awt.*;
@@ -15,7 +16,7 @@ public class Gui extends JFrame {
 
   public Gui(){
     super("Application");
-    setSize(800, 600);
+    setSize(Constants.FRAME_WIDTH, Constants.FRAME_HEIGHT);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(this);
     setResizable(false);
