@@ -18,6 +18,10 @@ import java.io.ByteArrayInputStream;
 
 public class Page1 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
+  private Gui gui;
+  private JPanel root;
+  private JPanel mainPanel;
+  private JPanel buttonsPannel;
   private JButton startButton;
   private JButton pauseButton;
   private JButton testButton;
@@ -25,23 +29,27 @@ public class Page1 extends JPanel implements Pages {
   private Graphics graphics;
   private boolean status = false;
   private Color defaultPanelColor;
-  private Gui gui;
-  private JPanel root;
 
-//  public Page1(JButton startButton, JButton pauseButton, JButton testButton, JPanel webcamPanel) {
   public Page1(final Gui gui) {
     this.gui = gui;
     root = gui.getTab1();
+    mainPanel = new JPanel();
+    buttonsPannel = new JPanel();
 
-    root.setLayout(new GridLayout(4,1));
-    JPanel mainPanel = new JPanel();
     mainPanel.setBackground(Color.blue);
+    buttonsPannel.setBackground(Color.green);
+
+
+    root.setLayout(new GridLayout(2,1));
+
+    root.add(mainPanel);
+    root.add(buttonsPannel);
+
+
+
+    //    root.setLayout(new GridLayout(4,1));
 //    mainPanel.setPreferredSize(new Dimension(300,500));
 //    mainPanel.setSize(300,500);
-    root.add(mainPanel);
-    JPanel buttonsPannel = new JPanel();
-    buttonsPannel.setBackground(Color.green);
-    root.add(buttonsPannel);
 
 
 //    startButton = new JButton("Start");
