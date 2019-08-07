@@ -1,7 +1,6 @@
 package com.pages.page1;
 
 import com.gui.Gui;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.pages.Pages;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -21,7 +20,7 @@ public class Page1 extends JPanel implements Pages {
   private Gui gui;
   private JPanel root;
   private JPanel mainPanel;
-  private JPanel buttonsPannel;
+  private JPanel buttonsPanel;
   private JButton startButton;
   private JButton pauseButton;
   private JButton testButton;
@@ -33,41 +32,38 @@ public class Page1 extends JPanel implements Pages {
   public Page1(final Gui gui) {
     this.gui = gui;
     root = gui.getTab1();
-    mainPanel = new JPanel();
-    buttonsPannel = new JPanel();
-
-    mainPanel.setBackground(Color.blue);
-    buttonsPannel.setBackground(Color.green);
-
-
-    root.setLayout(new GridLayout(2,1));
-
-    root.add(mainPanel);
-    root.add(buttonsPannel);
-
-
-
-    //    root.setLayout(new GridLayout(4,1));
-//    mainPanel.setPreferredSize(new Dimension(300,500));
-//    mainPanel.setSize(300,500);
-
-
-//    startButton = new JButton("Start");
-
-
-
-
-//    this.startButton = gui.getStartButton1();
-//    this.pauseButton = gui.getPauseButton1();
-//    this.testButton = gui.getTestButton1();
-//    this.webcamPanel = gui.getWebcamPanel1();
-
-//    defaultPanelColor = webcamPanel.getBackground();
-
-//    addListenersToPage1();
+    initComponents();
+    addListeners();
   }
 
-  private void addListenersToPage1() {
+  private void initComponents() {
+    mainPanel = new JPanel();
+    buttonsPanel = new JPanel();
+
+    ///////////////////////////////////////////////////////////////
+    mainPanel.setBackground(Color.blue);
+    buttonsPanel.setBackground(Color.green);
+    ///////////////////////////////////////////////////////////////
+
+    webcamPanel = new JPanel();
+    webcamPanel.setPreferredSize(new Dimension(640, 480));
+    mainPanel.add(webcamPanel);
+
+    startButton = new JButton("Start");
+    pauseButton = new JButton("Pause");
+    testButton = new JButton("Test");
+    buttonsPanel.add(startButton);
+    buttonsPanel.add(pauseButton);
+    buttonsPanel.add(testButton);
+
+    root.add(mainPanel);
+    root.add(buttonsPanel);
+    mainPanel.setPreferredSize(new Dimension(800,500));
+    buttonsPanel.setPreferredSize(new Dimension(800,100));
+    defaultPanelColor = webcamPanel.getBackground();
+  }
+
+  private void addListeners() {
     startButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -81,7 +77,7 @@ public class Page1 extends JPanel implements Pages {
         startButton.setEnabled(false);
         pauseButton.setEnabled(true);
         testButton.setEnabled(false);
-//        gui.getPagesPanel().setEnabled(false);
+        gui.getTabs().setEnabled(false);
       }
     });
 
@@ -94,7 +90,7 @@ public class Page1 extends JPanel implements Pages {
         startButton.setEnabled(true);
         webSource.release();
         testButton.setEnabled(true);
-//        gui.getPagesPanel().setEnabled(true);
+        gui.getTabs().setEnabled(true);
       }
     });
 
@@ -112,7 +108,6 @@ public class Page1 extends JPanel implements Pages {
     });
 
   }
-
 
   // definitions
   private DaemonThread myThread = null;

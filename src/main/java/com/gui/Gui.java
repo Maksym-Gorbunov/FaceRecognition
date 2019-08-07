@@ -31,10 +31,12 @@ public class Gui extends JFrame {
     tab2 = new JPanel();
     tab3 = new JPanel();
     tab4 = new JPanel();
+    //////////////////////////////////////////////////////////////////////
     tab1.setBackground(Color.CYAN);
     tab2.setBackground(Color.CYAN);
     tab3.setBackground(Color.CYAN);
     tab4.setBackground(Color.CYAN);
+    //////////////////////////////////////////////////////////////////////
     tabs.addTab("One", tab1);
     tabs.addTab("Two", tab2);
     tabs.addTab("Three", tab3);
@@ -44,8 +46,12 @@ public class Gui extends JFrame {
     tab1 = new Page1(Gui.this);
   }
 
-
+  // Getters
   public JPanel getTab1() {
     return tab1;
+  }
+
+  public JTabbedPane getTabs() {
+    return tabs;
   }
 }
