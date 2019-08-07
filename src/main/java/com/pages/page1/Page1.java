@@ -16,7 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 
-public class Page1 extends JFrame implements Pages {
+public class Page1 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private JButton startButton;
   private JButton pauseButton;
@@ -37,7 +37,7 @@ public class Page1 extends JFrame implements Pages {
     JPanel mainPanel = new JPanel();
     mainPanel.setBackground(Color.blue);
 //    mainPanel.setPreferredSize(new Dimension(300,500));
-    mainPanel.setSize(300,500);
+//    mainPanel.setSize(300,500);
     root.add(mainPanel);
     JPanel buttonsPannel = new JPanel();
     buttonsPannel.setBackground(Color.green);

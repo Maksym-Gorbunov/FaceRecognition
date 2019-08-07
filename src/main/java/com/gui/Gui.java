@@ -1,6 +1,5 @@
 package com.gui;
 
-import com.pages.Pages;
 import com.pages.page1.Page1;
 
 import java.awt.*;
@@ -14,12 +13,6 @@ public class Gui extends JFrame {
   private JPanel tab3;
   private JPanel tab4;
 
-  private Pages page1;
-  private Pages page2;
-  private Pages page3;
-  private Pages page4;
-
-
   public Gui(){
     super("Application");
     setSize(800, 600);
@@ -29,36 +22,26 @@ public class Gui extends JFrame {
     setVisible(true);
 
     initComponents();
-
-
-
   }
 
   private void initComponents() {
     tabs = new JTabbedPane();
     tabs.setBackground(Color.green);
-
     tab1 = new JPanel();
     tab2 = new JPanel();
     tab3 = new JPanel();
     tab4 = new JPanel();
-
     tab1.setBackground(Color.CYAN);
     tab2.setBackground(Color.CYAN);
     tab3.setBackground(Color.CYAN);
     tab4.setBackground(Color.CYAN);
-
     tabs.addTab("One", tab1);
     tabs.addTab("Two", tab2);
     tabs.addTab("Three", tab3);
     tabs.addTab("Four", tab4);
-
-
     add(tabs);
 
-
-    page1 = new Page1(Gui.this);
-//    tab1.add((Component) page1);
+    tab1 = new Page1(Gui.this);
   }
 
 
