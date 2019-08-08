@@ -2,6 +2,7 @@ package com.gui;
 
 import com.constants.Constants;
 import com.pages.page1.Page1;
+import com.pages.page2.Page2;
 
 import java.awt.*;
 
@@ -14,7 +15,7 @@ public class Gui extends JFrame {
   private JPanel tab3;
   private JPanel tab4;
 
-  public Gui(){
+  public Gui() {
     super("Application");
     setSize(Constants.FRAME_WIDTH, Constants.FRAME_HEIGHT);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,11 +46,24 @@ public class Gui extends JFrame {
     add(tabs);
 
     tab1 = new Page1(Gui.this);
+    tab2 = new Page2(Gui.this);
   }
 
   // Getters
   public JPanel getTab1() {
     return tab1;
+  }
+
+  public JPanel getTab2() {
+    return tab2;
+  }
+
+  public JPanel getTab3() {
+    return tab3;
+  }
+
+  public JPanel getTab4() {
+    return tab4;
   }
 
   public JTabbedPane getTabs() {
