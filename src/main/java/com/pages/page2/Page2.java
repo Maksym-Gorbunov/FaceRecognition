@@ -1,9 +1,12 @@
 package com.pages.page2;
 
+//import com.pages.page2.Contact;
+
 import com.gui.Gui;
 import com.pages.Pages;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -11,27 +14,33 @@ import java.awt.event.ActionListener;
 public class Page2 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private Gui gui;
-  private JPanel root;
-  private JPanel mainPanel;
+  private JPanel tab2;
 
-  private JPanel labelsPanel;
-  private JLabel nameLabel;
+  private JPanel comboboxPanel = new JPanel();
+  private JComboBox<Contact> contactsComboBox = new JComboBox<Contact>();
 
-  private JPanel textPanel;
-  private JTextField nameTextField;
-  private JTextField phoneTextField;
-  private JTextField emailTextField;
-  private JTextField surnameTextField;
-  private JComboBox<Contact> contactsComboBox;
+  private JPanel mainPanel = new JPanel();
 
+  private JPanel labelsPanel = new JPanel();
+  private JLabel nameLabel = new JLabel("name:");
+  private JLabel surnameLabel = new JLabel("surname:");
+  private JLabel phoneLabel = new JLabel("phone:");
+  private JLabel emailLabel = new JLabel("email:");
 
-  private JPanel buttonsPanel;
-  private JButton addButton;
-  private JButton printButton;
-  private JButton deleteButton;
-  private JButton editButton;
-  private JButton saveButton;
-  private JButton cancelButton;
+  private JPanel textPanel = new JPanel();
+  private JTextField nameTextField = new JTextField();
+  private JTextField surnameTextField = new JTextField();
+  private JTextField phoneTextField = new JTextField();
+  private JTextField emailTextField = new JTextField();
+
+  private JPanel buttonsPanel = new JPanel();
+  private JButton addButton = new JButton("Add");
+  private JButton printButton = new JButton("Print");
+  private JButton deleteButton = new JButton("Delete");
+  private JButton editButton = new JButton("Edit");
+  private JButton saveButton = new JButton("Save");
+  private JButton cancelButton = new JButton("Cancel");
+
   private ContactBook contactBook = new ContactBook();
   private boolean edit = false;
   private Contact editContact = new Contact();
@@ -39,18 +48,7 @@ public class Page2 extends JPanel implements Pages {
   // Constructor
   public Page2(final Gui gui) {
     this.gui = gui;
-    root = gui.getTab2();
-//    this.nameTextField = gui.getNameTextField2();
-//    this.surnameTextField = gui.getSurnameTextField2();
-//    this.phoneTextField = gui.getPhoneTextField2();
-//    this.emailTextField = gui.getEmailTextField2();
-//    this.addButton = gui.getAddContactButton2();
-//    this.editButton = gui.getEditButton2();
-//    this.saveButton = gui.getSaveButton2();
-//    this.cancelButton = gui.getCancelButton2();
-//    this.printButton = gui.getPrintAllContactsButton2();
-//    this.deleteButton = gui.getDeleteButton2();
-//    this.contactsComboBox = gui.getContactsComboBox2();
+    tab2 = gui.getTab2();
 
 //    dynamicEditDeletePrintButtons();
 //    dynamicAddSaveButtons();
@@ -59,12 +57,11 @@ public class Page2 extends JPanel implements Pages {
 //    temp();
 
     initComponents();
+
   }
 
   private void temp() {
 //    DB.populateContactBook();
-
-
 //    contactBook.add(new Contact("Max", "Fry", "max@mail.com", "0766533"));
 //    contactBook.add(new Contact("Bob", "Person", "bob@mail.com", "0765013"));
 //    contactBook.getContacts().stream().forEach(c -> contactsComboBox.addItem(c));
@@ -72,8 +69,45 @@ public class Page2 extends JPanel implements Pages {
 
   // Initialize defaults values on start
   private void initComponents() {
-    saveButton.setVisible(false);
-    cancelButton.setVisible(false);
+    comboboxPanel.setPreferredSize(new Dimension(800,50));
+    comboboxPanel.add(contactsComboBox);
+    tab2.add(comboboxPanel);
+
+    mainPanel.setPreferredSize(new Dimension(800,400));
+    mainPanel.setLayout(new GridLayout(1,2));
+
+    labelsPanel.setLayout(new GridLayout(4,1));
+    labelsPanel.setBackground(Color.green);
+    labelsPanel.add(nameLabel);
+    labelsPanel.add(surnameLabel);
+    labelsPanel.add(phoneLabel);
+    labelsPanel.add(emailLabel);
+    mainPanel.add(labelsPanel);
+
+    textPanel.setLayout(new GridLayout(4,1));
+    textPanel.setBackground(Color.red);
+    textPanel.add(nameTextField);
+    textPanel.add(surnameTextField);
+    textPanel.add(phoneTextField);
+    textPanel.add(emailTextField);
+    mainPanel.add(textPanel);
+
+    tab2.add(mainPanel);
+
+    buttonsPanel.setPreferredSize(new Dimension(800, 50));
+    buttonsPanel.add(addButton);
+    buttonsPanel.add(printButton);
+    buttonsPanel.add(deleteButton);
+    buttonsPanel.add(editButton);
+    buttonsPanel.add(saveButton);
+    buttonsPanel.add(cancelButton);
+    tab2.add(buttonsPanel);
+
+
+
+
+//    saveButton.setVisible(false);
+//    cancelButton.setVisible(false);
   }
 
   // Add gui elements listeners
@@ -132,7 +166,7 @@ public class Page2 extends JPanel implements Pages {
         saveButton.setVisible(true);
         cancelButton.setVisible(true);
         contactsComboBox.setEnabled(false);
-        gui.getPagesPanel().setEnabled(false);
+        gui.getTabs().setEnabled(false);
       }
     });
 
@@ -148,7 +182,7 @@ public class Page2 extends JPanel implements Pages {
         saveButton.setVisible(false);
         cancelButton.setVisible(false);
         contactsComboBox.setEnabled(true);
-        gui.getPagesPanel().setEnabled(true);
+        gui.getTabs().setEnabled(true);
 
         clearAllTextFields();
         edit = false;
@@ -161,7 +195,7 @@ public class Page2 extends JPanel implements Pages {
         saveButton.setVisible(false);
         cancelButton.setVisible(false);
         contactsComboBox.setEnabled(true);
-        gui.getPagesPanel().setEnabled(true);
+        gui.getTabs().setEnabled(true);
         clearAllTextFields();
         edit = false;
       }

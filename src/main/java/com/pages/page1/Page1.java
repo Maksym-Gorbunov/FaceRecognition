@@ -19,7 +19,7 @@ import java.io.ByteArrayInputStream;
 public class Page1 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private Gui gui;
-  private JPanel root;
+  private JPanel tab1;
   private JPanel mainPanel;
   private JPanel buttonsPanel;
   private JButton startButton;
@@ -32,7 +32,7 @@ public class Page1 extends JPanel implements Pages {
 
   public Page1(final Gui gui) {
     this.gui = gui;
-    root = gui.getTab1();
+    tab1 = gui.getTab1();
     initComponents();
     addListeners();
   }
@@ -57,8 +57,8 @@ public class Page1 extends JPanel implements Pages {
     buttonsPanel.add(pauseButton);
     buttonsPanel.add(testButton);
 
-    root.add(mainPanel);
-    root.add(buttonsPanel);
+    tab1.add(mainPanel);
+    tab1.add(buttonsPanel);
     mainPanel.setPreferredSize(new Dimension(800,500));
     buttonsPanel.setPreferredSize(new Dimension(800,100));
     defaultPanelColor = webcamPanel.getBackground();
