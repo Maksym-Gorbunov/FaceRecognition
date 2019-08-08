@@ -1,7 +1,6 @@
 package com.pages.page2;
 
-//import com.pages.page2.Contact;
-
+import com.db.DB;
 import com.gui.Gui;
 import com.pages.Pages;
 
@@ -45,26 +44,27 @@ public class Page2 extends JPanel implements Pages {
   private boolean edit = false;
   private Contact editContact = new Contact();
 
+
   // Constructor
   public Page2(final Gui gui) {
     this.gui = gui;
     tab2 = gui.getTab2();
 
-//    dynamicEditDeletePrintButtons();
-//    dynamicAddSaveButtons();
-//    addListeners();
+    dynamicEditDeletePrintButtons();
+    dynamicAddSaveButtons();
+    addListeners();
 
-//    temp();
+    temp();
 
     initComponents();
 
   }
 
   private void temp() {
-//    DB.populateContactBook();
-//    contactBook.add(new Contact("Max", "Fry", "max@mail.com", "0766533"));
-//    contactBook.add(new Contact("Bob", "Person", "bob@mail.com", "0765013"));
-//    contactBook.getContacts().stream().forEach(c -> contactsComboBox.addItem(c));
+    DB.populateContactBook();
+    contactBook.add(new Contact("Max", "Fry", "max@mail.com", "0766533"));
+    contactBook.add(new Contact("Bob", "Person", "bob@mail.com", "0765013"));
+    contactBook.getContacts().stream().forEach(c -> contactsComboBox.addItem(c));
   }
 
   // Initialize defaults values on start
@@ -103,11 +103,8 @@ public class Page2 extends JPanel implements Pages {
     buttonsPanel.add(cancelButton);
     tab2.add(buttonsPanel);
 
-
-
-
-//    saveButton.setVisible(false);
-//    cancelButton.setVisible(false);
+    saveButton.setVisible(false);
+    cancelButton.setVisible(false);
   }
 
   // Add gui elements listeners
