@@ -76,11 +76,11 @@ public class Page4 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         webSource = new VideoCapture(0); // video capture from default cam
-        myThread = new Page4.DaemonThread(); //create object of threat class
-        Thread t = new Thread(myThread);
-        t.setDaemon(true);
+        myThread = new DaemonThread(); //create object of threat class
+        Thread thread = new Thread(myThread);
+        thread.setDaemon(true);
         myThread.runnable = true;
-        t.start();                 //start thrad
+        thread.start();
         startButton.setEnabled(false);
         pauseButton.setEnabled(true);
         gui.getTabs().setEnabled(false);
