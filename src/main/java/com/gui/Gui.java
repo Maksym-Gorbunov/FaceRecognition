@@ -4,6 +4,7 @@ import com.constants.Constants;
 import com.pages.page1.Page1;
 import com.pages.page2.Page2;
 import com.pages.page3.Page3;
+import com.pages.page4.Page4;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -29,7 +30,7 @@ public class Gui extends JFrame {
     createMenuBar();
     initComponents();
 
-    System.out.println(Gui.this.getJMenuBar().getHeight());
+//    System.out.println(Gui.this.getJMenuBar().getHeight());
   }
 
   private void initComponents() {
@@ -55,6 +56,7 @@ public class Gui extends JFrame {
     tab1 = new Page1(Gui.this);
     tab2 = new Page2(Gui.this);
     tab3 = new Page3(Gui.this);
+    tab4 = new Page4(Gui.this);
   }
 
   private void createMenuBar() {

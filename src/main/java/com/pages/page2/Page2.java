@@ -61,7 +61,7 @@ public class Page2 extends JPanel implements Pages {
   }
 
   private void temp() {
-    DB.populateContactBook();
+//    DB.populateContactBook();
     contactBook.add(new Contact("Max", "Fry", "max@mail.com", "0766533"));
     contactBook.add(new Contact("Bob", "Person", "bob@mail.com", "0765013"));
     contactBook.getContacts().stream().forEach(c -> contactsComboBox.addItem(c));

@@ -56,6 +56,7 @@ public class Page1 extends JPanel implements Pages {
     mainPanel.setPreferredSize(new Dimension(800,500));
     buttonsPanel.setPreferredSize(new Dimension(800,100));
     defaultPanelColor = webcamPanel.getBackground();
+    pauseButton.setEnabled(false);
   }
 
   private void addListeners() {
