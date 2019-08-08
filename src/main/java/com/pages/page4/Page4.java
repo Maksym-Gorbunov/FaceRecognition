@@ -1,9 +1,9 @@
 package com.pages.page4;
 
-import com.app.App;
 import com.constants.Constants;
 import com.gui.Gui;
 import com.pages.Pages;
+
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -14,10 +14,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 
-//import javafx.event.ActionEvent;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfRect;
@@ -103,7 +100,6 @@ public class Page4 extends JPanel implements Pages {
   }
 
   class DaemonThread implements Runnable {
-
     protected volatile boolean runnable = false;
 
     @Override
@@ -116,38 +112,16 @@ public class Page4 extends JPanel implements Pages {
               Graphics g = webcamPanel.getGraphics();
               faceDetector.detectMultiScale(frame, faceDetections);
               for (Rect rect : faceDetections.toArray()) {
-                // System.out.println("ttt");
-
                 Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
                         new Scalar(0, 255, 0));
-
-
-//                                Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-//                                        new Scalar(0, 255,0));
               }
               Imgcodecs.imencode(".bmp", frame, mem);
-//                            Highgui.imencode(".bmp", frame, mem);
               Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
               BufferedImage buff = (BufferedImage) im;
-//              if (g.drawImage(buff, 0, 0, getWidth(), getHeight() - 150, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
               if (g.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
                 if (runnable == false) {
                   System.out.println("Paused ..... ");
-//                  this.wait();
-
-
-
-
-//                  try {
-//                    Class<?> act = Class.forName("com.app.App");
-////                    System.out.println(act);
-//                    act.wait();
-//                  } catch (ClassNotFoundException e) {
-//                    e.printStackTrace();
-//                  }
-//                  System.out.println(App.getMainClassName());
-
-
+                  this.wait();
                 }
               }
             } catch (Exception ex) {
