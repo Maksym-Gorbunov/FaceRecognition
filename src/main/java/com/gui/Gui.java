@@ -28,6 +28,8 @@ public class Gui extends JFrame {
 
     createMenuBar();
     initComponents();
+
+    System.out.println(Gui.this.getJMenuBar().getHeight());
   }
 
   private void initComponents() {
