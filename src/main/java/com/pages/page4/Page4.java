@@ -134,7 +134,20 @@ public class Page4 extends JPanel implements Pages {
                 if (runnable == false) {
                   System.out.println("Paused ..... ");
 //                  this.wait();
-//                  App.this.wait();
+
+
+
+
+//                  try {
+//                    Class<?> act = Class.forName("com.app.App");
+////                    System.out.println(act);
+//                    act.wait();
+//                  } catch (ClassNotFoundException e) {
+//                    e.printStackTrace();
+//                  }
+//                  System.out.println(App.getMainClassName());
+
+
                 }
               }
             } catch (Exception ex) {
