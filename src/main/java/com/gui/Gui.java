@@ -3,8 +3,11 @@ package com.gui;
 import com.constants.Constants;
 import com.pages.page1.Page1;
 import com.pages.page2.Page2;
+import com.pages.page3.Page3;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
@@ -23,10 +26,12 @@ public class Gui extends JFrame {
     setResizable(false);
     setVisible(true);
 
+    createMenuBar();
     initComponents();
   }
 
   private void initComponents() {
+
     tabs = new JTabbedPane();
     tabs.setBackground(Color.green);
     tab1 = new JPanel();
@@ -47,6 +52,27 @@ public class Gui extends JFrame {
 
     tab1 = new Page1(Gui.this);
     tab2 = new Page2(Gui.this);
+    tab3 = new Page3(Gui.this);
+  }
+
+  private void createMenuBar() {
+    JMenuBar menuBar = new JMenuBar();
+    JMenu fileMenu = new JMenu("File");
+    JMenuItem exitMenuItem = new JMenuItem("Exit");
+    fileMenu.add(exitMenuItem);
+    menuBar.add(fileMenu);
+    setJMenuBar(menuBar);
+
+    exitMenuItem.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        int action = JOptionPane.showConfirmDialog(Gui.this, Constants.EXIT_WARNING);
+        if(action == JOptionPane.OK_OPTION){
+          System.gc();
+          System.exit(0);
+        }
+      }
+    });
   }
 
   // Getters
@@ -69,4 +95,6 @@ public class Gui extends JFrame {
   public JTabbedPane getTabs() {
     return tabs;
   }
+
+
 }

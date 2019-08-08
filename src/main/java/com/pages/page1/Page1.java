@@ -20,12 +20,12 @@ public class Page1 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private Gui gui;
   private JPanel tab1;
-  private JPanel mainPanel;
-  private JPanel buttonsPanel;
-  private JButton startButton;
-  private JButton pauseButton;
-  private JButton testButton;
-  private JPanel webcamPanel;
+  private JPanel mainPanel = new JPanel();
+  private JPanel buttonsPanel = new JPanel();
+  private JButton startButton = new JButton("Start");
+  private JButton pauseButton = new JButton("Pause");
+  private JButton testButton = new JButton("Test");
+  private JPanel webcamPanel = new JPanel();
   private Graphics graphics;
   private boolean status = false;
   private Color defaultPanelColor;
@@ -38,21 +38,15 @@ public class Page1 extends JPanel implements Pages {
   }
 
   private void initComponents() {
-    mainPanel = new JPanel();
-    buttonsPanel = new JPanel();
 
     ///////////////////////////////////////////////////////////////
     mainPanel.setBackground(Color.blue);
     buttonsPanel.setBackground(Color.green);
     ///////////////////////////////////////////////////////////////
 
-    webcamPanel = new JPanel();
     webcamPanel.setPreferredSize(new Dimension(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT));
     mainPanel.add(webcamPanel);
 
-    startButton = new JButton("Start");
-    pauseButton = new JButton("Pause");
-    testButton = new JButton("Test");
     buttonsPanel.add(startButton);
     buttonsPanel.add(pauseButton);
     buttonsPanel.add(testButton);
