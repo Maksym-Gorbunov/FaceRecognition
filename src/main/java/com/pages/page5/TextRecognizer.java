@@ -76,7 +76,8 @@ public class TextRecognizer {
     long start = System.currentTimeMillis();
 
     // Read image
-    Mat origin = imread(SRC_PATH + "2.png");
+    Mat origin = imread(SRC_PATH + "byggmax.png");
+//    Mat origin = imread(SRC_PATH + "2.png");
 
     String result = new TextRecognizer().extractTextFromImage(origin);
     System.out.println(result);

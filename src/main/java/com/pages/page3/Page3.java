@@ -24,7 +24,7 @@ public class Page3  extends JPanel implements Pages {
   private FaceDetection faceDetection;
   private File file;
 
-  public Page3(Gui gui) {
+  public Page3(final Gui gui) {
     this.gui = gui;
     tab3 = gui.getTab3();
     menuBar = gui.getJMenuBar();

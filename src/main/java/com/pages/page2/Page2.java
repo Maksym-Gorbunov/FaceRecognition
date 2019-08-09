@@ -52,11 +52,11 @@ public class Page2 extends JPanel implements Pages {
 
     dynamicEditDeletePrintButtons();
     dynamicAddSaveButtons();
-    addListeners();
 
     temp();
 
     initComponents();
+    addListeners();
 
   }
 

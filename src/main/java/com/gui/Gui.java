@@ -5,6 +5,7 @@ import com.pages.page1.Page1;
 import com.pages.page2.Page2;
 import com.pages.page3.Page3;
 import com.pages.page4.Page4;
+import com.pages.page5.Page5;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,7 @@ public class Gui extends JFrame {
   private JPanel tab2;
   private JPanel tab3;
   private JPanel tab4;
+  private JPanel tab5;
 
   public Gui() {
     super("Application");
@@ -41,22 +43,26 @@ public class Gui extends JFrame {
     tab2 = new JPanel();
     tab3 = new JPanel();
     tab4 = new JPanel();
+    tab5 = new JPanel();
     //////////////////////////////////////////////////////////////////////
     tab1.setBackground(Color.CYAN);
     tab2.setBackground(Color.CYAN);
     tab3.setBackground(Color.CYAN);
     tab4.setBackground(Color.CYAN);
+    tab5.setBackground(Color.CYAN);
     //////////////////////////////////////////////////////////////////////
     tabs.addTab("One", tab1);
     tabs.addTab("Two", tab2);
     tabs.addTab("Three", tab3);
     tabs.addTab("Four", tab4);
+    tabs.addTab("Five", tab5);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
     tab2 = new Page2(Gui.this);
     tab3 = new Page3(Gui.this);
     tab4 = new Page4(Gui.this);
+    tab5 = new Page5(Gui.this);
   }
 
   private void createMenuBar() {
@@ -100,5 +106,7 @@ public class Gui extends JFrame {
     return tabs;
   }
 
-
+  public JPanel getTab5() {
+    return tab5;
+  }
 }

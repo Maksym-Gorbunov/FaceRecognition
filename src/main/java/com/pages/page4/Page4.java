@@ -45,7 +45,7 @@ public class Page4 extends JPanel implements Pages {
   private MatOfRect faceDetections = new MatOfRect();
 
 
-  public Page4(Gui gui) {
+  public Page4(final Gui gui) {
     this.gui = gui;
     tab4 = gui.getTab4();
     initComponents();
