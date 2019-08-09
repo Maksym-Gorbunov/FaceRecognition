@@ -48,6 +48,8 @@ public class Page5 extends JPanel implements Pages {
     buttonsPanel.add(recognizeTextBtn);
 
     leftPanel.setBackground(Color.green);
+
+    textArea = new JTextArea("some text...");
   }
 
 
