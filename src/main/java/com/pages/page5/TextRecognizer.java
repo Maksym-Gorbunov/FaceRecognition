@@ -32,10 +32,8 @@ import net.sourceforge.tess4j.TesseractException;
 public class TextRecognizer {
 
   // Source path content images
-//  static String SRC_PATH = "E:/Recognize/java_text/";
   static String SRC_PATH = Constants.projectPath+"\\img\\";
-  static String TESS_DATA = Constants.projectPath+"\\lib\\";    //path to eng.trainedata
-//  static String TESS_DATA = "E:/Programs/ocr/Tesseract-OCR/tessdata";
+  static String TESS_DATA = Constants.projectPath+"\\lib\\tesseract-OCR\\";    // path to Tesseract-OCR eng.trainedata
 
   // Create tess obj
   static Tesseract tesseract = new Tesseract();
