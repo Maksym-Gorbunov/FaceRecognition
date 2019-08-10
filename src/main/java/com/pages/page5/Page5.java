@@ -70,13 +70,13 @@ public class Page5 extends JPanel implements Pages {
     textArea = new JTextArea("some text...");
 //    textArea = new JTextArea("some text...",10,30);
     textArea.setBackground(Color.red);
-    textArea.setPreferredSize(new Dimension(200,200));
+    textArea.setPreferredSize(new Dimension(320,240));
     rightPanel.add(textArea);
 
     fileChooser = new JFileChooser();
 
-    imagePanel = new ImagePanel();
-    imagePanel.setPreferredSize(new Dimension(200,160));
+    imagePanel = new ImagePanel(320,240);
+//    imagePanel.setPreferredSize(new Dimension(200,160));
     leftPanel.add(imagePanel, new GridConstraints());
   }
 
@@ -107,7 +107,7 @@ public class Page5 extends JPanel implements Pages {
         long start = System.currentTimeMillis();
 
         // Read image
-        Mat origin = imread(SRC_PATH + fileName);
+        Mat origin = imread(IMG_PATH + fileName);
 
         String result = extractTextFromImage(origin);
 //        String result = new TextRecognizer().extractTextFromImage(origin);
@@ -128,7 +128,7 @@ public class Page5 extends JPanel implements Pages {
 
   ////////////////////////// RECOGNITION //////////////////////////
   // Source path content images
-  static String SRC_PATH = Constants.projectPath+"\\img\\";
+  static String IMG_PATH = Constants.projectPath+"\\img\\";
   static String TESS_DATA = Constants.projectPath+"\\lib\\tesseract-OCR\\";    // path to Tesseract-OCR eng.trainedata
 
   // Create tess obj
@@ -146,11 +146,11 @@ public class Page5 extends JPanel implements Pages {
 
     // Convert to gray scale
     cvtColor(inputMat, gray, COLOR_BGR2GRAY);
-    imwrite(SRC_PATH + FilenameUtils.removeExtension(fileName) + "_gray.png", gray);
+    imwrite(IMG_PATH + FilenameUtils.removeExtension(fileName) + "_gray.png", gray);
 
     try {
       // Recognize text with OCR
-      result = tesseract.doOCR(new File(SRC_PATH + FilenameUtils.removeExtension(fileName) +"_gray.png"));
+      result = tesseract.doOCR(new File(IMG_PATH + FilenameUtils.removeExtension(fileName) +"_gray.png"));
     } catch (TesseractException e) {
       e.printStackTrace();
     }

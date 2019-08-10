@@ -12,13 +12,18 @@
    private static final long serialVersionUID = 1L;
    private JLabel imageLabel;
    private ImageIcon transformedImageIcon;
+   private int width;
+   private int height;
 
-   public ImagePanel(){
+   public ImagePanel(int width, int height){
      this.imageLabel = new JLabel();
      setLayout(new BorderLayout());
      setBorder(BorderFactory.createLineBorder(Color.black));
      add(imageLabel, BorderLayout.CENTER);
      setBackground(Color.ORANGE);
+     setPreferredSize(new Dimension(width,height));
+     this.width = width;
+     this.height =height;
    }
 
    public void updadeImage(final Image image) {
@@ -26,7 +31,7 @@
    }
 
    private Image scaleImage(Image image) {
-     return image.getScaledInstance(200, 160, Image.SCALE_SMOOTH);
+     return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 //     return image.getScaledInstance(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, Image.SCALE_SMOOTH);
    }
 
