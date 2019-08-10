@@ -1,6 +1,5 @@
 package com.pages.page2;
 
-import com.db.DB;
 import com.gui.Gui;
 import com.pages.Pages;
 
@@ -53,17 +52,13 @@ public class Page2 extends JPanel implements Pages {
     dynamicEditDeletePrintButtons();
     dynamicAddSaveButtons();
 
-    temp();
-
     initComponents();
     addListeners();
-
+    contactBook.populateContactBook();
+    populateComboBox();
   }
 
-  private void temp() {
-//    DB.populateContactBook();
-    contactBook.add(new Contact("Max", "Fry", "max@mail.com", "0766533"));
-    contactBook.add(new Contact("Bob", "Person", "bob@mail.com", "0765013"));
+  private void populateComboBox() {
     contactBook.getContacts().stream().forEach(c -> contactsComboBox.addItem(c));
   }
 

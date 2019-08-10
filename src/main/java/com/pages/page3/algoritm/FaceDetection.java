@@ -1,7 +1,7 @@
 package com.pages.page3.algoritm;
 
 import com.constants.Constants;
-import com.pages.page3.ImagePanel;
+import com.gui.ImagePanel;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;

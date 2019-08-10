@@ -39,7 +39,7 @@ public class Contact {
 
     Contact contact = (Contact) o;
 
-    if (!email.equals(contact.email)) return false;
+    if ((email == null) || (phone == null) || (!email.equals(contact.email))) return false;
     return phone.equals(contact.phone);
   }
 

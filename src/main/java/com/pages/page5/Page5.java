@@ -1,6 +1,7 @@
 package com.pages.page5;
 
 import com.gui.Gui;
+import com.gui.ImagePanel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.pages.Pages;
 

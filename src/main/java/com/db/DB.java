@@ -14,75 +14,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DB {
-  static MongoClient mongoClient;
-  static MongoDatabase database;
-  static String collectionName = "Contacts";
-  static MongoCollection<Document> collection;
+  private MongoClient client;
+  private MongoDatabase db;
+  private String dbName = "hilodb";
+  private String collectionName = "Contacts";
+  private MongoCollection<Document> collection;
 
-  static {
-    MongoClientURI uri = new MongoClientURI(
-            "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority");
-    mongoClient = new MongoClient(uri);
+  public DB() {
+    String atlasConnectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
+    MongoClientURI uri = new MongoClientURI(atlasConnectionString);
+    client = new MongoClient(uri);
     Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
     mongoLogger.setLevel(Level.SEVERE);
-    database = mongoClient.getDatabase("hilodb");
-    collection = database.getCollection(collectionName);
+    db = client.getDatabase(dbName);
+    collection = db.getCollection(collectionName);
   }
 
 
-  public static void populateContactBook() {
-//    createCollection("Contacts");
-//    insertContact("Contacts", new Contact("Will", "Torre", "will@mail.com", "09879855"));
-//    insertContact("Contacts", new Contact("Nick", "Lonny", "nick@mail.com", "09879855"));
-
-    printContacts();
-//    updateFieldByContactName("Contacts", "Will", "newField", "uuuuu");
-//    findAndPrint("name", "Will");
-//    updateIncrement();
-  }
-
-
-  static void printContacts() {
-//    MongoCollection<Document> collection = database.getCollection(collectionName);
-    List<Document> result = collection.find().into(new ArrayList<>());
-    result.stream().map(Document::toJson).forEach(System.out::println);
-    /* OLD Style Java:
-    for (Document doc : result) {
-      System.out.println(doc.toJson());
-    }
-    */
-  }
-
-  // Create collection
-  static void createCollection(String collectionName) {
-    MongoCollection<Document> collection = database.getCollection(collectionName);
-    collection.insertOne(new Document());
-  }
-
-  // Delete collection
-  static void deleteCollection(String collectionName) {
-    MongoCollection<Document> collection = database.getCollection(collectionName);
-    collection.drop();
-    collection = database.getCollection(collectionName);
-    System.out.println(collection);
-  }
-
-  // Lists all database names
-  static void listDatabases() {
-    for (String db : mongoClient.listDatabaseNames()) {
-      System.out.println(db);
-    }
-  }
-
-  // Lists all collection names
-  static void listCollectionNames() {
-    for (String collectionName : database.listCollectionNames()) {
-      System.out.println(collectionName);
-    }
-  }
-
-  static void insertContact(String collectionName, Contact contact) {
-    MongoCollection<Document> collection = database.getCollection(collectionName);
+  public void insertContact(Contact contact) {
+    MongoCollection<Document> collection = db.getCollection(collectionName);
     Document document = new Document("name", contact.getName())
             .append("surname", contact.getSurname())
             .append("email", contact.getEmail())
@@ -90,8 +40,56 @@ public class DB {
     collection.insertOne(document);
   }
 
+
+  public List<Document> getAllDocuments() {
+    List<Document> result = collection.find().into(new ArrayList<>());
+    return result;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // Create collection
+  public void createCollection(String collectionName) {
+    MongoCollection<Document> collection = db.getCollection(collectionName);
+    collection.insertOne(new Document());
+  }
+
+  // Delete collection
+  public void deleteCollection(String collectionName) {
+    MongoCollection<Document> collection = db.getCollection(collectionName);
+    collection.drop();
+    collection = db.getCollection(collectionName);
+    System.out.println(collection);
+  }
+
+  // Lists all db names
+  public void listDatabases() {
+    for (String db : client.listDatabaseNames()) {
+      System.out.println(db);
+    }
+  }
+
+  // Lists all collection names
+  public void listCollectionNames() {
+    for (String collectionName : db.listCollectionNames()) {
+      System.out.println(collectionName);
+    }
+  }
+
+
 //  static void insertManyContacts(String collectionName, List<Contact> contact) {
-//    MongoCollection<Document> collection = database.getCollection(collectionName);
+//    MongoCollection<Document> collection = db.getCollection(collectionName);
 //    List<Document> document = asList(
 //            new Document ("name", contact.getName())
 //                    .append("surname", contact.getSurname())
@@ -105,27 +103,28 @@ public class DB {
 //  }
 
 
-  static void updateFieldByContactName(String collectionName, String contactName, String fieldName, String fieldValue) {
-    MongoCollection<Document> collection = database.getCollection(collectionName);
+  public void updateFieldByContactName(String collectionName, String contactName, String fieldName, String fieldValue) {
+    MongoCollection<Document> collection = db.getCollection(collectionName);
     BasicDBObject newDocument = new BasicDBObject();
     newDocument.append("$set", new BasicDBObject().append(fieldName, fieldValue));
     BasicDBObject query = new BasicDBObject().append("name", contactName);
     collection.updateOne(query, newDocument);
   }
 
-  static void findAndPrint(String field, String value) {
-    MongoCollection<Document> collection = database.getCollection("Contacts");
+  public void findAndPrint(String field, String value) {
+    MongoCollection<Document> collection = db.getCollection("Contacts");
     List<Document> result = collection.find(new Document(field, value)).into(new ArrayList<>());
     System.out.println(result);
   }
 
 
-  static void updateIncrement() {
-    MongoCollection<Document> collection = database.getCollection("Contacts");
+  public void updateIncrement() {
+    MongoCollection<Document> collection = db.getCollection("Contacts");
     BasicDBObject updateQuery = new BasicDBObject();
     updateQuery.append("$inc", new BasicDBObject().append("age", 555));
     BasicDBObject searchQuery = new BasicDBObject().append("name", "Max");
     collection.updateOne(searchQuery, updateQuery);
   }
+
 
 }
