@@ -31,9 +31,7 @@ public class DB {
     collection = db.getCollection(collectionName);
   }
 
-
   public void insertContact(Contact contact) {
-//    MongoCollection<Document> collection = db.getCollection(collectionName);
     Document document = new Document("_id", contact.get_id())
             .append("name", contact.getName())
             .append("surname", contact.getSurname())
@@ -42,18 +40,16 @@ public class DB {
     collection.insertOne(document);
   }
 
-
   public List<Document> getAllDocuments() {
     List<Document> result = collection.find().into(new ArrayList<>());
     return result;
   }
 
   public void deleteContact(Contact contact){
-    Bson filter = new Document("email", contact.getEmail());
+    Bson filter = new Document("_id", contact.get_id());
     collection.deleteOne(filter);
   }
 
-//  public void updateFieldByContactName(String contactName, String fieldName, String fieldValue) {
   public void updateContact(Contact contact) {
     BasicDBObject newDocument = new BasicDBObject();
     newDocument.append("$set", new BasicDBObject()

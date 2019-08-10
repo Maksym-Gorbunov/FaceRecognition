@@ -2,6 +2,7 @@ package com.pages.page2;
 
 import com.db.DB;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ public class ContactBook {
 
   public void remove(Contact contact) {
     contacts.remove(contact);
-//    db.deleteContact(contact);
+    db.deleteContact(contact);
   }
 
   public List<Contact> getContacts() {
@@ -34,6 +35,7 @@ public class ContactBook {
     List<Document> result = db.getAllDocuments();
     for(Document document : result){
       Contact contact = new Contact();
+      contact.set_id((ObjectId) document.get("_id"));
       contact.setName((String) document.get("name"));
       contact.setSurname((String) document.get("surname"));
       contact.setPhone((String) document.get("phone"));

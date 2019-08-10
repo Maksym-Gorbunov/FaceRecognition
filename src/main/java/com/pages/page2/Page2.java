@@ -140,11 +140,6 @@ public class Page2 extends JPanel implements Pages {
     deleteButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-//        contactBook.remove(contactsComboBox.getSelectedIndex());
-
-        System.out.println("__________________"+((Contact) contactsComboBox.getSelectedItem()).getEmail());
-        System.out.println("__________________"+((Contact) contactsComboBox.getSelectedItem()).get_id());
-
         contactBook.remove((Contact) contactsComboBox.getSelectedItem());
         contactsComboBox.removeItem(contactsComboBox.getSelectedItem());
         System.out.println("Contact was successfully removed!");
@@ -178,14 +173,11 @@ public class Page2 extends JPanel implements Pages {
         contact.setSurname(surnameTextField.getText());
         contact.setPhone(phoneTextField.getText());
         contact.setEmail(emailTextField.getText());
-
         contactBook.editContact(contact);
-
         saveButton.setVisible(false);
         cancelButton.setVisible(false);
         contactsComboBox.setEnabled(true);
         gui.getTabs().setEnabled(true);
-
         clearAllTextFields();
         edit = false;
       }
@@ -215,7 +207,6 @@ public class Page2 extends JPanel implements Pages {
         contactBook.populateContactBook();
         populateComboBox();
         gui.getTabs().setSelectedComponent(tab2);
-
       }
     });
   }
