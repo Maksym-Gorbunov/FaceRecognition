@@ -105,7 +105,8 @@ public class Page5 extends JPanel implements Pages {
         long start = System.currentTimeMillis();
 
         // Read image
-        Mat origin = imread(IMG_PATH + fileName);
+        Mat origin = imread(file.toString());
+//        Mat origin = imread(IMG_PATH + fileName);
 
         String result = extractTextFromImage(origin);
 //        String result = new TextRecognizer().extractTextFromImage(origin);
