@@ -1,11 +1,12 @@
- package com.pages.page3;
+ package com.pages.page5;
 
-import com.constants.Constants;
+ import com.constants.Constants;
+
+ import javax.swing.*;
+ import java.awt.*;
+ import java.io.File;
+
 //import com.recognition.image.constants.Constants;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
 
  public class ImagePanel extends JPanel{
    private static final long serialVersionUID = 1L;
@@ -25,7 +26,8 @@ import java.io.File;
    }
 
    private Image scaleImage(Image image) {
-     return image.getScaledInstance(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, Image.SCALE_SMOOTH);
+     return image.getScaledInstance(200, 160, Image.SCALE_SMOOTH);
+//     return image.getScaledInstance(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, Image.SCALE_SMOOTH);
    }
 
    public void loadImage(File file) {

@@ -1,6 +1,7 @@
 package com.pages.page5;
 
 import com.gui.Gui;
+import com.intellij.uiDesigner.core.GridConstraints;
 import com.pages.Pages;
 
 import javax.swing.*;
@@ -14,6 +15,7 @@ import static org.opencv.imgcodecs.Imgcodecs.imwrite;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
 import static org.opencv.imgproc.Imgproc.cvtColor;
 import com.constants.Constants;
+//import com.pages.page3.ImagePanel;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import net.sourceforge.tess4j.Tesseract;
@@ -33,7 +35,7 @@ public class Page5 extends JPanel implements Pages {
   private JFileChooser fileChooser;
   private File file;
   private String fileName;
-
+  private ImagePanel imagePanel;
 
   // Constructor
   public Page5(final Gui gui) {
@@ -72,6 +74,10 @@ public class Page5 extends JPanel implements Pages {
     rightPanel.add(textArea);
 
     fileChooser = new JFileChooser();
+
+    imagePanel = new ImagePanel();
+    imagePanel.setPreferredSize(new Dimension(200,160));
+    leftPanel.add(imagePanel, new GridConstraints());
   }
 
 
@@ -86,7 +92,7 @@ public class Page5 extends JPanel implements Pages {
           System.out.println("Image url: " + file);
           fileName = file.getName();
           System.out.println(file.getName());
-
+          imagePanel.loadImage(file);
         }
       }
     });
