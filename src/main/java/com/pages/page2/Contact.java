@@ -1,17 +1,20 @@
 package com.pages.page2;
 
+import org.bson.types.ObjectId;
+
 public class Contact {
   private static final long serialVersionUID = 1L;
+  private ObjectId _id = new ObjectId();
   private String name;
   private String surname;
   private String email;
   private String phone;
 
   public Contact() {
-    this.name = "";
-    this.surname = "";
-    this.email = "";
-    this.phone = "";
+    name = "";
+    surname = "";
+    email = "";
+    phone = "";
   }
 
   public Contact(String name, String surname, String email, String phone) {
@@ -80,5 +83,9 @@ public class Contact {
 
   public void setPhone(String phone) {
     this.phone = phone;
+  }
+
+  public ObjectId get_id() {
+    return _id;
   }
 }

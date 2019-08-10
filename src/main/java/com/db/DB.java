@@ -7,6 +7,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.pages.page2.Contact;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +33,9 @@ public class DB {
 
 
   public void insertContact(Contact contact) {
-    MongoCollection<Document> collection = db.getCollection(collectionName);
-    Document document = new Document("name", contact.getName())
+//    MongoCollection<Document> collection = db.getCollection(collectionName);
+    Document document = new Document("_id", contact.get_id())
+            .append("name", contact.getName())
             .append("surname", contact.getSurname())
             .append("email", contact.getEmail())
             .append("phone", contact.getPhone());
@@ -46,6 +48,22 @@ public class DB {
     return result;
   }
 
+  public void deleteContact(Contact contact){
+    Bson filter = new Document("email", contact.getEmail());
+    collection.deleteOne(filter);
+  }
+
+//  public void updateFieldByContactName(String contactName, String fieldName, String fieldValue) {
+  public void updateContact(Contact contact) {
+    BasicDBObject newDocument = new BasicDBObject();
+    newDocument.append("$set", new BasicDBObject()
+            .append("name", contact.getName())
+            .append("surname", contact.getSurname())
+            .append("email", contact.getEmail())
+            .append("phone", contact.getPhone()));
+    BasicDBObject query = new BasicDBObject().append("_id", contact.get_id());
+    collection.updateOne(query, newDocument);
+  }
 
 
 
@@ -59,6 +77,10 @@ public class DB {
 
 
 
+
+
+
+  /*
   // Create collection
   public void createCollection(String collectionName) {
     MongoCollection<Document> collection = db.getCollection(collectionName);
@@ -87,24 +109,21 @@ public class DB {
     }
   }
 
-
-//  static void insertManyContacts(String collectionName, List<Contact> contact) {
-//    MongoCollection<Document> collection = db.getCollection(collectionName);
-//    List<Document> document = asList(
-//            new Document ("name", contact.getName())
-//                    .append("surname", contact.getSurname())
-//                    .append("email", contact.getEmail())
-//                    .append("phone", contact.getPhone()),
-//
-//            new Document("name", "Patrik")
-//                    .append("email","patrik@email.com")
-//                    .append("customerId", 101));
-//    collection.insertMany(document);
-//  }
-
-
-  public void updateFieldByContactName(String collectionName, String contactName, String fieldName, String fieldValue) {
+  public void insertManyContacts(String collectionName, List<Contact> contact) {
     MongoCollection<Document> collection = db.getCollection(collectionName);
+    List<Document> document = asList(
+            new Document ("name", contact.getName())
+                    .append("surname", contact.getSurname())
+                    .append("email", contact.getEmail())
+                    .append("phone", contact.getPhone()),
+
+            new Document("name", "Patrik")
+                    .append("email","patrik@email.com")
+                    .append("customerId", 101));
+    collection.insertMany(document);
+  }
+
+  public void updateFieldByContactName(String contactName, String fieldName, String fieldValue) {
     BasicDBObject newDocument = new BasicDBObject();
     newDocument.append("$set", new BasicDBObject().append(fieldName, fieldValue));
     BasicDBObject query = new BasicDBObject().append("name", contactName);
@@ -125,6 +144,5 @@ public class DB {
     BasicDBObject searchQuery = new BasicDBObject().append("name", "Max");
     collection.updateOne(searchQuery, updateQuery);
   }
-
-
+  */
 }

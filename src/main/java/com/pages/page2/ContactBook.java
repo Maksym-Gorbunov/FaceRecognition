@@ -15,8 +15,9 @@ public class ContactBook {
     db.insertContact(contact);
   }
 
-  public void remove(int index) {
-    contacts.remove(index);
+  public void remove(Contact contact) {
+    contacts.remove(contact);
+//    db.deleteContact(contact);
   }
 
   public List<Contact> getContacts() {
@@ -39,5 +40,15 @@ public class ContactBook {
       contact.setEmail((String) document.get("email"));
       contacts.add(contact);
     }
+  }
+
+  public void editContact(Contact contact){
+    contacts.stream().filter(c -> c.get_id() == contact.get_id()).forEach(c -> {
+      c.setName(contact.getName());
+      c.setSurname(contact.getSurname());
+      c.setPhone(contact.getPhone());
+      c.setEmail(contact.getEmail());
+    });
+    db.updateContact(contact);
   }
 }
