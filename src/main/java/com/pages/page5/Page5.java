@@ -15,7 +15,6 @@ import static org.opencv.imgcodecs.Imgcodecs.imwrite;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
 import static org.opencv.imgproc.Imgproc.cvtColor;
 import com.constants.Constants;
-//import com.pages.page3.ImagePanel;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import net.sourceforge.tess4j.Tesseract;
@@ -76,7 +75,6 @@ public class Page5 extends JPanel implements Pages {
     fileChooser = new JFileChooser();
 
     imagePanel = new ImagePanel(320,240);
-//    imagePanel.setPreferredSize(new Dimension(200,160));
     leftPanel.add(imagePanel, new GridConstraints());
   }
 

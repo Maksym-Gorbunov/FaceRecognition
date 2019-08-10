@@ -51,11 +51,11 @@ public class Gui extends JFrame {
     tab4.setBackground(Color.CYAN);
     tab5.setBackground(Color.CYAN);
     //////////////////////////////////////////////////////////////////////
-    tabs.addTab("One", tab1);
-    tabs.addTab("Two", tab2);
-    tabs.addTab("Three", tab3);
-    tabs.addTab("Four", tab4);
-    tabs.addTab("Five", tab5);
+    tabs.addTab("Webbcam", tab1);
+    tabs.addTab("MongoCRUD", tab2);
+    tabs.addTab("Image Recognition", tab3);
+    tabs.addTab("Webbcam Recognition", tab4);
+    tabs.addTab("Text Recognition", tab5);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
