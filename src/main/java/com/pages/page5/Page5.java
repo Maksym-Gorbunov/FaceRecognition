@@ -22,6 +22,8 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FilenameUtils;
 
+
+// Image text recognition, Tesseract-OCR eng.trainedata
 public class Page5 extends JPanel implements Pages {
   private JFrame gui;
   private JPanel tab5;

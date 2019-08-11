@@ -16,6 +16,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 
+
+// Simble webbcamera
 public class Page1 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private Gui gui;

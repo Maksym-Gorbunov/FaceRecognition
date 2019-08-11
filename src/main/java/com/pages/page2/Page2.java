@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
+// CRUD MongoDB
 public class Page2 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private Gui gui;

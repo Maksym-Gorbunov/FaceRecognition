@@ -45,6 +45,7 @@ public class Page4 extends JPanel implements Pages {
   private MatOfRect faceDetections = new MatOfRect();
 
 
+  // Webb camera face recognition, OpenCV
   public Page4(final Gui gui) {
     this.gui = gui;
     tab4 = gui.getTab4();
