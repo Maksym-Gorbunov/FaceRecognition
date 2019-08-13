@@ -27,12 +27,11 @@ public class ImageTransformations {
 		cvSaveImage("Original.jpg",img);
 		cvSaveImage("HSV.jpg",hsvimg);
 		cvSaveImage("GRAY.jpg",grayimg);
-		
+
+		// Clear memory
 		cvReleaseImage(img);
 		cvReleaseImage(hsvimg);
 		cvReleaseImage(grayimg);
-		
-
 	}
 
 }

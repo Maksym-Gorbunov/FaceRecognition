@@ -14,13 +14,19 @@ public class VideoProcessing {
    * play video from file or webbcam and grayscale
    */
   public static void main(String[] args) {
-    //CvCapture capture = cvCreateFileCapture(Constants.videoPath+"halo.mp4");
-    CvCapture capture = cvCreateCameraCapture(CV_CAP_ANY);
+    //play video file
+    CvCapture capture = cvCreateFileCapture(Constants.videoPath+"halo.mp4");
+
+    //play webbcam
+    //CvCapture capture = cvCreateCameraCapture(CV_CAP_ANY);
+
     IplImage frame;
     IplImage grayimg = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1);
 
+    //create window
     cvNamedWindow("Video", CV_WINDOW_AUTOSIZE);
 
+    //infinity loop
     for (; ; ) {
       frame = cvQueryFrame(capture);
       if (frame == null) {
@@ -29,12 +35,19 @@ public class VideoProcessing {
       }
 
       cvCvtColor(frame, grayimg, CV_BGR2GRAY);
-      cvShowImage("Video", grayimg);
+
+      //play original color
+      cvShowImage("Video", frame);
+
+      //play greyscale
+      //cvShowImage("Video", grayimg);
+
       char c = (char) cvWaitKey(30);
-      // Esc button braak the loop
+      // 'Esc' button break the loop
       if (c == 27) break;
     }
 
+    //clean memory
     cvReleaseCapture(capture);
     cvDestroyWindow("Video");
   }
