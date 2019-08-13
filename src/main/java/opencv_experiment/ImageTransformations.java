@@ -10,8 +10,7 @@ public class ImageTransformations {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
+
 		IplImage img = cvLoadImage("EV.jpg");
 		
 		IplImage hsvimg = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U,3);
