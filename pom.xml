@@ -65,6 +65,15 @@
             <version>0.8</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.googlecode.charts4j/charts4j -->
+        <!-- https://mvnrepository.com/artifact/com.googlecode.javacv/javacv -->
+        <dependency>
+            <groupId>com.googlecode.javacv</groupId>
+            <artifactId>javacv</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+
 
 
     </dependencies>
