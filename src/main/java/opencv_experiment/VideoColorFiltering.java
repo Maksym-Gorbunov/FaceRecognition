@@ -29,7 +29,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2HSV;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
 
 import org.opencv.videoio.VideoWriter;
-public class ImageColorFiltering {
+public class VideoColorFiltering {
 
 	/**
 	 * @param args
@@ -43,12 +43,12 @@ public class ImageColorFiltering {
 
 
 		IplImage img1, imghsv, imgbin;
-		
+
 		imghsv = cvCreateImage(cvSize(640,480),8,3);
 		imgbin = cvCreateImage(cvSize(640,480),8,1);
-		
+
 		CvCapture capture1 = cvCreateCameraCapture(CV_CAP_ANY);
-		
+
 		int i=1;
 		
 		while(i==1)
@@ -59,12 +59,15 @@ public class ImageColorFiltering {
 			if(img1 == null) break;
 					
 			cvCvtColor(img1,imghsv,CV_BGR2HSV);
+
 			// blue filter
-			//opencv_core.CvScalar minc = cvScalar(95,150,75,0), maxc = cvScalar(145,255,255,0);
+			opencv_core.CvScalar minc = cvScalar(95,150,75,0);
+      opencv_core.CvScalar maxc = cvScalar(145,255,255,0);
 
       //green filter - ikea kopp  //63.98.198
-			opencv_core.CvScalar minc = cvScalar(60,55,105,0);
-			opencv_core.CvScalar maxc = cvScalar(75,85,140,0);
+			//opencv_core.CvScalar minc = cvScalar(60,55,105,0);
+			//opencv_core.CvScalar maxc = cvScalar(75,85,140,0);
+
 			cvInRangeS(imghsv,minc,maxc,imgbin);
 		
 			cvShowImage("color",img1);
