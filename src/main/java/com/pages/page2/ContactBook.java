@@ -9,7 +9,11 @@ import java.util.List;
 
 public class ContactBook {
   private List<Contact> contacts = new ArrayList<>();
-  private DB db = new DB();
+  private DB db;
+
+  public void connect(){
+    db = new DB();
+  }
 
   public void add(Contact contact) {
     contacts.add(contact);

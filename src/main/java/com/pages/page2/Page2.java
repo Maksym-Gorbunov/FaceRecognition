@@ -58,8 +58,6 @@ public class Page2 extends JPanel implements Pages {
 
     populateMenuBar();
 
-    contactBook.populateContactBook();
-    populateComboBox();
   }
 
   private void populateComboBox() {
@@ -198,19 +196,20 @@ public class Page2 extends JPanel implements Pages {
   }
 
   public void populateMenuBar() {
-    System.out.println("Refresh MongoDB code will run here");
-//    JMenu fileMenu = gui.getJMenuBar().getMenu(0);
-//    JMenuItem mongoRefresh = new JMenuItem("Mongo refresh");
-//    fileMenu.add(mongoRefresh);
-//
-//    mongoRefresh.addActionListener(new ActionListener() {
-//      @Override
-//      public void actionPerformed(ActionEvent e) {
-//        contactBook.populateContactBook();
-//        populateComboBox();
-//        gui.getTabs().setSelectedComponent(tab2);
-//      }
-//    });
+    JMenu fileMenu = gui.getJMenuBar().getMenu(0);
+    JMenuItem mongoRefresh = new JMenuItem("Connect DB");
+    fileMenu.add(mongoRefresh);
+
+    mongoRefresh.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        contactBook.connect();
+        contactBook.populateContactBook();
+        populateComboBox();
+        mongoRefresh.setEnabled(false);
+        gui.getTabs().setSelectedComponent(tab2);
+      }
+    });
   }
 
   // Clear all text fields

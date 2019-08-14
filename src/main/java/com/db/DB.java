@@ -22,6 +22,7 @@ public class DB {
   private MongoCollection<Document> collection;
 
   public DB() {
+    System.out.println("Connecting to MongoDB on cloud..");
     String atlasConnectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
     MongoClientURI uri = new MongoClientURI(atlasConnectionString);
     client = new MongoClient(uri);
