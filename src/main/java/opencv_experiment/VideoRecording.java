@@ -1,32 +1,33 @@
 package opencv_experiment;
-
 import com.constants.Constants;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameRecorder;
 import org.bytedeco.javacv.OpenCVFrameRecorder;
+import org.opencv.core.Core;
 import static org.bytedeco.javacpp.opencv_highgui.*;
+import org.opencv.videoio.VideoWriter;
 
 //Record video from webbcam, stop with 'q'
 public class VideoRecording {
+  static int width = 640;
+  static int height = 480;
 
-  /**
-   * @param args
-   * @throws Exception
-   */
   public static void main(String[] args) throws Exception {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
+    // choose any webbcam or default as usual
     CvCapture capture1 = cvCreateCameraCapture(CV_CAP_ANY);
-    cvSetCaptureProperty(capture1,CV_CAP_PROP_FRAME_WIDTH,640);
-    cvSetCaptureProperty(capture1,CV_CAP_PROP_FRAME_HEIGHT,480);
+
+    cvSetCaptureProperty(capture1,CV_CAP_PROP_FRAME_WIDTH, width);
+    cvSetCaptureProperty(capture1,CV_CAP_PROP_FRAME_HEIGHT, height);
 
     cvNamedWindow("LiveVid",CV_WINDOW_AUTOSIZE);
 
-    FrameRecorder recorder1 = new OpenCVFrameRecorder(Constants.videoPath+"record001.avi",640,480);
-//    recorder1.setVideoOption(CV_FOURCC('I','Y','U','V'));
-//    recorder1.setVideoCodec(CV_FOURCC('M','J','P','G'));
-//    recorder1.setCodecID(CV_FOURCC('M','J','P','G'));
-//    recorder1.setVideoCodec(CV_FOURCC('D','I','V','X'));
-//    recorder1.setVideoCodec(CV_FOURCC('M','P','4','V'));
+    FrameRecorder recorder1 = new OpenCVFrameRecorder(Constants.videoPath+"record001.avi",width,height);
+
+    //set video compressor
+    int fourcc = VideoWriter.fourcc('I', 'Y', 'U', 'V');
+    recorder1.setVideoCodec(fourcc);
     recorder1.setFormat("mp4");
 
     recorder1.setFrameRate(15);
@@ -50,6 +51,8 @@ public class VideoRecording {
     }
 
     recorder1.stop();
+
+    // clear memory
     cvDestroyWindow("LiveVid");
     cvReleaseCapture(capture1);
 

@@ -1,4 +1,5 @@
 package opencv_experiment;
+import com.constants.Constants;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -11,7 +12,7 @@ public class ImageTransformations {
 	 */
 	public static void main(String[] args) {
 
-		IplImage img = cvLoadImage("EV.jpg");
+		IplImage img = cvLoadImage(Constants.imgPath+"family.png");
 		
 		IplImage hsvimg = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U,3);
 		IplImage grayimg = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U,1);

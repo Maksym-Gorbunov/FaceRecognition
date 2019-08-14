@@ -198,18 +198,19 @@ public class Page2 extends JPanel implements Pages {
   }
 
   public void populateMenuBar() {
-    JMenu fileMenu = gui.getJMenuBar().getMenu(0);
-    JMenuItem mongoRefresh = new JMenuItem("Mongo refresh");
-    fileMenu.add(mongoRefresh);
-
-    mongoRefresh.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        contactBook.populateContactBook();
-        populateComboBox();
-        gui.getTabs().setSelectedComponent(tab2);
-      }
-    });
+    System.out.println("Refresh MongoDB code will run here");
+//    JMenu fileMenu = gui.getJMenuBar().getMenu(0);
+//    JMenuItem mongoRefresh = new JMenuItem("Mongo refresh");
+//    fileMenu.add(mongoRefresh);
+//
+//    mongoRefresh.addActionListener(new ActionListener() {
+//      @Override
+//      public void actionPerformed(ActionEvent e) {
+//        contactBook.populateContactBook();
+//        populateComboBox();
+//        gui.getTabs().setSelectedComponent(tab2);
+//      }
+//    });
   }
 
   // Clear all text fields

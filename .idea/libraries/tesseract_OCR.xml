@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="tesseract-OCR">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/lib/tesseract-OCR" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
