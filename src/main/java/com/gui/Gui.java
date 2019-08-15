@@ -6,6 +6,7 @@ import com.pages.page2.Page2;
 import com.pages.page3.Page3;
 import com.pages.page4.Page4;
 import com.pages.page5.Page5;
+import com.pages.page6.Page6;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -20,6 +21,7 @@ public class Gui extends JFrame {
   private JPanel tab3;
   private JPanel tab4;
   private JPanel tab5;
+  private JPanel tab6;
 
   public Gui() {
     super("Application");
@@ -44,18 +46,21 @@ public class Gui extends JFrame {
     tab3 = new JPanel();
     tab4 = new JPanel();
     tab5 = new JPanel();
+    tab6 = new JPanel();
     //////////////////////////////////////////////////////////////////////
     tab1.setBackground(Color.CYAN);
     tab2.setBackground(Color.CYAN);
     tab3.setBackground(Color.CYAN);
     tab4.setBackground(Color.CYAN);
     tab5.setBackground(Color.CYAN);
+    tab6.setBackground(Color.CYAN);
     //////////////////////////////////////////////////////////////////////
     tabs.addTab("Webbcam", tab1);
-    tabs.addTab("MongoCRUD", tab2);
+    tabs.addTab("Mongo CRUD", tab2);
     tabs.addTab("Image Recognition", tab3);
     tabs.addTab("Webbcam Recognition", tab4);
     tabs.addTab("Text Recognition", tab5);
+    tabs.addTab("Image Manipulations", tab6);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
@@ -63,6 +68,9 @@ public class Gui extends JFrame {
     tab3 = new Page3(Gui.this);
     tab4 = new Page4(Gui.this);
     tab5 = new Page5(Gui.this);
+    tab6 = new Page6(Gui.this);
+
+    tabs.setSelectedIndex(5);
   }
 
   private void createMenuBar() {
@@ -108,5 +116,9 @@ public class Gui extends JFrame {
 
   public JPanel getTab5() {
     return tab5;
+  }
+
+  public JPanel getTab6() {
+    return tab6;
   }
 }

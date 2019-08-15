@@ -15,7 +15,7 @@ import java.io.File;
 
 
 // Image face recognition, OpenCV
-public class Page3  extends JPanel implements Pages {
+public class Page3 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private Gui gui;
   private JPanel tab3;
