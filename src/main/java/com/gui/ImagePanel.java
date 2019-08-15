@@ -1,18 +1,8 @@
 package com.gui;
 
-import org.bytedeco.javacpp.opencv_core;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
-
-import org.bytedeco.javacpp.opencv_core.IplImage;
-
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
-//import com.recognition.image.constants.Constants;
 
 public class ImagePanel extends JPanel {
   private static final long serialVersionUID = 1L;
@@ -38,7 +28,6 @@ public class ImagePanel extends JPanel {
 
   private Image scaleImage(Image image) {
     return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-//     return image.getScaledInstance(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, Image.SCALE_SMOOTH);
   }
 
   public void loadImage(File file) {
@@ -54,12 +43,6 @@ public class ImagePanel extends JPanel {
   }
 
   public void clear() {
-    this.removeAll();
-    this.validate();
-    this.repaint();
-//    imageLabel.updateUI();
-//    imageLabel = null;
-//    transformedImageIcon = null;
-//    updadeImage(null);
+    imageLabel.setIcon(null);
   }
 }

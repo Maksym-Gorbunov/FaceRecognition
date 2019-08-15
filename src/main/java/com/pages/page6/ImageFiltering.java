@@ -1,19 +1,17 @@
-package opencv_experiment;
+package com.pages.page6;
 
 import com.constants.Constants;
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_core.*;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 
-public class ImageContourFiltering {
+public class ImageFiltering {
+  public static String resultPath = Constants.imgPath+"maxContour.jpg";
 
-  /**
-   * @param args
-   */
-  public static void main(String[] args) {
+  public static String filterMaxContour(String imgPath) {
     // Red 160-180
     // Green 40-80
     // Blue 95-145
@@ -31,14 +29,14 @@ public class ImageContourFiltering {
     double areaMax = 1000, areaC = 0;
 
 
-    img1 = cvLoadImage(Constants.imgPath + "figures.jpg");
+    img1 = cvLoadImage(imgPath);
     imghsv = cvCreateImage(cvGetSize(img1), 8, 3);
     imgbin = cvCreateImage(cvGetSize(img1), 8, 1);
 
     cvCvtColor(img1, imghsv, CV_BGR2HSV);
     cvInRangeS(imghsv, minc, maxc, imgbin);
 
-    cvShowImage("Binary", imgbin);
+//    cvShowImage("Binary", imgbin);
 
     cvFindContours(imgbin, storage, contour1, Loader.sizeof(CvContour.class),
             CV_RETR_LIST, CV_LINK_RUNS, cvPoint(0, 0));
@@ -66,15 +64,16 @@ public class ImageContourFiltering {
       contour2 = contour2.h_next();
     }
 
-    cvShowImage("Color", img1);
-    cvShowImage("CF", imgbin);
-    cvWaitKey();
+//    cvShowImage("Color", img1);
+//    cvShowImage("CF", imgbin);
+//    cvWaitKey();
 
 //    cvReleaseImage(img1);
 //    cvReleaseImage(imghsv);
 //    cvReleaseImage(imgbin);
 //    cvReleaseMemStorage(storage);
-
+    cvSaveImage(resultPath, imgbin);
+    return resultPath;
   }
 
 }
