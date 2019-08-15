@@ -59,20 +59,16 @@ public class Page6 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (fileChooser.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
-//          filterBtn.doClick();
+          filterBtn.doClick();
           file = fileChooser.getSelectedFile();
           if(filter){
             initButtons();
             imagePanel2.clear();
+//            filterBtn.doClick();
           }
-          // load the image
-          System.out.println("Image url: " + file);
           imagePanel1.loadImage(file);
-//          gui.getTabs().setSelectedComponent(tab6);
           createFilters();
           filterBtn.setEnabled(true);
-//          imagePanel2.clear();
-//          filterBtn.setText("Filter ON");
         }
       }
     });
@@ -82,42 +78,24 @@ public class Page6 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         if(file != null) {
           if(!filter){
-
             filterBtn.setText("Filter OFF");
-//            if(!filtersCreated){
-//              createFilters();
-//            }
             imagePanel2.loadIplImage(grayImgPath);
-
             grayBtn.setEnabled(false);
             hsvBtn.setEnabled(true);
             maxContourBtn.setEnabled(true);
             contoursBtn.setEnabled(true);
-
-            // Clear memory
-//            cvReleaseImage(img);
-//            cvReleaseImage(hsvimg);
-//            cvReleaseImage(grayimg);
-
             filter = !filter;
           } else {
             filterBtn.setText("Filter ON");
-
             imagePanel2.clear();
-//            imagePanel2.updadeImage(null);
-
             grayBtn.setEnabled(false);
             hsvBtn.setEnabled(false);
             maxContourBtn.setEnabled(false);
             contoursBtn.setEnabled(false);
             filter = !filter;
-//            imagePanel2.setBackground(Color.black);
-
             filterBtn.setBackground(Color.green);
             filterBtn.setOpaque(true);
             filterBtn.setBorderPainted(false);
-
-
           }
         }
       }
@@ -153,13 +131,9 @@ public class Page6 extends JPanel implements Pages {
         maxContourBtn.setEnabled(true);
         hsvBtn.setEnabled(true);
         grayBtn.setEnabled(true);
-
-
         imagePanel2.loadIplImage(contoursImgPath);
-
       }
     });
-
 
     maxContourBtn.addActionListener(new ActionListener() {
       @Override
@@ -169,10 +143,7 @@ public class Page6 extends JPanel implements Pages {
         hsvBtn.setEnabled(true);
         grayBtn.setEnabled(true);
         contoursBtn.setEnabled(true);
-
-
         imagePanel2.loadIplImage(maxContourImgPath);
-
       }
     });
   }
@@ -180,20 +151,15 @@ public class Page6 extends JPanel implements Pages {
   public void createFilters(){
     // create gray and hvs filters
     IplImage img = cvLoadImage(file.getAbsolutePath());
-
     IplImage hsvimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
     IplImage grayimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-
     cvCvtColor(img, hsvimg, CV_BGR2HSV);
     cvCvtColor(img, grayimg, CV_BGR2GRAY);
-
     cvSaveImage(grayImgPath, grayimg);
     cvSaveImage(hsvImgPath, hsvimg);
-    // create max contour filter
+    // create contours and max contour filter
     maxContourImgPath = ImageFiltering.filterMaxContour(file.getAbsolutePath());
     contoursImgPath = ImageFiltering.filterContours(file.getAbsolutePath());
-
-//    filtersCreated = true;
   }
 
   private void initComponents() {
