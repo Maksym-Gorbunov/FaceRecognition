@@ -1,4 +1,5 @@
 package opencv_experiment;
+
 import com.constants.Constants;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -20,14 +21,14 @@ public class ImageTransformations {
 		cvCvtColor(img,hsvimg,CV_BGR2HSV);
 		cvCvtColor(img,grayimg,CV_BGR2GRAY);
 		
-		cvShowImage("Original",img);
-		cvShowImage("HSV",hsvimg);
-		cvShowImage("GRAY",grayimg);
+		cvShowImage(Constants.imgPath+"Original",img);
+		cvShowImage(Constants.imgPath+"HSV",hsvimg);
+		cvShowImage(Constants.imgPath+"GRAY",grayimg);
 		cvWaitKey();
 		
-		cvSaveImage("Original.jpg",img);
-		cvSaveImage("HSV.jpg",hsvimg);
-		cvSaveImage("GRAY.jpg",grayimg);
+		cvSaveImage(Constants.imgPath+"Original.jpg",img);
+		cvSaveImage(Constants.imgPath+"HSV.jpg",hsvimg);
+		cvSaveImage(Constants.imgPath+"GRAY.jpg",grayimg);
 
 		// Clear memory
 		cvReleaseImage(img);
