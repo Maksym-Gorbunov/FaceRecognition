@@ -42,6 +42,7 @@ public class Page6 extends JPanel implements Pages {
   private JFileChooser fileChooser;
   private String grayImgPath = Constants.imgPath + "grayImg.jpg";
   private String hsvImgPath = Constants.imgPath + "hsvImg.jpg";
+  private boolean filter;
 
 
   public Page6(final Gui gui) {
@@ -50,6 +51,7 @@ public class Page6 extends JPanel implements Pages {
     initComponents();
     initButtons();
     addListeners();
+    filter = false;
   }
 
   private void addListeners() {
@@ -71,26 +73,44 @@ public class Page6 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         if(file != null) {
-          IplImage img = cvLoadImage(file.toString());
+          if(!filter){
+            filterBtn.setText("Filter OFF");
+            IplImage img = cvLoadImage(file.toString());
 
-          IplImage hsvimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
-          IplImage grayimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+            IplImage hsvimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+            IplImage grayimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
 
-          cvCvtColor(img, hsvimg, CV_BGR2HSV);
-          cvCvtColor(img, grayimg, CV_BGR2GRAY);
+            cvCvtColor(img, hsvimg, CV_BGR2HSV);
+            cvCvtColor(img, grayimg, CV_BGR2GRAY);
 
-          cvSaveImage(grayImgPath, grayimg);
-          cvSaveImage(hsvImgPath, hsvimg);
-          imagePanel2.loadIplImage(grayImgPath);
+            cvSaveImage(grayImgPath, grayimg);
+            cvSaveImage(hsvImgPath, hsvimg);
+            imagePanel2.loadIplImage(grayImgPath);
 
-          grayBtn.setEnabled(false);
-          hsvBtn.setEnabled(true);
+            grayBtn.setEnabled(false);
+            hsvBtn.setEnabled(true);
+
+            // Clear memory
+            cvReleaseImage(img);
+            cvReleaseImage(hsvimg);
+            cvReleaseImage(grayimg);
+
+            filter = !filter;
+          } else {
+            filterBtn.setText("Filter ON");
+            imagePanel2.clear();
+            grayBtn.setEnabled(false);
+            hsvBtn.setEnabled(false);
+            filter = !filter;
+//            imagePanel2.setBackground(Color.black);
+
+            filterBtn.setBackground(Color.green);
+            filterBtn.setOpaque(true);
+            filterBtn.setBorderPainted(false);
+
+
+          }
         }
-
-        // Clear memory
-//        cvReleaseImage(img);
-//        cvReleaseImage(hsvimg);
-//        cvReleaseImage(grayimg);
       }
     });
 
@@ -135,8 +155,13 @@ public class Page6 extends JPanel implements Pages {
     mainPanel.add(imagePanel2);
 
     loadBtn = new JButton("Load");
-    loadBtn.setBackground(Color.green);
-    filterBtn = new JButton("Filter ON/OFF");
+//    loadBtn.setBackground(Color.green);
+    filterBtn = new JButton("Filter ON");
+    filterBtn.setBackground(Color.green);
+    filterBtn.setOpaque(true);
+    filterBtn.setBorderPainted(false);
+
+
     grayBtn = new JButton("gray");
     hsvBtn = new JButton("hsv");
     btnPanel.add(loadBtn);

@@ -52,4 +52,14 @@ public class ImagePanel extends JPanel {
     Image image = transformedImageIcon.getImage();
     updadeImage(image);
   }
+
+  public void clear() {
+    this.removeAll();
+    this.validate();
+    this.repaint();
+//    imageLabel.updateUI();
+//    imageLabel = null;
+//    transformedImageIcon = null;
+//    updadeImage(null);
+  }
 }
