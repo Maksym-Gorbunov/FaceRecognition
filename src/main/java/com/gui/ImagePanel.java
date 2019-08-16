@@ -1,19 +1,20 @@
 package com.gui;
 
-import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+
 public class ImagePanel extends JPanel {
+
   private static final long serialVersionUID = 1L;
   private JLabel imageLabel;
   private ImageIcon transformedImageIcon;
   private int width;
   private int height;
+
 
   public ImagePanel(int width, int height) {
     this.imageLabel = new JLabel();
@@ -26,13 +27,16 @@ public class ImagePanel extends JPanel {
     this.height = height;
   }
 
+
   public void updadeImage(final Image image) {
     imageLabel.setIcon(new ImageIcon(scaleImage(image)));
   }
 
+
   private Image scaleImage(Image image) {
     return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
   }
+
 
   public void loadImage(File file) {
     this.transformedImageIcon = new ImageIcon(file.getAbsolutePath());
@@ -40,15 +44,11 @@ public class ImagePanel extends JPanel {
     updadeImage(image);
   }
 
-  public void loadIplImage(String imgPath) {
-    this.transformedImageIcon = new ImageIcon(imgPath);
-    Image image = transformedImageIcon.getImage();
-    updadeImage(image);
-  }
 
   public void clear() {
     imageLabel.setIcon(null);
   }
+
 
   // load image to ImagePanel without extra savers
   public void loadIplImage(IplImage filteredImage) {

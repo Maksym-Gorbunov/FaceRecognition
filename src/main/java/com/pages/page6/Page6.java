@@ -1,26 +1,18 @@
 package com.pages.page6;
 
 import java.awt.*;
-
-import com.constants.Constants;
 import com.gui.Gui;
 import com.gui.ImagePanel;
 import com.pages.Pages;
-import org.bytedeco.javacpp.opencv_core;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-
-import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 
 public class Page6 extends JPanel implements Pages {
+
   private static final long serialVersionUID = 1L;
   private Gui gui;
   private JPanel tab6;
@@ -40,12 +32,12 @@ public class Page6 extends JPanel implements Pages {
   private int height = 240;
   private JFileChooser fileChooser;
   private String imgOriginalPath = "";
-  private String grayImgPath = Constants.imgPath + "grayImg.jpg";
-  private String hsvImgPath = Constants.imgPath + "hsvImg.jpg";
-  private String maxContourPath = Constants.imgPath + "maxContour.jpg";
-  private String contoursPath = Constants.imgPath + "contours.jpg";
   private boolean filter;
   private int totalContours;
+  private IplImage grayImg;
+  private IplImage hsvImg;
+  private IplImage contoursImg;
+  private IplImage maxContourImg;
 
 
   public Page6(final Gui gui) {
@@ -58,8 +50,8 @@ public class Page6 extends JPanel implements Pages {
     totalContours = 0;
   }
 
-  private void addListeners() {
 
+  private void addListeners() {
     loadBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -70,23 +62,21 @@ public class Page6 extends JPanel implements Pages {
           if(filter){
             initButtons();
             imagePanel2.clear();
-//            filterBtn.doClick();
           }
           imagePanel1.loadImage(file);
-          createFilters();
+          createFilteringImages();
           filterBtn.setEnabled(true);
           contoursBtn.setText("contours ("+totalContours+")");
         }
       }
     });
-
     filterBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         if(file != null) {
           if(!filter){
             filterBtn.setText("Filter OFF");
-            imagePanel2.loadIplImage(grayImgPath);
+            imagePanel2.loadIplImage(grayImg);
             grayBtn.setEnabled(false);
             hsvBtn.setEnabled(true);
             maxContourBtn.setEnabled(true);
@@ -107,81 +97,68 @@ public class Page6 extends JPanel implements Pages {
         }
       }
     });
-
     grayBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        imagePanel2.loadIplImage(grayImgPath);
+        imagePanel2.loadIplImage(grayImg);
         grayBtn.setEnabled(false);
         hsvBtn.setEnabled(true);
         maxContourBtn.setEnabled(true);
         contoursBtn.setEnabled(true);
       }
     });
-
     hsvBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        imagePanel2.loadIplImage(hsvImgPath);
+        imagePanel2.loadIplImage(hsvImg);
         hsvBtn.setEnabled(false);
         grayBtn.setEnabled(true);
         maxContourBtn.setEnabled(true);
         contoursBtn.setEnabled(true);
       }
     });
-
     contoursBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        imagePanel2.loadIplImage(contoursImg);
         contoursBtn.setEnabled(false);
         maxContourBtn.setEnabled(true);
         hsvBtn.setEnabled(true);
         grayBtn.setEnabled(true);
-        imagePanel2.loadIplImage(contoursPath);
       }
     });
-
     maxContourBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        imagePanel2.loadIplImage(maxContourImg);
         maxContourBtn.setEnabled(false);
         hsvBtn.setEnabled(true);
         grayBtn.setEnabled(true);
         contoursBtn.setEnabled(true);
-        imagePanel2.loadIplImage(maxContourPath);
-      }
-    });
-
-    testBtn.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        ImageFiltering f = new ImageFiltering(imgOriginalPath);
-        IplImage filteredImage = f.test();
-        imagePanel2.loadIplImage(filteredImage);
       }
     });
   }
 
 
-  public void createFilters(){
+  public void createFilteringImages() {
     ImageFiltering filter = new ImageFiltering(imgOriginalPath);
-    filter.grayFilter(grayImgPath);
-    filter.hsvFilter(hsvImgPath);
-    totalContours = filter.maxContourFilter(maxContourPath);
-    filter.contoursFilter(contoursPath);
+    grayImg = filter.grayFilter();
+    hsvImg = filter.hsvFilter();
+    contoursImg = filter.contoursFilter();
+    maxContourImg = filter.maxContourFilter();
+    totalContours = filter.getTotalContours();
   }
+
 
   private void initComponents() {
     btnPanel = new JPanel();
     btnPanel.setPreferredSize(new Dimension(800, 200));
     btnPanel.setBackground(Color.green);
-
     mainPanel = new JPanel();
     mainPanel.setPreferredSize(new Dimension(800, 300));
     mainPanel.setBackground(Color.MAGENTA);
     tab6.add(btnPanel);
     tab6.add(mainPanel);
-
     mainPanel.setLayout(new FlowLayout());
     imagePanel1 = new ImagePanel(width, height);
     imagePanel1.setBackground(Color.black);
@@ -189,14 +166,11 @@ public class Page6 extends JPanel implements Pages {
     imagePanel2.setBackground(Color.black);
     mainPanel.add(imagePanel1);
     mainPanel.add(imagePanel2);
-
     loadBtn = new JButton("Load");
     filterBtn = new JButton("Filter ON");
     filterBtn.setBackground(Color.green);
     filterBtn.setOpaque(true);
     filterBtn.setBorderPainted(false);
-
-
     grayBtn = new JButton("gray");
     hsvBtn = new JButton("hsv");
     maxContourBtn = new JButton("max contour");
@@ -209,9 +183,9 @@ public class Page6 extends JPanel implements Pages {
     btnPanel.add(contoursBtn);
     btnPanel.add(maxContourBtn);
     btnPanel.add(testBtn);
-
     fileChooser = new JFileChooser();
   }
+
 
   public void initButtons() {
     filterBtn.setText("Filter ON");
