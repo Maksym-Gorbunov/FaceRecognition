@@ -24,15 +24,21 @@ public class ImageFiltering {
     //minScale = cvScalar(40, 150, 75, 0);
     //maxScale = cvScalar(80, 255, 255, 0);
 
-    // blue
+    // blue default
     minScale = cvScalar(95, 150, 75, 0);
     maxScale = cvScalar(145, 255, 255, 0);
   }
 
 
 
-  // Set minScale scale
-
+  // Set minScale
+  public void setMinScale(int h, int s, int v){
+    minScale = cvScalar(h, s, v, 0);
+  }
+  // Set maxScale
+  public void setMaxScale(int h, int s, int v){
+    maxScale = cvScalar(h, s, v, 0);
+  }
 
 
   // Filter IplImage image and show all contours

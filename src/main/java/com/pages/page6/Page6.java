@@ -1,13 +1,16 @@
 package com.pages.page6;
 
 import java.awt.*;
+
 import com.gui.Gui;
 import com.gui.ImagePanel;
 import com.pages.Pages;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+
 import org.bytedeco.javacpp.opencv_core.*;
 
 
@@ -20,13 +23,14 @@ public class Page6 extends JPanel implements Pages {
   private JPanel mainPanel;
   private ImagePanel imagePanel1;
   private ImagePanel imagePanel2;
+  private JButton activeBtn;
   private JButton loadBtn;
   private JButton filterBtn;
   private JButton grayBtn;
   private JButton hsvBtn;
   private JButton contoursBtn;
   private JButton maxContourBtn;
-  private JButton testBtn;
+  private JButton blueGreenBtn;
   private File file;
   private int width = 320;
   private int height = 240;
@@ -39,6 +43,8 @@ public class Page6 extends JPanel implements Pages {
   private IplImage contoursImg;
   private IplImage maxContourImg;
   private ImageFiltering filter;
+
+  private boolean x = false;
 
 
   public Page6(final Gui gui) {
@@ -61,40 +67,37 @@ public class Page6 extends JPanel implements Pages {
           filterBtn.doClick();
           file = fileChooser.getSelectedFile();
           imgPath = file.getAbsolutePath();
-          if(filterImagesCreated){
+          if (filterImagesCreated) {
             initButtons();
             imagePanel2.clear();
           }
           imagePanel1.loadImage(file);
           createFilteringImages();
           filterBtn.setEnabled(true);
-          contoursBtn.setText("contours ("+totalContours+")");
+          contoursBtn.setText("contours (" + totalContours + ")");
         }
       }
     });
     filterBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        if(file != null) {
-          if(!filterImagesCreated){
+        if (file != null) {
+          if (!filterImagesCreated) {
             filterBtn.setText("Filter OFF");
             imagePanel2.loadIplImage(grayImg);
-            grayBtn.setEnabled(false);
-            hsvBtn.setEnabled(true);
-            maxContourBtn.setEnabled(true);
-            contoursBtn.setEnabled(true);
+            activeBtn = grayBtn;
+            turnOnActiveButton();
             filterImagesCreated = !filterImagesCreated;
           } else {
             filterBtn.setText("Filter ON");
             imagePanel2.clear();
-            grayBtn.setEnabled(false);
-            hsvBtn.setEnabled(false);
-            maxContourBtn.setEnabled(false);
-            contoursBtn.setEnabled(false);
+            activeBtn = null;
+            turnOffFilterButtons();
             filterImagesCreated = !filterImagesCreated;
             filterBtn.setBackground(Color.green);
             filterBtn.setOpaque(true);
             filterBtn.setBorderPainted(false);
+            blueGreenBtn.setEnabled(false);
           }
         }
       }
@@ -103,40 +106,47 @@ public class Page6 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         imagePanel2.loadIplImage(grayImg);
-        grayBtn.setEnabled(false);
-        hsvBtn.setEnabled(true);
-        maxContourBtn.setEnabled(true);
-        contoursBtn.setEnabled(true);
+        activeBtn = grayBtn;
+        turnOnActiveButton();
       }
     });
     hsvBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         imagePanel2.loadIplImage(hsvImg);
-        hsvBtn.setEnabled(false);
-        grayBtn.setEnabled(true);
-        maxContourBtn.setEnabled(true);
-        contoursBtn.setEnabled(true);
+        activeBtn = hsvBtn;
+        turnOnActiveButton();
       }
     });
     contoursBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         imagePanel2.loadIplImage(contoursImg);
-        contoursBtn.setEnabled(false);
-        maxContourBtn.setEnabled(true);
-        hsvBtn.setEnabled(true);
-        grayBtn.setEnabled(true);
+        activeBtn = contoursBtn;
+        turnOnActiveButton();
       }
     });
     maxContourBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         imagePanel2.loadIplImage(maxContourImg);
-        maxContourBtn.setEnabled(false);
-        hsvBtn.setEnabled(true);
-        grayBtn.setEnabled(true);
-        contoursBtn.setEnabled(true);
+        activeBtn = maxContourBtn;
+        turnOnActiveButton();
+      }
+    });
+
+
+
+    blueGreenBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        x=!x;
+        setImgScale();
+        createFilteringImages();
+
+        // toDO repaint activ tab
+        imagePanel2.loadIplImage(contoursImg);
+
       }
     });
   }
@@ -144,11 +154,30 @@ public class Page6 extends JPanel implements Pages {
 
   public void createFilteringImages() {
     filter.setImagePath(imgPath);
+
     grayImg = filter.grayFilter();
     hsvImg = filter.hsvFilter();
     contoursImg = filter.contoursFilter();
     maxContourImg = filter.maxContourFilter();
     totalContours = filter.getTotalContours();
+  }
+
+  public void setImgScale() {
+    //green
+    //minScale = cvScalar(40, 150, 75, 0);
+    //maxScale = cvScalar(80, 255, 255, 0);
+
+    // blue default
+    //minScale = cvScalar(95, 150, 75, 0);
+    //maxScale = cvScalar(145, 255, 255, 0);
+    if (x) {
+      filter.setMinScale(40, 150, 75);
+      filter.setMaxScale(80, 255, 255);
+    } else{
+      filter.setMinScale(95, 150, 75);
+      filter.setMaxScale(145, 255, 255);
+    }
+
   }
 
 
@@ -177,14 +206,14 @@ public class Page6 extends JPanel implements Pages {
     hsvBtn = new JButton("hsv");
     maxContourBtn = new JButton("max contour");
     contoursBtn = new JButton("contours");
-    testBtn = new JButton("test");
+    blueGreenBtn = new JButton("blue/green");
     btnPanel.add(loadBtn);
     btnPanel.add(filterBtn);
     btnPanel.add(grayBtn);
     btnPanel.add(hsvBtn);
     btnPanel.add(contoursBtn);
     btnPanel.add(maxContourBtn);
-    btnPanel.add(testBtn);
+    btnPanel.add(blueGreenBtn);
     fileChooser = new JFileChooser();
   }
 
@@ -192,10 +221,33 @@ public class Page6 extends JPanel implements Pages {
   public void initButtons() {
     filterBtn.setText("Filter ON");
     filterBtn.setEnabled(false);
+    blueGreenBtn.setEnabled(false);
+    turnOffFilterButtons();
+  }
+
+  public void turnOnFilterButtons() {
+    grayBtn.setEnabled(true);
+    hsvBtn.setEnabled(true);
+    contoursBtn.setEnabled(true);
+    maxContourBtn.setEnabled(true);
+  }
+
+  public void turnOffFilterButtons() {
     grayBtn.setEnabled(false);
     hsvBtn.setEnabled(false);
-    maxContourBtn.setEnabled(false);
-    maxContourBtn.setEnabled(false);
     contoursBtn.setEnabled(false);
+    maxContourBtn.setEnabled(false);
+  }
+
+  public void turnOnActiveButton(){
+    turnOnFilterButtons();
+    if(activeBtn != null){
+      activeBtn.setEnabled(false);
+    }
+    if(activeBtn == contoursBtn || activeBtn == maxContourBtn){
+      blueGreenBtn.setEnabled(true);
+    }else{
+      blueGreenBtn.setEnabled(false);
+    }
   }
 }
