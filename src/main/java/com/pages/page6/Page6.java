@@ -4,6 +4,7 @@ import java.awt.*;
 
 import com.gui.Gui;
 import com.gui.ImagePanel;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.pages.Pages;
 
 import javax.swing.*;
@@ -136,17 +137,19 @@ public class Page6 extends JPanel implements Pages {
     });
 
 
-
     blueGreenBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        x=!x;
+        x = !x;
         setImgScale();
         createFilteringImages();
-
-        // toDO repaint activ tab
-        imagePanel2.loadIplImage(contoursImg);
-
+        //repaint active tab
+        if (activeBtn == contoursBtn) {
+          imagePanel2.loadIplImage(contoursImg);
+        }
+        if(activeBtn == maxContourBtn){
+          imagePanel2.loadIplImage(maxContourImg);
+        }
       }
     });
   }
@@ -173,11 +176,10 @@ public class Page6 extends JPanel implements Pages {
     if (x) {
       filter.setMinScale(40, 150, 75);
       filter.setMaxScale(80, 255, 255);
-    } else{
+    } else {
       filter.setMinScale(95, 150, 75);
       filter.setMaxScale(145, 255, 255);
     }
-
   }
 
 
@@ -185,11 +187,13 @@ public class Page6 extends JPanel implements Pages {
     btnPanel = new JPanel();
     btnPanel.setPreferredSize(new Dimension(800, 200));
     btnPanel.setBackground(Color.green);
+
     mainPanel = new JPanel();
     mainPanel.setPreferredSize(new Dimension(800, 300));
     mainPanel.setBackground(Color.MAGENTA);
     tab6.add(btnPanel);
     tab6.add(mainPanel);
+
     mainPanel.setLayout(new FlowLayout());
     imagePanel1 = new ImagePanel(width, height);
     imagePanel1.setBackground(Color.black);
@@ -197,23 +201,34 @@ public class Page6 extends JPanel implements Pages {
     imagePanel2.setBackground(Color.black);
     mainPanel.add(imagePanel1);
     mainPanel.add(imagePanel2);
+
     loadBtn = new JButton("Load");
     filterBtn = new JButton("Filter ON");
-    filterBtn.setBackground(Color.green);
-    filterBtn.setOpaque(true);
-    filterBtn.setBorderPainted(false);
     grayBtn = new JButton("gray");
     hsvBtn = new JButton("hsv");
     maxContourBtn = new JButton("max contour");
     contoursBtn = new JButton("contours");
     blueGreenBtn = new JButton("blue/green");
-    btnPanel.add(loadBtn);
-    btnPanel.add(filterBtn);
-    btnPanel.add(grayBtn);
-    btnPanel.add(hsvBtn);
-    btnPanel.add(contoursBtn);
-    btnPanel.add(maxContourBtn);
-    btnPanel.add(blueGreenBtn);
+
+    btnPanel.setLayout(new GridLayout(2,2));
+    JPanel btnPanel1 = new JPanel();
+    JPanel btnPanel2 = new JPanel();
+    JPanel btnPanel3 = new JPanel();
+    JPanel btnPanel4 = new JPanel();
+    btnPanel.add(btnPanel1);
+    btnPanel.add(btnPanel2);
+    btnPanel.add(btnPanel3);
+    btnPanel.add(btnPanel4);
+
+
+    btnPanel1.add(loadBtn);
+    btnPanel1.add(filterBtn);
+    btnPanel2.add(grayBtn);
+    btnPanel2.add(hsvBtn);
+    btnPanel2.add(contoursBtn);
+    btnPanel2.add(maxContourBtn);
+    btnPanel2.add(blueGreenBtn);
+
     fileChooser = new JFileChooser();
   }
 
@@ -239,14 +254,14 @@ public class Page6 extends JPanel implements Pages {
     maxContourBtn.setEnabled(false);
   }
 
-  public void turnOnActiveButton(){
+  public void turnOnActiveButton() {
     turnOnFilterButtons();
-    if(activeBtn != null){
+    if (activeBtn != null) {
       activeBtn.setEnabled(false);
     }
-    if(activeBtn == contoursBtn || activeBtn == maxContourBtn){
+    if (activeBtn == contoursBtn || activeBtn == maxContourBtn) {
       blueGreenBtn.setEnabled(true);
-    }else{
+    } else {
       blueGreenBtn.setEnabled(false);
     }
   }
