@@ -36,10 +36,9 @@ public class Page6 extends JPanel implements Pages {
   private String hsvImgPath = Constants.imgPath + "hsvImg.jpg";
   private String maxContourPath = Constants.imgPath + "maxContour.jpg";
   private String contoursPath = Constants.imgPath + "contours.jpg";
-//  private String maxContourImgPath;
-//  private String contoursImgPath;
   private boolean filter;
-//  private boolean filtersCreated;
+  private int totalContours;
+
 
   public Page6(final Gui gui) {
     this.gui = gui;
@@ -48,7 +47,7 @@ public class Page6 extends JPanel implements Pages {
     initButtons();
     addListeners();
     filter = false;
-//    filtersCreated = false;
+    totalContours = 0;
   }
 
   private void addListeners() {
@@ -68,6 +67,7 @@ public class Page6 extends JPanel implements Pages {
           imagePanel1.loadImage(file);
           createFilters();
           filterBtn.setEnabled(true);
+          contoursBtn.setText("contours ("+totalContours+")");
         }
       }
     });
@@ -152,7 +152,7 @@ public class Page6 extends JPanel implements Pages {
     ImageFiltering filter = new ImageFiltering(imgOriginalPath);
     filter.grayFilter(grayImgPath);
     filter.hsvFilter(hsvImgPath);
-    filter.maxContourFilter(maxContourPath);
+    totalContours = filter.maxContourFilter(maxContourPath);
     filter.contoursFilter(contoursPath);
   }
 

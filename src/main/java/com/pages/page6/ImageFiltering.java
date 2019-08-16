@@ -21,7 +21,7 @@ public class ImageFiltering {
 
 
   // Filter IplImage image and show max
-  public void maxContourFilter(String resultPath) {
+  public int maxContourFilter(String resultPath) {
     IplImage imghsv, imgbin;
     // green
     CvScalar minc = cvScalar(40, 150, 75, 0), maxc = cvScalar(80, 255, 255, 0);
@@ -36,7 +36,6 @@ public class ImageFiltering {
     cvInRangeS(imghsv, minc, maxc, imgbin);
     int total = cvFindContours(imgbin, storage, contour1, Loader.sizeof(CvContour.class),
             CV_RETR_LIST, CV_LINK_RUNS, cvPoint(0, 0));
-    System.out.println(total);
     contour2 = contour1;
     while (contour1 != null && !contour1.isNull()) {
       areaC = cvContourArea(contour1, CV_WHOLE_SEQ, 1);
@@ -54,6 +53,10 @@ public class ImageFiltering {
       contour2 = contour2.h_next();
     }
     cvSaveImage(resultPath, imgbin);
+    if(total <= 0){
+      return 0;
+    }
+    return total;
   }
 
 
