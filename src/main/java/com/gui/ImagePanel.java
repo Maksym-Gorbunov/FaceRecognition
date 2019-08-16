@@ -2,6 +2,7 @@ package com.gui;
 
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -49,17 +50,11 @@ public class ImagePanel extends JPanel {
     imageLabel.setIcon(null);
   }
 
-  public void add(IplImage filteredImage) {
-    BufferedImage img1;
-    img1 = filteredImage.getBufferedImage();
+  // load image to ImagePanel without extra savers
+  public void loadIplImage(IplImage filteredImage) {
+    BufferedImage img1 = filteredImage.getBufferedImage();
     ImageIcon icon = new ImageIcon(img1);
-    imageLabel.setIcon(icon);
+    Image image = icon.getImage();
+    updadeImage(image);
   }
-
-//  public void add(IplImage filteredImage) {
-//    BufferedImage img1;
-//    img1 = filteredImage.getBufferedImage();
-//    ImageIcon icon = new ImageIcon(img1);
-//    imageLabel.setIcon(icon);
-//  }
 }

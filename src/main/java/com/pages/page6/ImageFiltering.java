@@ -90,7 +90,21 @@ public class ImageFiltering {
     cvSaveImage(resultPath, hsvimg);
   }
 
-  public IplImage test() {
+
+
+
+  /////////////////////////  no need to save file  ////////////////////////////////////
+
+  // Gray filter
+  public IplImage grayFilter() {
+    IplImage grayImg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+    cvCvtColor(img, grayImg, CV_BGR2GRAY);
+    return grayImg;
+  }
+
+
+  // HSV filter
+  public IplImage hsvFilter() {
     IplImage hsvimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
     cvCvtColor(img, hsvimg, CV_BGR2HSV);
     return hsvimg;

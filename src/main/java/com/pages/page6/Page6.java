@@ -133,7 +133,6 @@ public class Page6 extends JPanel implements Pages {
     contoursBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.out.println("all");
         contoursBtn.setEnabled(false);
         maxContourBtn.setEnabled(true);
         hsvBtn.setEnabled(true);
@@ -145,7 +144,6 @@ public class Page6 extends JPanel implements Pages {
     maxContourBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.out.println("xxx");
         maxContourBtn.setEnabled(false);
         hsvBtn.setEnabled(true);
         grayBtn.setEnabled(true);
@@ -159,7 +157,7 @@ public class Page6 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         ImageFiltering f = new ImageFiltering(imgOriginalPath);
         IplImage filteredImage = f.test();
-        imagePanel2.add(filteredImage);
+        imagePanel2.loadIplImage(filteredImage);
       }
     });
   }
