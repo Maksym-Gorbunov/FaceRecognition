@@ -37,10 +37,13 @@ public class Page6 extends JPanel implements Pages {
   private int width = 320;
   private int height = 240;
   private JFileChooser fileChooser;
+  private String imgOriginalPath = "";
   private String grayImgPath = Constants.imgPath + "grayImg.jpg";
   private String hsvImgPath = Constants.imgPath + "hsvImg.jpg";
-  private String maxContourImgPath;
-  private String contoursImgPath;
+  private String maxContourPath = Constants.imgPath + "maxContour.jpg";
+  private String contoursPath = Constants.imgPath + "contours.jpg";
+//  private String maxContourImgPath;
+//  private String contoursImgPath;
   private boolean filter;
 //  private boolean filtersCreated;
 
@@ -55,12 +58,14 @@ public class Page6 extends JPanel implements Pages {
   }
 
   private void addListeners() {
+
     loadBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (fileChooser.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           filterBtn.doClick();
           file = fileChooser.getSelectedFile();
+          imgOriginalPath = file.getAbsolutePath();
           if(filter){
             initButtons();
             imagePanel2.clear();
@@ -131,7 +136,7 @@ public class Page6 extends JPanel implements Pages {
         maxContourBtn.setEnabled(true);
         hsvBtn.setEnabled(true);
         grayBtn.setEnabled(true);
-        imagePanel2.loadIplImage(contoursImgPath);
+        imagePanel2.loadIplImage(contoursPath);
       }
     });
 
@@ -143,14 +148,14 @@ public class Page6 extends JPanel implements Pages {
         hsvBtn.setEnabled(true);
         grayBtn.setEnabled(true);
         contoursBtn.setEnabled(true);
-        imagePanel2.loadIplImage(maxContourImgPath);
+        imagePanel2.loadIplImage(maxContourPath);
       }
     });
   }
 
   public void createFilters(){
     // create gray and hvs filters
-    IplImage img = cvLoadImage(file.getAbsolutePath());
+    IplImage img = cvLoadImage(imgOriginalPath);
     IplImage hsvimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
     IplImage grayimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
     cvCvtColor(img, hsvimg, CV_BGR2HSV);
@@ -158,8 +163,8 @@ public class Page6 extends JPanel implements Pages {
     cvSaveImage(grayImgPath, grayimg);
     cvSaveImage(hsvImgPath, hsvimg);
     // create contours and max contour filter
-    maxContourImgPath = ImageFiltering.filterMaxContour(file.getAbsolutePath());
-    contoursImgPath = ImageFiltering.filterContours(file.getAbsolutePath());
+    ImageFiltering.filterMaxContour(imgOriginalPath, maxContourPath);
+    ImageFiltering.filterContours(imgOriginalPath, contoursPath);
   }
 
   private void initComponents() {

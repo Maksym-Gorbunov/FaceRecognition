@@ -13,8 +13,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
 // Blue 95-145
 
 public class ImageFiltering {
-  public static String maxContourPath = Constants.imgPath + "maxContour.jpg";
-  public static String contoursPath = Constants.imgPath + "contours.jpg";
+
 
 
 
@@ -33,7 +32,7 @@ public class ImageFiltering {
 
 
 
-  public static String filterMaxContour(String imgPath) {
+  public static void filterMaxContour(String imgOriginalPath, String resultPath) {
 
     IplImage img1, imghsv, imgbin;
 
@@ -45,7 +44,7 @@ public class ImageFiltering {
     CvSeq contour1 = new CvSeq(), contour2;
     CvMemStorage storage = CvMemStorage.create();
     double areaMax = 1000, areaC = 0;
-    img1 = cvLoadImage(imgPath);
+    img1 = cvLoadImage(imgOriginalPath);
     imghsv = cvCreateImage(cvGetSize(img1), 8, 3);
     imgbin = cvCreateImage(cvGetSize(img1), 8, 1);
     cvCvtColor(img1, imghsv, CV_BGR2HSV);
@@ -70,15 +69,15 @@ public class ImageFiltering {
       }
       contour2 = contour2.h_next();
     }
-    cvSaveImage(maxContourPath, imgbin);
-    cvReleaseImage(img1);
-    cvReleaseImage(imghsv);
-    cvReleaseImage(imgbin);
-    cvReleaseMemStorage(storage);
-    return maxContourPath;
+    cvSaveImage(resultPath, imgbin);
+//    cvReleaseImage(img1);
+//    cvReleaseImage(imghsv);
+//    cvReleaseImage(imgbin);
+//    cvReleaseMemStorage(storage);
+//    return resultPath;
   }
 
-  public static String filterContours(String imgPath) {
+  public static void filterContours(String imgOriginalPath, String resultPath) {
     IplImage img1, imghsv, imgbin;
 
     // green
@@ -89,18 +88,18 @@ public class ImageFiltering {
     CvSeq contour1 = new CvSeq(), contour2;
     CvMemStorage storage = CvMemStorage.create();
     double areaMax = 1000, areaC = 0;
-    img1 = cvLoadImage(imgPath);
+    img1 = cvLoadImage(imgOriginalPath);
     imghsv = cvCreateImage(cvGetSize(img1), 8, 3);
     imgbin = cvCreateImage(cvGetSize(img1), 8, 1);
     cvCvtColor(img1, imghsv, CV_BGR2HSV);
     cvInRangeS(imghsv, minc, maxc, imgbin);
 
-    cvSaveImage(contoursPath, imgbin);
-    cvReleaseImage(img1);
-    cvReleaseImage(imghsv);
-    cvReleaseImage(imgbin);
-    cvReleaseMemStorage(storage);
-    return contoursPath;
+    cvSaveImage(resultPath, imgbin);
+//    cvReleaseImage(img1);
+//    cvReleaseImage(imghsv);
+//    cvReleaseImage(imgbin);
+//    cvReleaseMemStorage(storage);
+//    return resultPath;
   }
 }
 
