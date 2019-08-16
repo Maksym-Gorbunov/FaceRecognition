@@ -14,22 +14,25 @@ public class ImageFiltering {
   private IplImage hsvImg;
   private IplImage binImg;
   private int totalContours;
-  private CvScalar min;
-  private CvScalar max;
+  private CvScalar minScale;
+  private CvScalar maxScale;
 
 
   // Constructor
-  public ImageFiltering(String imgOriginalPath){
-    img = cvLoadImage(imgOriginalPath);
-
+  public ImageFiltering(){
     //green
-    //min = cvScalar(40, 150, 75, 0);
-    //max = cvScalar(80, 255, 255, 0);
+    //minScale = cvScalar(40, 150, 75, 0);
+    //maxScale = cvScalar(80, 255, 255, 0);
 
     // blue
-    min = cvScalar(95, 150, 75, 0);
-    max = cvScalar(145, 255, 255, 0);
+    minScale = cvScalar(95, 150, 75, 0);
+    maxScale = cvScalar(145, 255, 255, 0);
   }
+
+
+
+  // Set minScale scale
+
 
 
   // Filter IplImage image and show all contours
@@ -37,12 +40,12 @@ public class ImageFiltering {
     hsvImg = cvCreateImage(cvGetSize(img), 8, 3);
     binImg = cvCreateImage(cvGetSize(img), 8, 1);
     cvCvtColor(img, hsvImg, CV_BGR2HSV);
-    cvInRangeS(hsvImg, min, max, binImg);
+    cvInRangeS(hsvImg, minScale, maxScale, binImg);
     return binImg;
   }
 
 
-  // Filter IplImage image and show max
+  // Filter IplImage image and show maxScale
   public IplImage maxContourFilter() {
     CvSeq contour1 = new CvSeq(), contour2;
     CvMemStorage storage = CvMemStorage.create();
@@ -50,7 +53,7 @@ public class ImageFiltering {
     hsvImg = cvCreateImage(cvGetSize(img), 8, 3);
     binImg = cvCreateImage(cvGetSize(img), 8, 1);
     cvCvtColor(img, hsvImg, CV_BGR2HSV);
-    cvInRangeS(hsvImg, min, max, binImg);
+    cvInRangeS(hsvImg, minScale, maxScale, binImg);
     totalContours = cvFindContours(binImg, storage, contour1, Loader.sizeof(CvContour.class),
             CV_RETR_LIST, CV_LINK_RUNS, cvPoint(0, 0));
     contour2 = contour1;
@@ -95,6 +98,10 @@ public class ImageFiltering {
       return 0;
     }
     return totalContours;
+  }
+
+  public void setImagePath(String imgPath) {
+    img = cvLoadImage(imgPath);
   }
 }
 

@@ -31,13 +31,14 @@ public class Page6 extends JPanel implements Pages {
   private int width = 320;
   private int height = 240;
   private JFileChooser fileChooser;
-  private String imgOriginalPath = "";
-  private boolean filter;
+  private String imgPath = "";
+  private boolean filterImagesCreated;
   private int totalContours;
   private IplImage grayImg;
   private IplImage hsvImg;
   private IplImage contoursImg;
   private IplImage maxContourImg;
+  private ImageFiltering filter;
 
 
   public Page6(final Gui gui) {
@@ -46,7 +47,8 @@ public class Page6 extends JPanel implements Pages {
     initComponents();
     initButtons();
     addListeners();
-    filter = false;
+    filter = new ImageFiltering();
+    filterImagesCreated = false;
     totalContours = 0;
   }
 
@@ -58,8 +60,8 @@ public class Page6 extends JPanel implements Pages {
         if (fileChooser.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           filterBtn.doClick();
           file = fileChooser.getSelectedFile();
-          imgOriginalPath = file.getAbsolutePath();
-          if(filter){
+          imgPath = file.getAbsolutePath();
+          if(filterImagesCreated){
             initButtons();
             imagePanel2.clear();
           }
@@ -74,14 +76,14 @@ public class Page6 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         if(file != null) {
-          if(!filter){
+          if(!filterImagesCreated){
             filterBtn.setText("Filter OFF");
             imagePanel2.loadIplImage(grayImg);
             grayBtn.setEnabled(false);
             hsvBtn.setEnabled(true);
             maxContourBtn.setEnabled(true);
             contoursBtn.setEnabled(true);
-            filter = !filter;
+            filterImagesCreated = !filterImagesCreated;
           } else {
             filterBtn.setText("Filter ON");
             imagePanel2.clear();
@@ -89,7 +91,7 @@ public class Page6 extends JPanel implements Pages {
             hsvBtn.setEnabled(false);
             maxContourBtn.setEnabled(false);
             contoursBtn.setEnabled(false);
-            filter = !filter;
+            filterImagesCreated = !filterImagesCreated;
             filterBtn.setBackground(Color.green);
             filterBtn.setOpaque(true);
             filterBtn.setBorderPainted(false);
@@ -141,7 +143,7 @@ public class Page6 extends JPanel implements Pages {
 
 
   public void createFilteringImages() {
-    ImageFiltering filter = new ImageFiltering(imgOriginalPath);
+    filter.setImagePath(imgPath);
     grayImg = filter.grayFilter();
     hsvImg = filter.hsvFilter();
     contoursImg = filter.contoursFilter();
