@@ -12,12 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import org.bytedeco.javacpp.opencv_core.IplImage;
-
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
-
 
 public class Page6 extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
@@ -153,18 +147,13 @@ public class Page6 extends JPanel implements Pages {
     });
   }
 
+
   public void createFilters(){
-    // create gray and hvs filters
-    IplImage img = cvLoadImage(imgOriginalPath);
-    IplImage hsvimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
-    IplImage grayimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
-    cvCvtColor(img, hsvimg, CV_BGR2HSV);
-    cvCvtColor(img, grayimg, CV_BGR2GRAY);
-    cvSaveImage(grayImgPath, grayimg);
-    cvSaveImage(hsvImgPath, hsvimg);
-    // create contours and max contour filter
-    ImageFiltering.filterMaxContour(imgOriginalPath, maxContourPath);
-    ImageFiltering.filterContours(imgOriginalPath, contoursPath);
+    ImageFiltering filter = new ImageFiltering(imgOriginalPath);
+    filter.grayFilter(grayImgPath);
+    filter.hsvFilter(hsvImgPath);
+    filter.maxContourFilter(maxContourPath);
+    filter.contoursFilter(contoursPath);
   }
 
   private void initComponents() {
