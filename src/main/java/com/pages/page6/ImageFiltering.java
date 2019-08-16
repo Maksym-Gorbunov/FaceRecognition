@@ -89,5 +89,11 @@ public class ImageFiltering {
     cvCvtColor(img, hsvimg, CV_BGR2HSV);
     cvSaveImage(resultPath, hsvimg);
   }
+
+  public IplImage test() {
+    IplImage hsvimg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+    cvCvtColor(img, hsvimg, CV_BGR2HSV);
+    return hsvimg;
+  }
 }
 

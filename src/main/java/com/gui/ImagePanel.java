@@ -1,7 +1,10 @@
 package com.gui;
 
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class ImagePanel extends JPanel {
@@ -45,4 +48,18 @@ public class ImagePanel extends JPanel {
   public void clear() {
     imageLabel.setIcon(null);
   }
+
+  public void add(IplImage filteredImage) {
+    BufferedImage img1;
+    img1 = filteredImage.getBufferedImage();
+    ImageIcon icon = new ImageIcon(img1);
+    imageLabel.setIcon(icon);
+  }
+
+//  public void add(IplImage filteredImage) {
+//    BufferedImage img1;
+//    img1 = filteredImage.getBufferedImage();
+//    ImageIcon icon = new ImageIcon(img1);
+//    imageLabel.setIcon(icon);
+//  }
 }

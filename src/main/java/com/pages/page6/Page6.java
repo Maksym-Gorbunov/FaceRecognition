@@ -6,11 +6,18 @@ import com.constants.Constants;
 import com.gui.Gui;
 import com.gui.ImagePanel;
 import com.pages.Pages;
+import org.bytedeco.javacpp.opencv_core;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 
 public class Page6 extends JPanel implements Pages {
@@ -25,8 +32,9 @@ public class Page6 extends JPanel implements Pages {
   private JButton filterBtn;
   private JButton grayBtn;
   private JButton hsvBtn;
-  private JButton maxContourBtn;
   private JButton contoursBtn;
+  private JButton maxContourBtn;
+  private JButton testBtn;
   private File file;
   private int width = 320;
   private int height = 240;
@@ -145,6 +153,15 @@ public class Page6 extends JPanel implements Pages {
         imagePanel2.loadIplImage(maxContourPath);
       }
     });
+
+    testBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        ImageFiltering f = new ImageFiltering(imgOriginalPath);
+        IplImage filteredImage = f.test();
+        imagePanel2.add(filteredImage);
+      }
+    });
   }
 
 
@@ -184,14 +201,16 @@ public class Page6 extends JPanel implements Pages {
 
     grayBtn = new JButton("gray");
     hsvBtn = new JButton("hsv");
-    contoursBtn = new JButton("contours");
     maxContourBtn = new JButton("max contour");
+    contoursBtn = new JButton("contours");
+    testBtn = new JButton("test");
     btnPanel.add(loadBtn);
     btnPanel.add(filterBtn);
     btnPanel.add(grayBtn);
     btnPanel.add(hsvBtn);
     btnPanel.add(contoursBtn);
     btnPanel.add(maxContourBtn);
+    btnPanel.add(testBtn);
 
     fileChooser = new JFileChooser();
   }
