@@ -1,6 +1,7 @@
 package com.gui;
 
 import com.constants.Constants;
+import com.pages.Page7.Page7;
 import com.pages.page1.Page1;
 import com.pages.page2.Page2;
 import com.pages.page3.Page3;
@@ -22,6 +23,7 @@ public class Gui extends JFrame {
   private JPanel tab4;
   private JPanel tab5;
   private JPanel tab6;
+  private JPanel tab7;
 
   public Gui() {
     super("Application");
@@ -47,6 +49,7 @@ public class Gui extends JFrame {
     tab4 = new JPanel();
     tab5 = new JPanel();
     tab6 = new JPanel();
+    tab7 = new JPanel();
     //////////////////////////////////////////////////////////////////////
     tab1.setBackground(Color.CYAN);
     tab2.setBackground(Color.CYAN);
@@ -54,6 +57,7 @@ public class Gui extends JFrame {
     tab4.setBackground(Color.CYAN);
     tab5.setBackground(Color.CYAN);
     tab6.setBackground(Color.CYAN);
+    tab7.setBackground(Color.CYAN);
     //////////////////////////////////////////////////////////////////////
     tabs.addTab("Webbcam", tab1);
     tabs.addTab("Mongo CRUD", tab2);
@@ -61,6 +65,7 @@ public class Gui extends JFrame {
     tabs.addTab("Webbcam Recognition", tab4);
     tabs.addTab("Text Recognition", tab5);
     tabs.addTab("Image Manipulations", tab6);
+    tabs.addTab("Video Manipulations", tab7);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
@@ -69,6 +74,7 @@ public class Gui extends JFrame {
     tab4 = new Page4(Gui.this);
     tab5 = new Page5(Gui.this);
     tab6 = new Page6(Gui.this);
+    tab7 = new Page7(Gui.this);
 
     tabs.setSelectedIndex(5);
   }
@@ -120,5 +126,9 @@ public class Gui extends JFrame {
 
   public JPanel getTab6() {
     return tab6;
+  }
+
+  public JPanel getTab7() {
+    return tab7;
   }
 }
