@@ -89,13 +89,14 @@ public class Page6 extends JPanel implements Pages {
             activeBtn = grayBtn;
             turnOnActiveButton();
             filterImagesCreated = !filterImagesCreated;
+//            filterBtn.setBackground(Color.red);
           } else {
             filterBtn.setText("Filter ON");
             imagePanel2.clear();
             activeBtn = null;
             turnOffFilterButtons();
             filterImagesCreated = !filterImagesCreated;
-            filterBtn.setBackground(Color.green);
+//            filterBtn.setBackground(Color.green);
             filterBtn.setOpaque(true);
             filterBtn.setBorderPainted(false);
             blueGreenBtn.setEnabled(false);
@@ -203,10 +204,12 @@ public class Page6 extends JPanel implements Pages {
     mainPanel.add(imagePanel2);
 
     loadBtn = new JButton("Load");
-    loadBtn.setBackground(Color.RED);
-    loadBtn.setOpaque(true);
-
     filterBtn = new JButton("Filter ON");
+//    filterBtn.setBackground(Color.RED);
+//    filterBtn.setContentAreaFilled(false);
+//    filterBtn.setOpaque(true);
+//    filterBtn.setForeground(Color.white);
+
     grayBtn = new JButton("gray");
     hsvBtn = new JButton("hsv");
     maxContourBtn = new JButton("max contour");
