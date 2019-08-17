@@ -203,6 +203,9 @@ public class Page6 extends JPanel implements Pages {
     mainPanel.add(imagePanel2);
 
     loadBtn = new JButton("Load");
+    loadBtn.setBackground(Color.RED);
+    loadBtn.setOpaque(true);
+
     filterBtn = new JButton("Filter ON");
     grayBtn = new JButton("gray");
     hsvBtn = new JButton("hsv");
