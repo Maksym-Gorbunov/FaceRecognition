@@ -14,6 +14,10 @@ public class Page7 extends JPanel implements Pages {
   public Page7(Gui gui){
     this.gui = gui;
     tab7 = gui.getTab7();
+    initComponents();
+    initButtons();
+    addListeners();
+
   }
 
 

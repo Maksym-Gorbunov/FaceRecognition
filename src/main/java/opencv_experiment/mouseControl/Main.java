@@ -25,6 +25,7 @@ public class Main {
     CvScalar Gminc = cvScalar(40,50,60,0), Gmaxc = cvScalar(80,255,255,0);
 
     //img1 = cvLoadImage("Pic.jpg");
+
     CvArr mask;
 //    int w=640,h=420;
     int w=320,h=240;
