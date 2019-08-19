@@ -45,15 +45,12 @@ public class Page6 extends JPanel implements Pages {
   private IplImage contoursImg;
   private IplImage maxContourImg;
   private ImageFiltering filter;
-
+  private MongoDB db;
   private boolean x = false;
 
 
   public Page6(final Gui gui) {
-//    MongoDB db = new MongoDB();
-//    db.createCollection("images");
-//    DB2.uploadFile();
-    DB2.loadFile();
+    db = new MongoDB();
 
     this.gui = gui;
     tab6 = gui.getTab6();
@@ -73,6 +70,9 @@ public class Page6 extends JPanel implements Pages {
         if (fileChooser.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           filterBtn.doClick();
           file = fileChooser.getSelectedFile();
+
+          db.uploadFile(file);
+
           imgPath = file.getAbsolutePath();
           if (filterImagesCreated) {
             initButtons();

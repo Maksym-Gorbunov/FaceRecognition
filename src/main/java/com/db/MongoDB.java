@@ -1,24 +1,19 @@
 package com.db;
 
+import org.apache.commons.io.FilenameUtils;
 import com.constants.Constants;
 import com.mongodb.*;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.gridfs.GridFSBucket;
-import com.mongodb.client.gridfs.GridFSBuckets;
-import com.mongodb.client.gridfs.GridFSUploadStream;
-import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 import com.pages.page2.Contact;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -26,71 +21,59 @@ import java.util.logging.Logger;
 
 public class MongoDB {
   private MongoClient client;
-  private MongoDatabase db;
-  private String dbName;
+  private MongoDatabase mongoDatabase;
+  private DB db;
+  private String databaseName;
   private String collectionName;
   private MongoCollection<Document> collection;
   private String atlasConnectionString;
 
   public MongoDB() {
     System.out.println("Connecting to MongoDB on cloud..");
-    dbName = "hilodb";
+    databaseName = "hilodb";
     collectionName = "Contacts";
     atlasConnectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
     MongoClientURI uri = new MongoClientURI(atlasConnectionString);
     client = new MongoClient(uri);
     Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
     mongoLogger.setLevel(Level.SEVERE);
-    db = client.getDatabase(dbName);
-    collection = db.getCollection(collectionName);
+    mongoDatabase = client.getDatabase(databaseName);
+    collection = mongoDatabase.getCollection(collectionName);
+    db =  client.getDB(databaseName);
   }
 
-
-  public void uploadFile() {
-//    String connectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
-//    String dbName = "hilodb";
-//    String collectionName = "Contacts";
-    String filePath = Constants.imgPath + "car3.png";
-
-//    MongoClient client = new MongoClient(new MongoClientURI(connectionString));
-    DB db =  client.getDB(dbName);
-    DBCollection collection = db.getCollection(collectionName);
-
-    String newFileName = "newImage";
-    File imageFile = new File(filePath);
-    GridFS gfsPhoto = new GridFS(db, "images000");
+  // Upload file to db
+  public void uploadFile(File file) {
+    String fileName = FilenameUtils.removeExtension(file.getName());
+    File imageFile = new File(file.getAbsolutePath());
+    GridFS gfsPhoto = new GridFS(db, "images");
     GridFSInputFile gfsFile = null;
     try {
       gfsFile = gfsPhoto.createFile(imageFile);
     } catch (IOException e) {
       e.printStackTrace();
     }
-    gfsFile.setFilename(newFileName);
+    gfsFile.setFilename(fileName);
     gfsFile.save();
   }
 
-
-
-  public void loadFile() {
-//    String connectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
-//    String dbName = "hilodb";
-//    String collectionName = "Contacts";
-//    String filePath = Constants.imgPath + "car3.png";
-
-//    MongoClient client = new MongoClient(new MongoClientURI(connectionString));
-    DB db =  client.getDB(dbName);
-    DBCollection collection = db.getCollection(collectionName);
-
-    String newFileName = "newImage";
-    GridFS gfsPhoto = new GridFS(db, "images000");
-    GridFSDBFile imageForOutput = gfsPhoto.findOne(newFileName);
+  // Download file from db, ex "colors.png"
+  public void downloadFile(String fileName) {
+    GridFS gfsPhoto = new GridFS(db, "images");
+    String fName = FilenameUtils.removeExtension(fileName);
+    GridFSDBFile imageForOutput = gfsPhoto.findOne(fName);
     try {
-      imageForOutput.writeTo(Constants.imgPath+"downloaded_001.png");
+      imageForOutput.writeTo(Constants.imgPath+fileName);
     } catch (IOException e) {
       e.printStackTrace();
     }
     System.out.println(imageForOutput);
   }
+
+
+
+
+
 
 
   public void insertContact(Contact contact) {
@@ -126,34 +109,34 @@ public class MongoDB {
 
   // Create collection
   public void createCollection(String collectionName) {
-    db.createCollection(collectionName);
+    mongoDatabase.createCollection(collectionName);
   }
 
   /*
   // Delete collection
   public void deleteCollection(String collectionName) {
-    MongoCollection<Document> collection = db.getCollection(collectionName);
+    MongoCollection<Document> collection = mongoDatabase.getCollection(collectionName);
     collection.drop();
-    collection = db.getCollection(collectionName);
+    collection = mongoDatabase.getCollection(collectionName);
     System.out.println(collection);
   }
 
-  // Lists all db names
+  // Lists all mongoDatabase names
   public void listDatabases() {
-    for (String db : client.listDatabaseNames()) {
-      System.out.println(db);
+    for (String mongoDatabase : client.listDatabaseNames()) {
+      System.out.println(mongoDatabase);
     }
   }
 
   // Lists all collection names
   public void listCollectionNames() {
-    for (String collectionName : db.listCollectionNames()) {
+    for (String collectionName : mongoDatabase.listCollectionNames()) {
       System.out.println(collectionName);
     }
   }
 
   public void insertManyContacts(String collectionName, List<Contact> contact) {
-    MongoCollection<Document> collection = db.getCollection(collectionName);
+    MongoCollection<Document> collection = mongoDatabase.getCollection(collectionName);
     List<Document> document = asList(
             new Document ("name", contact.getName())
                     .append("surname", contact.getSurname())
@@ -174,14 +157,14 @@ public class MongoDB {
   }
 
   public void findAndPrint(String field, String value) {
-    MongoCollection<Document> collection = db.getCollection("Contacts");
+    MongoCollection<Document> collection = mongoDatabase.getCollection("Contacts");
     List<Document> result = collection.find(new Document(field, value)).into(new ArrayList<>());
     System.out.println(result);
   }
 
 
   public void updateIncrement() {
-    MongoCollection<Document> collection = db.getCollection("Contacts");
+    MongoCollection<Document> collection = mongoDatabase.getCollection("Contacts");
     BasicDBObject updateQuery = new BasicDBObject();
     updateQuery.append("$inc", new BasicDBObject().append("age", 555));
     BasicDBObject searchQuery = new BasicDBObject().append("name", "Max");
