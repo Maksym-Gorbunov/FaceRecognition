@@ -2,9 +2,10 @@ package com.pages.page6;
 
 import java.awt.*;
 
+import com.db.DB2;
+import com.db.MongoDB;
 import com.gui.Gui;
 import com.gui.ImagePanel;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.pages.Pages;
 
 import javax.swing.*;
@@ -49,6 +50,11 @@ public class Page6 extends JPanel implements Pages {
 
 
   public Page6(final Gui gui) {
+//    MongoDB db = new MongoDB();
+//    db.createCollection("images");
+//    DB2.uploadFile();
+    DB2.loadFile();
+
     this.gui = gui;
     tab6 = gui.getTab6();
     initComponents();

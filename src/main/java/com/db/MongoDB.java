@@ -1,29 +1,42 @@
 package com.db;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.constants.Constants;
+import com.mongodb.*;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSUploadStream;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.gridfs.GridFS;
+import com.mongodb.gridfs.GridFSDBFile;
+import com.mongodb.gridfs.GridFSInputFile;
 import com.pages.page2.Contact;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
+
+import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DB {
+public class MongoDB {
   private MongoClient client;
   private MongoDatabase db;
-  private String dbName = "hilodb";
-  private String collectionName = "Contacts";
+  private String dbName;
+  private String collectionName;
   private MongoCollection<Document> collection;
+  private String atlasConnectionString;
 
-  public DB() {
+  public MongoDB() {
     System.out.println("Connecting to MongoDB on cloud..");
-    String atlasConnectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
+    dbName = "hilodb";
+    collectionName = "Contacts";
+    atlasConnectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
     MongoClientURI uri = new MongoClientURI(atlasConnectionString);
     client = new MongoClient(uri);
     Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
@@ -31,6 +44,54 @@ public class DB {
     db = client.getDatabase(dbName);
     collection = db.getCollection(collectionName);
   }
+
+
+  public void uploadFile() {
+//    String connectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
+//    String dbName = "hilodb";
+//    String collectionName = "Contacts";
+    String filePath = Constants.imgPath + "car3.png";
+
+//    MongoClient client = new MongoClient(new MongoClientURI(connectionString));
+    DB db =  client.getDB(dbName);
+    DBCollection collection = db.getCollection(collectionName);
+
+    String newFileName = "newImage";
+    File imageFile = new File(filePath);
+    GridFS gfsPhoto = new GridFS(db, "images000");
+    GridFSInputFile gfsFile = null;
+    try {
+      gfsFile = gfsPhoto.createFile(imageFile);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    gfsFile.setFilename(newFileName);
+    gfsFile.save();
+  }
+
+
+
+  public void loadFile() {
+//    String connectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
+//    String dbName = "hilodb";
+//    String collectionName = "Contacts";
+//    String filePath = Constants.imgPath + "car3.png";
+
+//    MongoClient client = new MongoClient(new MongoClientURI(connectionString));
+    DB db =  client.getDB(dbName);
+    DBCollection collection = db.getCollection(collectionName);
+
+    String newFileName = "newImage";
+    GridFS gfsPhoto = new GridFS(db, "images000");
+    GridFSDBFile imageForOutput = gfsPhoto.findOne(newFileName);
+    try {
+      imageForOutput.writeTo(Constants.imgPath+"downloaded_001.png");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    System.out.println(imageForOutput);
+  }
+
 
   public void insertContact(Contact contact) {
     Document document = new Document("_id", contact.get_id())
@@ -46,7 +107,7 @@ public class DB {
     return result;
   }
 
-  public void deleteContact(Contact contact){
+  public void deleteContact(Contact contact) {
     Bson filter = new Document("_id", contact.get_id());
     collection.deleteOne(filter);
   }
@@ -63,27 +124,12 @@ public class DB {
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /*
   // Create collection
   public void createCollection(String collectionName) {
-    MongoCollection<Document> collection = db.getCollection(collectionName);
-    collection.insertOne(new Document());
+    db.createCollection(collectionName);
   }
 
+  /*
   // Delete collection
   public void deleteCollection(String collectionName) {
     MongoCollection<Document> collection = db.getCollection(collectionName);

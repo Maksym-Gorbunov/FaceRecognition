@@ -1,6 +1,6 @@
 package com.pages.page2;
 
-import com.db.DB;
+import com.db.MongoDB;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -9,10 +9,10 @@ import java.util.List;
 
 public class ContactBook {
   private List<Contact> contacts = new ArrayList<>();
-  private DB db;
+  private MongoDB db;
 
   public void connect(){
-    db = new DB();
+    db = new MongoDB();
   }
 
   public void add(Contact contact) {

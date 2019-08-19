@@ -197,7 +197,7 @@ public class Page2 extends JPanel implements Pages {
 
   public void populateMenuBar() {
     JMenu fileMenu = gui.getJMenuBar().getMenu(0);
-    JMenuItem mongoRefresh = new JMenuItem("Connect DB");
+    JMenuItem mongoRefresh = new JMenuItem("Connect MongoDB");
     fileMenu.add(mongoRefresh);
 
     mongoRefresh.addActionListener(new ActionListener() {
