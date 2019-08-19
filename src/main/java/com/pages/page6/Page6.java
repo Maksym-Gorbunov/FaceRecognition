@@ -62,6 +62,7 @@ public class Page6 extends JPanel implements Pages {
 
 
   private void addListeners() {
+
     loadBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
