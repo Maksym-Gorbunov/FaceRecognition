@@ -1,18 +1,14 @@
 package com.pages.page6;
 
 import java.awt.*;
-
-import com.db.DB2;
 import com.db.MongoDB;
 import com.gui.Gui;
 import com.gui.ImagePanel;
 import com.pages.Pages;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-
 import org.bytedeco.javacpp.opencv_core.*;
 
 
@@ -51,6 +47,7 @@ public class Page6 extends JPanel implements Pages {
 
   public Page6(final Gui gui) {
     db = new MongoDB();
+    db.downloadFile("family.png");
 
     this.gui = gui;
     tab6 = gui.getTab6();
@@ -70,9 +67,6 @@ public class Page6 extends JPanel implements Pages {
         if (fileChooser.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           filterBtn.doClick();
           file = fileChooser.getSelectedFile();
-
-          db.uploadFile(file);
-
           imgPath = file.getAbsolutePath();
           if (filterImagesCreated) {
             initButtons();
