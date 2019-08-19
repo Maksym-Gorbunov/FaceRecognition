@@ -203,7 +203,7 @@ public class Page2 extends JPanel implements Pages {
     mongoRefresh.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        contactBook.connect();
+//        contactBook.connect();
         contactBook.populateContactBook();
         populateComboBox();
         mongoRefresh.setEnabled(false);

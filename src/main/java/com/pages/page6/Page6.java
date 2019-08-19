@@ -1,14 +1,17 @@
 package com.pages.page6;
 
 import java.awt.*;
+
 import com.db.MongoDB;
 import com.gui.Gui;
 import com.gui.ImagePanel;
 import com.pages.Pages;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+
 import org.bytedeco.javacpp.opencv_core.*;
 
 
@@ -29,6 +32,8 @@ public class Page6 extends JPanel implements Pages {
   private JButton contoursBtn;
   private JButton maxContourBtn;
   private JButton blueGreenBtn;
+  private JButton uploadBtn;
+  private JButton downloadBtn;
   private File file;
   private int width = 320;
   private int height = 240;
@@ -41,14 +46,10 @@ public class Page6 extends JPanel implements Pages {
   private IplImage contoursImg;
   private IplImage maxContourImg;
   private ImageFiltering filter;
-  private MongoDB db;
   private boolean x = false;
 
 
   public Page6(final Gui gui) {
-    db = new MongoDB();
-    db.downloadFile("family.png");
-
     this.gui = gui;
     tab6 = gui.getTab6();
     initComponents();
@@ -148,11 +149,33 @@ public class Page6 extends JPanel implements Pages {
         if (activeBtn == contoursBtn) {
           imagePanel2.loadIplImage(contoursImg);
         }
-        if(activeBtn == maxContourBtn){
+        if (activeBtn == maxContourBtn) {
           imagePanel2.loadIplImage(maxContourImg);
         }
       }
     });
+
+    uploadBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (file != null) {
+          downloadBtn.setEnabled(true);
+          MongoDB.uploadFile(file);
+          System.out.println(file+" was succesfully downloaded to img/downloads");
+        } else {
+          downloadBtn.setEnabled(false);
+        }
+      }
+    });
+
+    downloadBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        MongoDB.downloadFile("family.png");
+        System.out.println("saved..");
+      }
+    });
+
   }
 
 
@@ -217,8 +240,10 @@ public class Page6 extends JPanel implements Pages {
     maxContourBtn = new JButton("max contour");
     contoursBtn = new JButton("contours");
     blueGreenBtn = new JButton("blue/green");
+    uploadBtn = new JButton("upload");
+    downloadBtn = new JButton("download");
 
-    btnPanel.setLayout(new GridLayout(2,2));
+    btnPanel.setLayout(new GridLayout(2, 2));
     JPanel btnPanel1 = new JPanel();
     JPanel btnPanel2 = new JPanel();
     JPanel btnPanel3 = new JPanel();
@@ -236,6 +261,10 @@ public class Page6 extends JPanel implements Pages {
     btnPanel2.add(contoursBtn);
     btnPanel2.add(maxContourBtn);
     btnPanel2.add(blueGreenBtn);
+
+    btnPanel3.add(new JLabel("MongoDB"));
+    btnPanel3.add(uploadBtn);
+    btnPanel3.add(downloadBtn);
 
     fileChooser = new JFileChooser();
   }

@@ -20,16 +20,16 @@ import java.util.logging.Logger;
 
 // This class handel all data on MongoDB, cloud
 public class MongoDB {
-  private MongoClient client;
-  private MongoDatabase mongoDatabase;
-  private DB db;
-  private String databaseName;
-  private String collectionName;
-  private MongoCollection<Document> collection;
-  private String atlasConnectionString;
+  public static MongoClient client;
+  public static MongoDatabase mongoDatabase;
+  public static DB db;
+  public static String databaseName;
+  public static String collectionName;
+  public static MongoCollection<Document> collection;
+  public static String atlasConnectionString;
 
   // Constructor
-  public MongoDB() {
+  static {
     System.out.println("Connecting to MongoDB on cloud..");
     databaseName = "hilodb";
     collectionName = "Contacts";
@@ -44,7 +44,7 @@ public class MongoDB {
   }
 
   // Upload file to db
-  public void uploadFile(File file) {
+  public static void uploadFile(File file) {
     String fileName = FilenameUtils.removeExtension(file.getName());
     File imageFile = new File(file.getAbsolutePath());
     GridFS gfsPhoto = new GridFS(db, "images");
@@ -59,7 +59,7 @@ public class MongoDB {
   }
 
   // Download file from db, ex "colors.png"
-  public void downloadFile(String fileName) {
+  public static void downloadFile(String fileName) {
     GridFS gfsPhoto = new GridFS(db, "images");
     String fName = FilenameUtils.removeExtension(fileName);
     GridFSDBFile imageForOutput = gfsPhoto.findOne(fName);
@@ -73,7 +73,7 @@ public class MongoDB {
   }
 
   // Add new contact
-  public void insertContact(Contact contact) {
+  public static void insertContact(Contact contact) {
     Document document = new Document("_id", contact.get_id())
             .append("name", contact.getName())
             .append("surname", contact.getSurname())
@@ -83,19 +83,19 @@ public class MongoDB {
   }
 
   // Get all documents
-  public List<Document> getAllDocuments() {
+  public static List<Document> getAllDocuments() {
     List<Document> result = collection.find().into(new ArrayList<>());
     return result;
   }
 
   // Delete all contacts
-  public void deleteContact(Contact contact) {
+  public static void deleteContact(Contact contact) {
     Bson filter = new Document("_id", contact.get_id());
     collection.deleteOne(filter);
   }
 
   // Update contacts
-  public void updateContact(Contact contact) {
+  public static void updateContact(Contact contact) {
     BasicDBObject newDocument = new BasicDBObject();
     newDocument.append("$set", new BasicDBObject()
             .append("name", contact.getName())
@@ -107,7 +107,7 @@ public class MongoDB {
   }
 
   // Create collection
-  public void createCollection(String collectionName) {
+  public static void createCollection(String collectionName) {
     mongoDatabase.createCollection(collectionName);
   }
 
