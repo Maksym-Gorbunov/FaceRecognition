@@ -130,7 +130,7 @@ public class Page5 extends JPanel implements Pages {
 
   ////////////////////////// RECOGNITION //////////////////////////
   // Source path content images
-  static String IMG_PATH = Constants.projectPath+"\\img\\";
+//  static String IMG_PATH = Constants.projectPath+"\\img\\";
   static String TESS_DATA = Constants.projectPath+"\\lib\\tesseract-OCR\\";    // path to Tesseract-OCR eng.trainedata
 
   // Create tess obj
@@ -148,11 +148,11 @@ public class Page5 extends JPanel implements Pages {
 
     // Convert to gray scale
     cvtColor(inputMat, gray, COLOR_BGR2GRAY);
-    imwrite(IMG_PATH + FilenameUtils.removeExtension(fileName) + "_gray.png", gray);
+    imwrite(Constants.imgPath + FilenameUtils.removeExtension(fileName) + "_gray.png", gray);
 
     try {
       // Recognize text with OCR
-      result = tesseract.doOCR(new File(IMG_PATH + FilenameUtils.removeExtension(fileName) +"_gray.png"));
+      result = tesseract.doOCR(new File(Constants.imgPath + FilenameUtils.removeExtension(fileName) +"_gray.png"));
     } catch (TesseractException e) {
       e.printStackTrace();
     }
