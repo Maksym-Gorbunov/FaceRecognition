@@ -2,6 +2,7 @@ package com.pages.page8;
 
 import com.gui.Gui;
 import com.pages.Pages;
+import com.pages.page8.Webcam;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -15,8 +16,10 @@ public class Page8 extends JPanel implements Pages {
     private Webcam webcam = new Webcam();
     private JButton startBtn = new JButton("Start");
     private JButton pauseBtn = new JButton("Pause");
-    private JButton binaryFilter = new JButton("Binary Filter");
-    private JButton filterOffBtn = new JButton("FilterOff");
+    private JButton grayFilterBtn = new JButton("GrayFilter");
+    private JButton binaryFilterBtn = new JButton("BinaryFilter");
+    private JButton hsvFilterBtn = new JButton("HsvFilter");
+    private JButton filtersOffBtn = new JButton("FiltersOFF");
     private boolean filtering = false;
 
 
@@ -45,19 +48,35 @@ public class Page8 extends JPanel implements Pages {
             }
         });
 
-        binaryFilter.addActionListener(new ActionListener() {
+        grayFilterBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                webcam.setFilter("gray");
+                webcam.setFilter(Webcam.Filter.GRAY);
             }
         });
 
-        filterOffBtn.addActionListener(new ActionListener() {
+        binaryFilterBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                webcam.setFilter("hsv");
+                webcam.setFilter(Webcam.Filter.BINARY);
             }
         });
+
+        hsvFilterBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                webcam.setFilter(Webcam.Filter.HSV);
+            }
+        });
+
+        filtersOffBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                webcam.setFilter(Webcam.Filter.OFF);
+            }
+        });
+
+
     }
 
 
@@ -69,7 +88,9 @@ public class Page8 extends JPanel implements Pages {
         mainPanel.add(webcam);
         btnPanel.add(startBtn);
         btnPanel.add(pauseBtn);
-        btnPanel.add(binaryFilter);
-        btnPanel.add(filterOffBtn);
+        btnPanel.add(grayFilterBtn);
+        btnPanel.add(binaryFilterBtn);
+        btnPanel.add(hsvFilterBtn);
+        btnPanel.add(filtersOffBtn);
     }
 }

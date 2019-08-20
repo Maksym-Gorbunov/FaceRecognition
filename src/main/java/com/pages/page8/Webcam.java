@@ -21,17 +21,22 @@ public class Webcam extends JPanel implements Runnable {
     private CvScalar minc;
     private CvScalar maxc;
     private BufferedImage buffImg;
-    private String filter = "original";
+    private Filter filter;
+
+    public static enum Filter{
+        GRAY, HSV, BINARY, OFF
+    }
 
 
     public Webcam() {
         setPreferredSize(new Dimension(width, height));
         minc = cvScalar(20, 100, 100, 0);
         maxc = cvScalar(60, 160, 160, 0);
+        filter = Filter.OFF;
     }
 
-    public void setFilter(String filterName) {
-        filter = filterName;
+    public void setFilter(Filter filter) {
+        this.filter = filter;
     }
 
     @Override
@@ -48,17 +53,17 @@ public class Webcam extends JPanel implements Runnable {
                 //draw each image on JPanel
                 cvInRangeS(hsvImg, minc, maxc, binImg);
                 switch (filter) {
-                    case "original":
+                    case OFF:
                         buffImg = img.getBufferedImage();
                         break;
-                    case "binary":
+                    case BINARY:
                         buffImg = binImg.getBufferedImage();
                         break;
-                    case "hsv":
+                    case HSV:
                         cvCvtColor(img, hsvImg, CV_BGR2HSV);
                         buffImg = hsvImg.getBufferedImage();
                         break;
-                    case "gray":
+                    case GRAY:
                         grayImg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
                         cvCvtColor(img, grayImg, CV_BGR2GRAY);
                         buffImg = grayImg.getBufferedImage();
