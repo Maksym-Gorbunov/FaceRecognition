@@ -11,14 +11,13 @@ import java.awt.image.BufferedImage;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2HSV;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 public class Webcam extends JPanel implements Runnable {
   protected volatile boolean runnable = false;
   private int width = Constants.VIDEO_WIDTH;
   private int height = Constants.VIDEO_HEIGHT;
-  private IplImage img, imgHsv, imgBin;
+  private IplImage img, hsvImg, binImg, grayImg;
   private CvCapture capture;
   private String filter = "original";
 
@@ -29,25 +28,39 @@ public class Webcam extends JPanel implements Runnable {
   @Override
   public void run() {
     synchronized (this) {
-      imgHsv = cvCreateImage(cvSize(width, height), 8, 3);
-      imgBin = cvCreateImage(cvSize(width, height), 8, 1);
+      hsvImg = cvCreateImage(cvSize(width, height), 8, 3);
+      binImg = cvCreateImage(cvSize(width, height), 8, 1);
       capture = cvCreateCameraCapture(CV_CAP_ANY);
       while (runnable) {
         img = cvQueryFrame(capture);
         if (img == null) {
           break;
         }
-        // hsv filter
-        cvCvtColor(img, imgHsv, CV_BGR2HSV);
+
+        //hsv filter
+        cvCvtColor(img, hsvImg, CV_BGR2HSV);
+
+        //color filter
         opencv_core.CvScalar minc = cvScalar(20, 100, 100, 0);
         opencv_core.CvScalar maxc = cvScalar(60, 160, 160, 0);
-        cvInRangeS(imgHsv, minc, maxc, imgBin);
+        cvInRangeS(hsvImg, minc, maxc, binImg);
 
-        // draw each image on JPanel
+        //gray filter
+        grayImg = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 1);
+        cvCvtColor(img, grayImg, CV_BGR2GRAY);
+
+        //draw each image on JPanel
         BufferedImage buff;
         if (filter.equals("binary")) {
-          buff = imgHsv.getBufferedImage();
-//          buff = imgBin.getBufferedImage();
+          buff = grayImg.getBufferedImage();
+          //toDo add extra methods for each filter
+          //toDo add moments
+          // blue/green btn
+          // factory object recognition as on video, left item selected
+          // countur size experiment
+
+//          buff = hsvImg.getBufferedImage();
+//          buff = binImg.getBufferedImage();
         } else {
           buff = img.getBufferedImage();
         }
@@ -57,8 +70,8 @@ public class Webcam extends JPanel implements Runnable {
                 buff.getWidth(), buff.getHeight(), null);
         if (!runnable) {
 //          cvReleaseImage(img);
-//          cvReleaseImage(imgHsv);
-//          cvReleaseImage(imgBin);
+//          cvReleaseImage(hsvImg);
+//          cvReleaseImage(binImg);
           cvReleaseCapture(capture);
           break;
         }
@@ -90,12 +103,12 @@ public class Webcam extends JPanel implements Runnable {
     return img;
   }
 
-  public IplImage getImgHsv() {
-    return imgHsv;
+  public IplImage getHsvImg() {
+    return hsvImg;
   }
 
-  public IplImage getImgBin() {
-    return imgBin;
+  public IplImage getBinImg() {
+    return binImg;
   }
 
 
