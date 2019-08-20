@@ -68,5 +68,4 @@ public class Page7 extends JPanel implements Pages {
 
   }
 
-
 }
