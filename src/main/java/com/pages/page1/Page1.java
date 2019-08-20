@@ -23,14 +23,17 @@ public class Page1 extends JPanel implements Pages {
   private Gui gui;
   private JPanel tab1;
   private JPanel mainPanel = new JPanel();
-  private JPanel buttonsPanel = new JPanel();
-  private JButton startButton = new JButton("Start");
-  private JButton pauseButton = new JButton("Pause");
-  private JButton testButton = new JButton("Test");
+  private JPanel btnPanel = new JPanel();
+  private JButton startBtn = new JButton("Start");
+  private JButton pauseBtn = new JButton("Pause");
+  private JButton momentBtn = new JButton("Moment");
+  private JButton testBtn = new JButton("Test");
   private JPanel webcamPanel = new JPanel();
   private Graphics graphics;
   private boolean status = false;
   private Color defaultPanelColor;
+  private Moment moment;
+  private boolean showMoment = false;
 
   public Page1(final Gui gui) {
     this.gui = gui;
@@ -43,26 +46,29 @@ public class Page1 extends JPanel implements Pages {
 
     ///////////////////////////////////////////////////////////////
     mainPanel.setBackground(Color.blue);
-    buttonsPanel.setBackground(Color.green);
+    btnPanel.setBackground(Color.green);
     ///////////////////////////////////////////////////////////////
 
     webcamPanel.setPreferredSize(new Dimension(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT));
     mainPanel.add(webcamPanel);
 
-    buttonsPanel.add(startButton);
-    buttonsPanel.add(pauseButton);
-    buttonsPanel.add(testButton);
+    btnPanel.add(startBtn);
+    btnPanel.add(pauseBtn);
+    btnPanel.add(testBtn);
+    btnPanel.add(momentBtn);
+    momentBtn.setEnabled(false);
 
     tab1.add(mainPanel);
-    tab1.add(buttonsPanel);
-    mainPanel.setPreferredSize(new Dimension(800,500));
-    buttonsPanel.setPreferredSize(new Dimension(800,100));
+    tab1.add(btnPanel);
+    mainPanel.setPreferredSize(new Dimension(800, 500));
+    btnPanel.setPreferredSize(new Dimension(800, 100));
     defaultPanelColor = webcamPanel.getBackground();
-    pauseButton.setEnabled(false);
+    pauseBtn.setEnabled(false);
   }
 
   private void addListeners() {
-    startButton.addActionListener(new ActionListener() {
+
+    startBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         System.out.println("Start...");
@@ -72,27 +78,47 @@ public class Page1 extends JPanel implements Pages {
         t.setDaemon(true);
         myThread.runnable = true;
         t.start();
-        startButton.setEnabled(false);
-        pauseButton.setEnabled(true);
-        testButton.setEnabled(false);
+        startBtn.setEnabled(false);
+        pauseBtn.setEnabled(true);
+        testBtn.setEnabled(false);
+        momentBtn.setEnabled(false);
         gui.getTabs().setEnabled(false);
       }
     });
 
-    pauseButton.addActionListener(new ActionListener() {
+    pauseBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         System.out.println("Pause...");
         myThread.runnable = false;
-        pauseButton.setEnabled(false);
-        startButton.setEnabled(true);
+        pauseBtn.setEnabled(false);
+        startBtn.setEnabled(true);
+        momentBtn.setEnabled(true);
         webSource.release();
-        testButton.setEnabled(true);
+        testBtn.setEnabled(true);
         gui.getTabs().setEnabled(true);
       }
     });
 
-    testButton.addActionListener(new ActionListener() {
+    momentBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showMoment = !showMoment;
+        if (showMoment) {
+          startBtn.setEnabled(false);
+          moment = new Moment(webcamPanel);
+          Thread t = new Thread(moment);
+          t.setDaemon(true);
+          moment.runnable = true;
+          t.start();
+        } else {
+          moment.runnable = false;
+          startBtn.setEnabled(true);
+        }
+      }
+    });
+
+    testBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         status = !status;
