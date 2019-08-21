@@ -35,8 +35,8 @@ public class Gui extends JFrame {
     setResizable(false);
     setVisible(true);
 
-    createMenuBar();
     initComponents();
+    createMenuBar();
 
 //    System.out.println(Gui.this.getJMenuBar().getHeight());
   }
@@ -97,7 +97,7 @@ public class Gui extends JFrame {
       @Override
       public void actionPerformed(ActionEvent arg0) {
         int action = JOptionPane.showConfirmDialog(Gui.this, Constants.EXIT_WARNING);
-        if(action == JOptionPane.OK_OPTION){
+        if (action == JOptionPane.OK_OPTION) {
           System.gc();
           System.exit(0);
         }

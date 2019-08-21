@@ -133,6 +133,7 @@ public class Page1 extends JPanel implements Pages {
 
   }
 
+
   // definitions
   private DaemonThread myThread = null;
   int count = 0;
