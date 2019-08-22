@@ -7,8 +7,8 @@ import com.pages.page3.Page3;
 import com.pages.page4.Page4;
 import com.pages.page5.Page5;
 import com.pages.page6.Page6;
-//import com.pages.Page7.Page7;
-//import com.pages.page8.Page8;
+import com.pages.Page7.Page7;
+import com.pages.page8.Page8;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -25,8 +25,8 @@ public class Gui extends JFrame {
   private JPanel tab4;
   private JPanel tab5;
   private JPanel tab6;
-//  private JPanel tab7;
-//  private JPanel tab8;
+  private JPanel tab7;
+  private JPanel tab8;
 
   public Gui() {
     super("Application");
@@ -49,8 +49,8 @@ public class Gui extends JFrame {
     tab4 = new JPanel();
     tab5 = new JPanel();
     tab6 = new JPanel();
-//    tab7 = new JPanel();
-//    tab8 = new JPanel();
+    tab7 = new JPanel();
+    tab8 = new JPanel();
     //////////////////////////////////////////////////////////////////////
     tab1.setBackground(Color.CYAN);
     tab2.setBackground(Color.CYAN);
@@ -58,8 +58,8 @@ public class Gui extends JFrame {
     tab4.setBackground(Color.CYAN);
     tab5.setBackground(Color.CYAN);
     tab6.setBackground(Color.CYAN);
-//    tab7.setBackground(Color.CYAN);
-//    tab8.setBackground(Color.CYAN);
+    tab7.setBackground(Color.CYAN);
+    tab8.setBackground(Color.CYAN);
     //////////////////////////////////////////////////////////////////////
     tabs.addTab("Webbcam", tab1);
     tabs.addTab("Mongo CRUD", tab2);
@@ -67,8 +67,8 @@ public class Gui extends JFrame {
     tabs.addTab("Webbcam Recognition", tab4);
     tabs.addTab("Text Recognition", tab5);
     tabs.addTab("Image Manipulations", tab6);
-//    tabs.addTab("Video Manipulations", tab7);
-//    tabs.addTab("VIDEO", tab8);
+    tabs.addTab("Empty", tab7);
+    tabs.addTab("VIDEO", tab8);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
@@ -77,10 +77,10 @@ public class Gui extends JFrame {
     tab4 = new Page4(Gui.this);
     tab5 = new Page5(Gui.this);
     tab6 = new Page6(Gui.this);
-//    tab7 = new Page7(Gui.this);
-//    tab8 = new Page8(Gui.this);
+    tab7 = new Page7(Gui.this);
+    tab8 = new Page8(Gui.this);
 
-//    tabs.setSelectedIndex(7);
+    tabs.setSelectedIndex(7);
   }
 
   private void createMenuBar() {
@@ -132,11 +132,11 @@ public class Gui extends JFrame {
     return tab6;
   }
 
-//  public JPanel getTab7() {
-//    return tab7;
-//  }
+  public JPanel getTab7() {
+    return tab7;
+  }
 
-//  public JPanel getTab8() {
-//    return tab8;
-//  }
+  public JPanel getTab8() {
+    return tab8;
+  }
 }
