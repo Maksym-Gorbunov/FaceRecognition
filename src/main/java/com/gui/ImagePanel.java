@@ -1,8 +1,11 @@
  package com.gui;
 
+ import org.bytedeco.javacpp.opencv_core;
+
  import javax.swing.*;
  import java.awt.*;
  import java.io.File;
+ import java.awt.image.BufferedImage;
 
 //import com.recognition.image.constants.Constants;
 
@@ -36,6 +39,19 @@
    public void loadImage(File file) {
      this.transformedImageIcon = new ImageIcon(file.getAbsolutePath());
      Image image = transformedImageIcon.getImage();
+     updadeImage(image);
+   }
+
+   public void clear() {
+     imageLabel.setIcon(null);
+   }
+
+   // load image to ImagePanel without extra savers
+   public void loadIplImage(opencv_core.IplImage filteredImage) {
+//     BufferedImage img1 = IplImageToBufferedImage(filteredImage);
+    BufferedImage img1 = filteredImage.getBufferedImage();
+     ImageIcon icon = new ImageIcon(img1);
+     Image image = icon.getImage();
      updadeImage(image);
    }
  }

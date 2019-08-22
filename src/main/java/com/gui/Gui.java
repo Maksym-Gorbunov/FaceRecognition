@@ -6,7 +6,7 @@ import com.pages.page2.Page2;
 import com.pages.page3.Page3;
 import com.pages.page4.Page4;
 import com.pages.page5.Page5;
-//import com.pages.page6.Page6;
+import com.pages.page6.Page6;
 //import com.pages.Page7.Page7;
 //import com.pages.page8.Page8;
 
@@ -35,7 +35,6 @@ public class Gui extends JFrame {
     setLocationRelativeTo(this);
     setResizable(false);
     setVisible(true);
-
     createMenuBar();
     initComponents();
   }
@@ -77,7 +76,7 @@ public class Gui extends JFrame {
     tab3 = new Page3(Gui.this);
     tab4 = new Page4(Gui.this);
     tab5 = new Page5(Gui.this);
-//    tab6 = new Page6(Gui.this);
+    tab6 = new Page6(Gui.this);
 //    tab7 = new Page7(Gui.this);
 //    tab8 = new Page8(Gui.this);
 
