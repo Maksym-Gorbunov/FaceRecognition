@@ -11,11 +11,11 @@ public class VideoProcessing {
 
   /**
    * @param args
-   * play video from file or webbcam and grayscale
+   * play video from file or webbcam and greyscale
    */
   public static void main(String[] args) {
     //play video file
-    CvCapture capture = cvCreateFileCapture(Constants.videoPath+"halo.mp4");
+    CvCapture capture = cvCreateFileCapture(Constants.videoPath+"Halo.mp4");
 
     //play webbcam
     //CvCapture capture = cvCreateCameraCapture(CV_CAP_ANY);
@@ -30,6 +30,7 @@ public class VideoProcessing {
     for (; ; ) {
       frame = cvQueryFrame(capture);
       if (frame == null) {
+        // if no file
         System.out.println("ERROR: NO Video File");
         break;
       }

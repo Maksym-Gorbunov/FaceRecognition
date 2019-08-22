@@ -58,6 +58,8 @@ public class Page2 extends JPanel implements Pages {
 
     populateMenuBar();
 
+    contactBook.populateContactBook();
+    populateComboBox();
   }
 
   private void populateComboBox() {
@@ -197,16 +199,14 @@ public class Page2 extends JPanel implements Pages {
 
   public void populateMenuBar() {
     JMenu fileMenu = gui.getJMenuBar().getMenu(0);
-    JMenuItem mongoRefresh = new JMenuItem("Connect MongoDB");
+    JMenuItem mongoRefresh = new JMenuItem("Mongo refresh");
     fileMenu.add(mongoRefresh);
 
     mongoRefresh.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-//        contactBook.connect();
         contactBook.populateContactBook();
         populateComboBox();
-        mongoRefresh.setEnabled(false);
         gui.getTabs().setSelectedComponent(tab2);
       }
     });

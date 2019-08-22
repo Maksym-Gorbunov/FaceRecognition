@@ -15,7 +15,7 @@ import java.io.File;
 
 
 // Image face recognition, OpenCV
-public class Page3 extends JPanel implements Pages {
+public class Page3  extends JPanel implements Pages {
   private static final long serialVersionUID = 1L;
   private Gui gui;
   private JPanel tab3;
@@ -26,9 +26,6 @@ public class Page3 extends JPanel implements Pages {
   private JFileChooser fileChooser;
   private FaceDetection faceDetection;
   private File file;
-  private JMenuItem loadMenuItem;
-  private JMenuItem detectMenuItem;
-
 
   public Page3(final Gui gui) {
     this.gui = gui;
@@ -42,14 +39,14 @@ public class Page3 extends JPanel implements Pages {
   }
 
   private void initComponents() {
+//    imagePanel.setPreferredSize(new Dimension(Constants.VIDEO_WIDTH,Constants.VIDEO_HEIGHT));
     tab3.add(imagePanel, new GridConstraints());
   }
 
   public void populateMenuBar(){
     JMenu fileMenu = gui.getJMenuBar().getMenu(0);
-    loadMenuItem = new JMenuItem("Load image");
-    detectMenuItem = new JMenuItem("Detect faces");
-    detectMenuItem.setEnabled(false);
+    JMenuItem loadMenuItem = new JMenuItem("Load image");
+    JMenuItem detectMenuItem = new JMenuItem("Detect faces");
     fileMenu.add(loadMenuItem);
     fileMenu.add(detectMenuItem);
 
@@ -62,7 +59,6 @@ public class Page3 extends JPanel implements Pages {
           System.out.println("Image url: " + file);
           imagePanel.loadImage(file);
           gui.getTabs().setSelectedComponent(tab3);
-          detectMenuItem.setEnabled(true);
         }
       }
     });
