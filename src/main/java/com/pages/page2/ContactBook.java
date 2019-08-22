@@ -1,6 +1,6 @@
 package com.pages.page2;
 
-import com.db.DB;
+import com.db.MongoDB;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -9,16 +9,20 @@ import java.util.List;
 
 public class ContactBook {
   private List<Contact> contacts = new ArrayList<>();
-  private DB db = new DB();
+//  private MongoDB db;
+
+//  public void connect(){
+//    db = new MongoDB();
+//  }
 
   public void add(Contact contact) {
     contacts.add(contact);
-    db.insertContact(contact);
+    MongoDB.insertContact(contact);
   }
 
   public void remove(Contact contact) {
     contacts.remove(contact);
-    db.deleteContact(contact);
+    MongoDB.deleteContact(contact);
   }
 
   public List<Contact> getContacts() {
@@ -32,7 +36,7 @@ public class ContactBook {
   }
 
   public void populateContactBook() {
-    List<Document> result = db.getAllDocuments();
+    List<Document> result = MongoDB.getAllDocuments();
     for(Document document : result){
       Contact contact = new Contact();
       contact.set_id((ObjectId) document.get("_id"));
@@ -51,6 +55,6 @@ public class ContactBook {
       c.setPhone(contact.getPhone());
       c.setEmail(contact.getEmail());
     });
-    db.updateContact(contact);
+    MongoDB.updateContact(contact);
   }
 }
