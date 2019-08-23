@@ -19,7 +19,9 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
+
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
@@ -76,7 +78,7 @@
 
 
 
-    </dependencies>
+</dependencies>
 
 
 </project>

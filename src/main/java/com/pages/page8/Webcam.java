@@ -1,28 +1,26 @@
 package com.pages.page8;
 
 import com.constants.Constants;
-import com.gui.ImagePanel;
 import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.*;
 import org.bytedeco.javacpp.opencv_highgui;
-//import org.bytedeco.javacpp.opencv_videoio.*;
-import org.opencv.core.Point;
-
+//import org.opencv.core.Point;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-
 import static org.bytedeco.javacpp.helper.opencv_core.CV_RGB;
-//import static org.bytedeco.javacpp.helper.opencv_core.RGB;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-//import static org.bytedeco.javacpp.opencv_videoio.*;
-//import static org.bytedeco.javacpp.opencv_imgcodecs.*;
-//import static org.apache.pdfbox.rendering.ImageType.RGB;
-//import com.googlecode.javacv.cpp.opencv_core.CvPoint;
-//import org.bytedeco.javacpp.;
-//import java.awt.Color;
+
+// for objects method
+//import static org.bytedeco.javacpp.opencv_core.CV_RGB;
+import static org.bytedeco.javacpp.opencv_core.Scalar;
+import static org.bytedeco.javacpp.opencv_core.Point;
+import static org.bytedeco.javacpp.opencv_core.CvBox2D;
+import org.bytedeco.javacpp.opencv_core.RotatedRect;
+
 
 public class Webcam extends JPanel implements Runnable {
 
@@ -38,8 +36,9 @@ public class Webcam extends JPanel implements Runnable {
 
   private CvSeq contour1;
   private CvSeq contour2;
+  private CvSeq contour3;
   private CvMemStorage storage;
-  private CvMemStorage mem;
+//  private CvMemStorage mem;
   private double areaMax;
   private double areaC;
   private CvMoments moments;
@@ -72,10 +71,11 @@ public class Webcam extends JPanel implements Runnable {
       if (runnable) {
         //contours
         contour1 = new CvSeq();
+//        contour3 = new CvSeq();
         storage = CvMemStorage.create();
 
         //objects
-        mem = CvMemStorage.create();
+//        mem = CvMemStorage.create();
 //        storage = CvMemStorage.create();
 
         areaC = 0;
@@ -146,43 +146,51 @@ public class Webcam extends JPanel implements Runnable {
 
 
   private void objects() {
-    /*
-    grayImg = cvCreateImage(cvSize(width, height), 8, 1);
-    cvCvtColor(img, grayImg, CV_BGR2GRAY);
-//    buffImg = grayImg.getBufferedImage();
+    IplImage gray = cvCreateImage(cvSize(width, height), 8, 1);
+    cvCvtColor(img, gray, CV_BGR2GRAY);
 
-//    IplImage gray = toGray(img.clone());
-    cvSmooth(grayImg, grayImg, 3, 7, 7, 3, 3);
-    cvThreshold(grayImg, grayImg, 150, 255, 1);
 
+    cvSmooth(gray, gray, 3, 7, 7, 3, 3);
+    cvThreshold(gray, gray, 150, 255, 1);
 //    CvMemStorage mem = CvMemStorage.create();
-//    CvSeq contours = new CvSeq();
-    cvFindContours(grayImg, mem, contour1, Loader.sizeof(CvContour.class) , RETR_EXTERNAL , CHAIN_APPROX_SIMPLE );
-    cvDrawContours(grayImg, contour1, CvScalar.WHITE, CvScalar.WHITE, 3, -1, 0);
+    CvSeq contour3 = new CvSeq();
+    cvFindContours(gray, storage, contour3, Loader.sizeof(CvContour.class) , RETR_EXTERNAL , CHAIN_APPROX_SIMPLE );
+    cvDrawContours(gray, contour3, CvScalar.WHITE, CvScalar.WHITE, 3, -1, 0);
+    CvMemStorage storage = CvMemStorage.create();
     Point minleft = new Point(0, 0);
-    while (contour1 != null && !contour1.isNull() && contour1.elem_size() > 0) {
-      CvBox2D box = cvMinAreaRect2(contour1, storage);
+    while (contour3 != null && !contour3.isNull() && contour3.elem_size() > 0) {
+      CvBox2D box = cvMinAreaRect2(contour3, storage);
       CvSize2D32f size = box.size();
       if (size.width() > 50 && size.height() > 50) {
         if (box != null) {
 
-          CvBox2D box1 = cvFitEllipse2(contour1);
-          ellipse(cvarrToMat(img), box1.center(),RGB(1,1, 255), -1, 0);
+          CvBox2D box1 = cvFitEllipse2(contour3);
+          RotatedRect rotatedRect = new RotatedRect(box1);
+//          Scalar color1 = RGB(1,1, 255);
+          Scalar color1 = new Scalar(1,1, 255,0);
+          ellipse(cvarrToMat(img), rotatedRect, color1, -1, 0);
 //          ellipse(cvarrToMat(img), box1.asRotatedRect(),RGB(1,1, 255), -1, 0);
-          Scalar c = RGB(1,255, 0);
-          if (minleft.x() == 0 || minleft.x() > box.center().x()) {
-            minleft.x((int) box.center().x());
-            minleft.y((int) box.center().y());
-          }
-          circle(cvarrToMat(img), new Point(Math.round(box.center().x()), Math.round(box.center().y())), 10, c, CV_FILLED, CV_AA, 0);
+//          Scalar c = RGB(1,255, 0);
+
+
+
+
+//          Scalar color2 = new Scalar(1,255, 0,0);
+//          if (minleft.x() == 0 || minleft.x() > box.center().x()) {
+//            minleft.x((int) box.center().x());
+//            minleft.y((int) box.center().y());
+//          }
+//          circle(cvarrToMat(img), new Point(Math.round(box.center().x()), Math.round(box.center().y())),
+//                  10, color2, CV_FILLED, CV_AA, 0);
         }
       }
-      contour1 = contour1.h_next();
+      contour3 = contour3.h_next();
     }
-    circle(cvarrToMat(img), minleft, 10, RGB(255,0, 0), CV_FILLED, CV_AA, 0);
+//    Scalar color3 = new Scalar(255,0,0,0);
+//    circle(cvarrToMat(img), minleft, 10, color3, CV_FILLED, CV_AA, 0);
 
     buffImg = img.getBufferedImage();
-    */
+
   }
 
 
@@ -257,7 +265,6 @@ public class Webcam extends JPanel implements Runnable {
     buffImg = binImg.getBufferedImage();
   }
 
-
   public void on() {
     Thread thread = new Thread(this);
     thread.setDaemon(true);
@@ -265,11 +272,9 @@ public class Webcam extends JPanel implements Runnable {
     thread.start();
   }
 
-
   public void off() {
     runnable = false;
   }
-
 
   public Filter getFilter() {
     return filter;
