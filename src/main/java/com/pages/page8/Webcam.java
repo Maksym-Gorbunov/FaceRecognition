@@ -154,7 +154,9 @@ public class Webcam extends JPanel implements Runnable {
     cvThreshold(gray, gray, 150, 255, 1);
 //    CvMemStorage mem = CvMemStorage.create();
     CvSeq contour3 = new CvSeq();
-    cvFindContours(gray, storage, contour3, Loader.sizeof(CvContour.class) , RETR_EXTERNAL , CHAIN_APPROX_SIMPLE );
+    cvFindContours(gray, storage, contour3, Loader.sizeof(CvContour.class),
+            CV_RETR_LIST, CV_LINK_RUNS, cvPoint(0, 0) );
+//    cvFindContours(gray, storage, contour3, Loader.sizeof(CvContour.class) , RETR_EXTERNAL , CHAIN_APPROX_SIMPLE );
     cvDrawContours(gray, contour3, CvScalar.WHITE, CvScalar.WHITE, 3, -1, 0);
     CvMemStorage storage = CvMemStorage.create();
     Point minleft = new Point(0, 0);
@@ -162,26 +164,27 @@ public class Webcam extends JPanel implements Runnable {
       CvBox2D box = cvMinAreaRect2(contour3, storage);
       CvSize2D32f size = box.size();
       if (size.width() > 50 && size.height() > 50) {
+//      if ((size.width() > 50 && size.height() > 50) && (size.width() < 100 && size.height() < 100)) {
         if (box != null) {
 
           CvBox2D box1 = cvFitEllipse2(contour3);
           RotatedRect rotatedRect = new RotatedRect(box1);
-//          Scalar color1 = RGB(1,1, 255);
-          Scalar color1 = new Scalar(1,1, 255,0);
-          ellipse(cvarrToMat(img), rotatedRect, color1, -1, 0);
-//          ellipse(cvarrToMat(img), box1.asRotatedRect(),RGB(1,1, 255), -1, 0);
-//          Scalar c = RGB(1,255, 0);
+                                  // B, R, G
+//          Scalar color1 = new Scalar(255,0, 0,0);
+//          ellipse(cvarrToMat(img), rotatedRect, color1, -1, 0);
+
+          cvCircle(img, cvPoint((int) box1.center().x(), (int) box1.center().y()),
+                  5, cvScalar(255, 0, 0, 0), 20, 0, 0);
 
 
 
-
-//          Scalar color2 = new Scalar(1,255, 0,0);
-//          if (minleft.x() == 0 || minleft.x() > box.center().x()) {
-//            minleft.x((int) box.center().x());
-//            minleft.y((int) box.center().y());
-//          }
-//          circle(cvarrToMat(img), new Point(Math.round(box.center().x()), Math.round(box.center().y())),
-//                  10, color2, CV_FILLED, CV_AA, 0);
+          Scalar color2 = new Scalar(1,255, 0,0);
+          if (minleft.x() == 0 || minleft.x() > box.center().x()) {
+            minleft.x((int) box.center().x());
+            minleft.y((int) box.center().y());
+          }
+          circle(cvarrToMat(img), new Point(Math.round(box.center().x()), Math.round(box.center().y())),
+                  10, color2, CV_FILLED, CV_AA, 0);
         }
       }
       contour3 = contour3.h_next();
@@ -190,6 +193,7 @@ public class Webcam extends JPanel implements Runnable {
 //    circle(cvarrToMat(img), minleft, 10, color3, CV_FILLED, CV_AA, 0);
 
     buffImg = img.getBufferedImage();
+//    buffImg = gray.getBufferedImage();
 
   }
 
