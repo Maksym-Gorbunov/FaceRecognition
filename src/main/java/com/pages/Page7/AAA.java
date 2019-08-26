@@ -2,9 +2,7 @@ package com.pages.Page7;
 
 import com.constants.Constants;
 import org.bytedeco.javacpp.opencv_core;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.bytedeco.javacpp.opencv_core.*;
@@ -17,8 +15,8 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
-
-
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class AAA {
@@ -37,9 +35,10 @@ public class AAA {
     Imgproc.Canny(gray, edges, threshold, threshold*3);
     edges.convertTo(draw, CvType.CV_8U);
 
+    List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+    Mat hierarchy = new Mat();
 
-
-//    Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+    Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
 
 
