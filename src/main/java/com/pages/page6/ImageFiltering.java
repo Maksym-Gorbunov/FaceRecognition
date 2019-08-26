@@ -1,19 +1,21 @@
 package com.pages.page6;
 
+import com.constants.Constants;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
 //import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.opencv.core.Mat;
 
-
-import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core;
+import org.opencv.core.CvType;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
-import static org.bytedeco.javacpp.opencv_core.*;
 //import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+
 
 public class ImageFiltering {
 
@@ -21,6 +23,7 @@ public class ImageFiltering {
   private IplImage grayImg;
   private IplImage hsvImg;
   private IplImage binImg;
+  private String filePath;
   private int totalContours;
   private opencv_core.CvScalar minScale;
   private opencv_core.CvScalar maxScale;
@@ -97,6 +100,22 @@ public class ImageFiltering {
     return grayImg;
   }
 
+
+  //Edge filter
+  public Mat edgeFilter(String filePath){
+    Mat imgMat = Imgcodecs.imread(filePath);
+//    Mat imgMat = Imgcodecs.imread(Constants.imgPath+"car3.png");
+
+    Mat grayMat = new Mat();
+    Mat drawMat = new Mat();
+    Mat edgeMat = new Mat();
+
+    Imgproc.cvtColor(imgMat, grayMat, Imgproc.COLOR_BGR2GRAY);
+    Imgproc.Canny(grayMat, edgeMat, 50, 150, 3, false);
+    edgeMat.convertTo(drawMat, CvType.CV_8U);
+
+    return drawMat;
+  }
 
   // HSV filter
   public IplImage hsvFilter() {

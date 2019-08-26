@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 import org.bytedeco.javacpp.opencv_core.*;
+import org.opencv.core.Mat;
 
 
 public class Page6 extends JPanel implements Pages {
@@ -28,6 +29,7 @@ public class Page6 extends JPanel implements Pages {
   private JButton loadBtn;
   private JButton filterBtn;
   private JButton grayBtn;
+  private JButton edgeBtn;
   private JButton hsvBtn;
   private JButton contoursBtn;
   private JButton maxContourBtn;
@@ -42,6 +44,8 @@ public class Page6 extends JPanel implements Pages {
   private boolean filterImagesCreated;
   private int totalContours;
   private IplImage grayImg;
+  private Mat edgeImg;
+//  private IplImage edgeImg;
   private IplImage hsvImg;
   private IplImage contoursImg;
   private IplImage maxContourImg;
@@ -111,6 +115,14 @@ public class Page6 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         imagePanel2.loadIplImage(grayImg);
         activeBtn = grayBtn;
+        turnOnActiveButton();
+      }
+    });
+    edgeBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        imagePanel2.loadMatImage(edgeImg);
+        activeBtn = edgeBtn;
         turnOnActiveButton();
       }
     });
@@ -184,6 +196,7 @@ public class Page6 extends JPanel implements Pages {
     filter.setImagePath(imgPath);
 
     grayImg = filter.grayFilter();
+    edgeImg = filter.edgeFilter(file.getAbsolutePath());
     hsvImg = filter.hsvFilter();
     contoursImg = filter.contoursFilter();
     maxContourImg = filter.maxContourFilter();
@@ -237,6 +250,7 @@ public class Page6 extends JPanel implements Pages {
 //    filterBtn.setForeground(Color.white);
 
     grayBtn = new JButton("gray");
+    edgeBtn = new JButton("edge");
     hsvBtn = new JButton("hsv");
     maxContourBtn = new JButton("max contour");
     contoursBtn = new JButton("contours");
@@ -258,6 +272,7 @@ public class Page6 extends JPanel implements Pages {
     btnPanel1.add(loadBtn);
     btnPanel1.add(filterBtn);
     btnPanel2.add(grayBtn);
+    btnPanel2.add(edgeBtn);
     btnPanel2.add(hsvBtn);
     btnPanel2.add(contoursBtn);
     btnPanel2.add(maxContourBtn);
@@ -280,6 +295,7 @@ public class Page6 extends JPanel implements Pages {
 
   public void turnOnFilterButtons() {
     grayBtn.setEnabled(true);
+    edgeBtn.setEnabled(true);
     hsvBtn.setEnabled(true);
     contoursBtn.setEnabled(true);
     maxContourBtn.setEnabled(true);
@@ -287,6 +303,7 @@ public class Page6 extends JPanel implements Pages {
 
   public void turnOffFilterButtons() {
     grayBtn.setEnabled(false);
+    edgeBtn.setEnabled(false);
     hsvBtn.setEnabled(false);
     contoursBtn.setEnabled(false);
     maxContourBtn.setEnabled(false);

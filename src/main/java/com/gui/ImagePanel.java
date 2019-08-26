@@ -2,12 +2,17 @@
 
  import org.bytedeco.javacpp.opencv_core;
 
+ import javax.imageio.ImageIO;
  import javax.swing.*;
  import java.awt.*;
+ import java.io.ByteArrayInputStream;
  import java.io.File;
  import java.awt.image.BufferedImage;
 
 //import com.recognition.image.constants.Constants;
+ import org.opencv.core.Mat;
+ import org.opencv.core.MatOfByte;
+ import org.opencv.imgcodecs.Imgcodecs;
 
  public class ImagePanel extends JPanel{
    private static final long serialVersionUID = 1L;
@@ -54,4 +59,30 @@
      Image image = icon.getImage();
      updadeImage(image);
    }
+
+
+   public void loadMatImage(Mat filteredImage) {
+//     BufferedImage img1 = IplImageToBufferedImage(filteredImage);
+     BufferedImage img1 = null;
+     try {
+       img1 = Mat2BufferedImage(filteredImage);
+     } catch (Exception e) {
+       e.printStackTrace();
+     }
+//     BufferedImage img1 = filteredImage.getBufferedImage();
+     ImageIcon icon = new ImageIcon(img1);
+     Image image = icon.getImage();
+     updadeImage(image);
+   }
+
+
+   static BufferedImage Mat2BufferedImage(Mat matrix)throws Exception {
+     MatOfByte mob=new MatOfByte();
+     Imgcodecs.imencode(".jpg", matrix, mob);
+     byte ba[]=mob.toArray();
+
+     BufferedImage bi= ImageIO.read(new ByteArrayInputStream(ba));
+     return bi;
+   }
+
  }
