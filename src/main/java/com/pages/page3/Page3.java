@@ -32,7 +32,7 @@ public class Page3  extends JPanel implements Pages {
     tab3 = gui.getTab3();
     menuBar = gui.getJMenuBar();
     this.imagePanel = new ImagePanel(Constants.VIDEO_WIDTH,Constants.VIDEO_HEIGHT);
-    this.fileChooser = new JFileChooser();
+    this.fileChooser = new JFileChooser(Constants.imgPath);
     this.faceDetection = new FaceDetection();
     initComponents();
     populateMenuBar();

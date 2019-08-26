@@ -2,6 +2,7 @@ package com.pages.page6;
 
 import java.awt.*;
 
+import com.constants.Constants;
 import com.db.MongoDB;
 import com.gui.Gui;
 import com.gui.ImagePanel;
@@ -71,6 +72,7 @@ public class Page6 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (fileChooser.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
+
           filterBtn.doClick();
           file = fileChooser.getSelectedFile();
           imgPath = file.getAbsolutePath();
@@ -282,7 +284,7 @@ public class Page6 extends JPanel implements Pages {
     btnPanel3.add(uploadBtn);
     btnPanel3.add(downloadBtn);
 
-    fileChooser = new JFileChooser();
+    fileChooser = new JFileChooser(Constants.imgPath);
   }
 
 
