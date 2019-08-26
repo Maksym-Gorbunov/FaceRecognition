@@ -67,14 +67,23 @@
             <version>0.8</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.googlecode.charts4j/charts4j -->
-        <!-- https://mvnrepository.com/artifact/com.googlecode.javacv/javacv -->
+
+
+        // Mouse Controll in experiment folder
         <dependency>
             <groupId>com.googlecode.javacv</groupId>
             <artifactId>javacv</artifactId>
             <version>0.1</version>
         </dependency>
 
+
+
+        <!---->
+        <!--<dependency>-->
+            <!--<groupId>com.googlecode.javacpp</groupId>-->
+            <!--<artifactId>javacpp</artifactId>-->
+            <!--<version>0.1</version>-->
+        <!--</dependency>-->
 
 
 
