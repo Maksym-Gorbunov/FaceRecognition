@@ -69,7 +69,7 @@
 
 
 
-        // Mouse Controll in experiment folder
+        <!-- Mouse Controll in experiment folder -->
         <dependency>
             <groupId>com.googlecode.javacv</groupId>
             <artifactId>javacv</artifactId>
