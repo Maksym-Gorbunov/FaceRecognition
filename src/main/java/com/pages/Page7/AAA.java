@@ -10,11 +10,16 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
+import static com.constants.Constants.imgPath;
 import static org.bytedeco.javacpp.opencv_core.*;
+import static org.opencv.imgproc.Imgproc.contourArea;
 import static org.opencv.imgproc.Imgproc.drawContours;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +33,7 @@ public class AAA {
 
 
     Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
-    Mat source = Imgcodecs.imread(Constants.imgPath + "car6.jpg");
+    Mat source = Imgcodecs.imread(imgPath + "car6.jpg");
     Mat gray = new Mat();
     Mat grayOpen = new Mat();
     Mat grayClose = new Mat();
@@ -55,169 +60,96 @@ public class AAA {
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
 
     //blur, blur plus kernel of 5
-    Imgproc.morphologyEx(grayPlusTopHatMinusBlackHat, blur, Imgproc.CV_BLUR, kernel);
+//    Imgproc.morphologyEx(grayPlusTopHatMinusBlackHat, blur, Imgproc.CV_BLUR, kernel);
+    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
+    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blurPlus5, new Size(5, 5), 1);
+
     Core.add(blur, Scalar.all(5), blurPlus5);
 
 
     //threshold, javadoc: threshold(src, dst, thresh, maxval, type)
-    Imgproc.threshold(blurPlus5, threshold, 200, 255,Imgproc.THRESH_BINARY_INV);
+    Imgproc.threshold(blurPlus5, threshold, 200, 255, Imgproc.THRESH_BINARY_INV);
 //    Imgproc.threshold(blurPlus5, threshold, 19, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY_INV);
 
 
+    //
+
+    Mat cannyOutput = threshold;
+//    Imgproc.Canny(threshold, cannyOutput, threshold, threshold * 2);
 
 
 
 
-    //contours
+    //CONTOURS
     List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+    List<MatOfPoint> contours2 = new ArrayList<MatOfPoint>();
     Mat hierarchy = new Mat();
-
-    Imgproc.findContours(threshold, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+    Imgproc.findContours(cannyOutput, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    Scalar green = new Scalar(81, 190, 0);
     if (contours != null) {
-      drawContours(source, contours, -1, new Scalar(0, 0, 255, 0), CV_FILLED);
+      contours.stream().forEach((c) -> {
+                double areaC;
+                areaC = contourArea(c, false);
+                if (c.height() >15 && c.height()<40) {
+                  System.out.println("area: " + c.size());
+                  contours2.add(c);
+                }
+              }
+      );
+      drawContours(source, contours2, -1, new Scalar(200, 0, 0, 0), CV_FILLED);
     }
 
+    Imgcodecs.imwrite(imgPath + "result\\source.jpg", source);
+    Imgcodecs.imwrite(imgPath + "result\\gray.jpg", gray);
+    Imgcodecs.imwrite(imgPath + "result\\grayOpen.jpg", grayOpen);
+    Imgcodecs.imwrite(imgPath + "result\\grayClose.jpg", grayClose);
+    Imgcodecs.imwrite(imgPath + "result\\topHat.jpg", topHat);
+    Imgcodecs.imwrite(imgPath + "result\\blackHat.jpg", blackHat);
+    Imgcodecs.imwrite(imgPath + "result\\grayPlusTopHat.jpg", grayPlusTopHat);
+    Imgcodecs.imwrite(imgPath + "result\\grayPlusTopHatMinusBlackHat.jpg", grayPlusTopHatMinusBlackHat);
+    Imgcodecs.imwrite(imgPath + "result\\blur.jpg", blur);
+    Imgcodecs.imwrite(imgPath + "result\\blurPlus5.jpg", blurPlus5);
+    Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
+    Imgcodecs.imwrite(imgPath + "result\\cannyOtput.jpg", cannyOutput);
 
 
-    Imgcodecs.imwrite(Constants.imgPath + "result\\source.jpg", source);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\gray.jpg", gray);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\grayOpen.jpg", grayOpen);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\grayClose.jpg", grayClose);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\topHat.jpg", topHat);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\blackHat.jpg", blackHat);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\grayPlusTopHat.jpg", grayPlusTopHat);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\grayPlusTopHatMinusBlackHat.jpg", grayPlusTopHatMinusBlackHat);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\blur.jpg", blur);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\blurPlus5.jpg", blurPlus5);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\threshold.jpg", threshold);
+    String licencenumbers = recognizeText(imgPath + "result\\threshold.jpg");
 
+    System.out.println("Licencenumbers: " + licencenumbers);
 
-
-    String licencenumbers = recognizeText(Constants.imgPath + "result\\threshold.jpg");
-
-    System.out.println("Licencenumbers: "+licencenumbers);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    cvCvtColor(source, gray, CV_BGR2GRAY);
-
-//    Imgproc.morphologyEx(source, gray, Imgproc.COLOR_RGB2GRAY, kernel);
-//    Imgproc.morphologyEx(temp, destination, Imgproc.MORPH_CLOSE, kernel);
-//    Imgproc.morphologyEx(source, gray, Imgproc.MORPH_GRADIENT, kernel);
-
-
-//    Imgcodecs.imwrite(Constants.imgPath + "result\\temp.jpg", temp);
-//    Imgcodecs.imwrite(Constants.imgPath + "result\\destination1.jpg", destination);
-//    Imgcodecs.imwrite(Constants.imgPath + "result\\temp.jpg", temp);
-//    Imgcodecs.imwrite(Constants.imgPath + "result\\destination2.jpg", destination);
-
-
-
-
-
-
-
-
-
-
-//    int threshold = 150;
-//    Imgproc.Canny(gray, edges, threshold, threshold * 3);
-//    edges.convertTo(draw, CvType.CV_8U);
-//
-//    List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-//    List<MatOfPoint> contours2 = new ArrayList<MatOfPoint>();
-//    Mat hierarchy = new Mat();
-//
-//    Imgproc.findContours(draw, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-//
-//
-//    Scalar green = new Scalar(81, 190, 0);
-//
-//
-//    if (contours != null) {
-//      contours.stream().forEach((c) -> {
-//                double areaC;
-//                areaC = contourArea(c, false);
-//                if (areaC > 300) {
-//                  System.out.println("area: " + c.size());
-//                  contours2.add(c);
-//
-//
-//                  RotatedRect rotatedRect = Imgproc.minAreaRect(new MatOfPoint2f(c.toArray()));
-//                  drawRotatedRect(draw, rotatedRect, green, 4);
-//
-//                }
-//              }
-//      );
-//      drawContours(edges, contours2, -1, new Scalar(200, 0, 0, 0), CV_FILLED);
-//      System.out.println(contours.size());
-//      System.out.println(contours2.size());
-//    }
-
-
-//    if (Imgcodecs.imwrite(Constants.imgPath + "result\\gray.png", gray)) {
-//      System.out.println("..gray.png");
-//    }
-//    if (Imgcodecs.imwrite(Constants.imgPath + "result\\draw.png", draw)) {
-//      System.out.println("..draw.png");
-//    }
-//    if (Imgcodecs.imwrite(Constants.imgPath + "result\\edges.png", edges)) {
-//      System.out.println("..edges.png");
-//    }
 
     System.out.println("...done");
   }
 
 
-  public static String recognizeText(String imgPath){
+  public static String recognizeText(String imgPath) {
     Tesseract tesseract = new Tesseract();
-    String TESS_DATA = Constants.projectPath+"\\lib\\tesseract-OCR\\";
+    String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
     tesseract.setDatapath(TESS_DATA);
     String result = "";
-
     try {
       // Recognize text with OCR
       result = tesseract.doOCR(new File(imgPath));
     } catch (TesseractException e) {
       e.printStackTrace();
     }
-
     return result;
-
   }
+
+
+//  public static String recognizeText(String imgPath) {
+//    Tesseract tesseract = new Tesseract();
+//    String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
+//    tesseract.setDatapath(TESS_DATA);
+//    String result = "";
+//    try {
+//      // Recognize text with OCR
+//      result = tesseract.doOCR(new File(imgPath));
+//    } catch (TesseractException e) {
+//      e.printStackTrace();
+//    }
+//    return result;
+//  }
+
 
 }
