@@ -6,6 +6,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -35,19 +36,58 @@ public class AAA {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 
-    img = Imgcodecs.imread(Constants.imgPath + "car6.jpg");
-    gray = new Mat();
-    draw = new Mat();
-    edges = new Mat();
-    Mat filtered = new Mat();
+    Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+    Mat source = Imgcodecs.imread(Constants.imgPath + "car6.jpg");
+    Mat temp = new Mat();
+    Mat gray = new Mat();
+    Mat topHat = new Mat();
+    Mat blackHat = new Mat();
+    Mat grayPlusTopHat = new Mat();
+    Mat grayPlusTopHatMinusBlackHat = new Mat();
+
+    //gray scale
+    Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
+    //topHat
+    Imgproc.morphologyEx(gray, topHat, Imgproc.MORPH_TOPHAT, kernel);
+    //blackHat
+    Imgproc.morphologyEx(gray, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
+
+    //grays cale + topHat - blackHat
+    Core.add(gray, topHat, grayPlusTopHat);
+    Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
 
 
-    // blue filter
-    Scalar minc = new Scalar(95, 150, 75, 0);
-    Scalar maxc = new Scalar(145, 255, 255, 0);
 
-    Imgproc.cvtColor(img, gray, Imgproc.COLOR_BGR2GRAY);
-    Imgcodecs.imwrite(Constants.imgPath + "result\\gray111.png", gray);
+
+    Imgcodecs.imwrite(Constants.imgPath + "result\\gray.jpg", gray);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\topHat.jpg", topHat);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\blackHat.jpg", blackHat);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\grayPlusTopHat.jpg", grayPlusTopHat);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\grayPlusTopHatMinusBlackHat.jpg", grayPlusTopHatMinusBlackHat);
+
+
+
+
+
+
+
+
+
+
+
+//    cvCvtColor(source, gray, CV_BGR2GRAY);
+
+//    Imgproc.morphologyEx(source, temp, Imgproc.MORPH_OPEN, kernel);
+//    Imgproc.morphologyEx(source, gray, Imgproc.COLOR_RGB2GRAY, kernel);
+//    Imgproc.morphologyEx(temp, destination, Imgproc.MORPH_CLOSE, kernel);
+//    Imgproc.morphologyEx(source, gray, Imgproc.MORPH_GRADIENT, kernel);
+
+
+//    Imgcodecs.imwrite(Constants.imgPath + "result\\temp.jpg", temp);
+//    Imgcodecs.imwrite(Constants.imgPath + "result\\destination1.jpg", destination);
+//    Imgcodecs.imwrite(Constants.imgPath + "result\\temp.jpg", temp);
+//    Imgcodecs.imwrite(Constants.imgPath + "result\\destination2.jpg", destination);
+
 
 
 
@@ -92,17 +132,17 @@ public class AAA {
 //    }
 
 
-    if (Imgcodecs.imwrite(Constants.imgPath + "result\\gray.png", gray)) {
-      System.out.println("..gray.png");
-    }
-    if (Imgcodecs.imwrite(Constants.imgPath + "result\\draw.png", draw)) {
-      System.out.println("..draw.png");
-    }
-    if (Imgcodecs.imwrite(Constants.imgPath + "result\\edges.png", edges)) {
-      System.out.println("..edges.png");
-    }
+//    if (Imgcodecs.imwrite(Constants.imgPath + "result\\gray.png", gray)) {
+//      System.out.println("..gray.png");
+//    }
+//    if (Imgcodecs.imwrite(Constants.imgPath + "result\\draw.png", draw)) {
+//      System.out.println("..draw.png");
+//    }
+//    if (Imgcodecs.imwrite(Constants.imgPath + "result\\edges.png", edges)) {
+//      System.out.println("..edges.png");
+//    }
 
-
+    System.out.println("...done");
   }
 
   private static double angle(Point pt1, Point pt2, Point pt0) {
