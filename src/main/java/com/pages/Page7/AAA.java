@@ -47,89 +47,51 @@ public class AAA {
     Scalar maxc = new Scalar(145, 255, 255, 0);
 
     Imgproc.cvtColor(img, gray, Imgproc.COLOR_BGR2GRAY);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\gray111.png", gray);
 
 
-    int threshold = 150;
-    Imgproc.Canny(gray, edges, threshold, threshold * 3);
-    edges.convertTo(draw, CvType.CV_8U);
-
-    List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-    List<MatOfPoint> contours2 = new ArrayList<MatOfPoint>();
-    Mat hierarchy = new Mat();
-
-    Imgproc.findContours(draw, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
 
-    int i = 1;
-    Scalar green = new Scalar(81, 190, 0);
 
 
-    if (contours != null) {
-      contours.stream().forEach((c) -> {
-                double areaC;
-                areaC = contourArea(c, false);
-                if (areaC > 500) {
-                  System.out.println("area: " + c.size());
-                  contours2.add(c);
 
-                  RotatedRect rotatedRect = Imgproc.minAreaRect(new MatOfPoint2f(c.toArray()));
-                  drawRotatedRect(draw, rotatedRect, green, 4);
 
-                }
-              }
-      );
-      drawContours(edges, contours2, -1, new Scalar(200, 0, 0, 0), CV_FILLED);
-      System.out.println(contours.size());
-      System.out.println(contours2.size());
+
+//    int threshold = 150;
+//    Imgproc.Canny(gray, edges, threshold, threshold * 3);
+//    edges.convertTo(draw, CvType.CV_8U);
+//
+//    List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+//    List<MatOfPoint> contours2 = new ArrayList<MatOfPoint>();
+//    Mat hierarchy = new Mat();
+//
+//    Imgproc.findContours(draw, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 //
 //
-//      if (areaC < 300) {
-//        drawText(new Point(20,20), "DSDSD");
+//    Scalar green = new Scalar(81, 190, 0);
 //
-////        cvDrawContours(edges, contours, CV_RGB(0, 0, 0), CV_RGB(0, 0, 0),
-////                0, CV_FILLED, 8, cvPoint(0, 0));
-//      }
-
-//      contours = contours. .h_next();
-    }
-
 //
-//    MatOfPoint2f matOfPoint2f = new MatOfPoint2f();
-//    MatOfPoint2f approxCurve = new MatOfPoint2f();
+//    if (contours != null) {
+//      contours.stream().forEach((c) -> {
+//                double areaC;
+//                areaC = contourArea(c, false);
+//                if (areaC > 300) {
+//                  System.out.println("area: " + c.size());
+//                  contours2.add(c);
 //
-//    for (int idx = 0; idx >= 0; idx = (int) hierarchy.get(0, idx)[0]) {
-//      MatOfPoint contour = contours.get(idx);
-//      Rect rect = Imgproc.boundingRect(contour);
-//      double contourArea = contourArea(contour);
-//      matOfPoint2f.fromList(contour.toList());
-//      Imgproc.approxPolyDP(matOfPoint2f, approxCurve, Imgproc.arcLength(matOfPoint2f, true) * 0.02, true);
-//      long total = approxCurve.total();
-//      if (total == 3) { // is triangle
-//        // do things for triangle
-//      }
-//      if (total >= 4 && total <= 6) {
-//        List<Double> cos = new ArrayList<>();
-//        Point[] points = approxCurve.toArray();
-//        for (int j = 2; j < total + 1; j++) {
-//          cos.add(angle(points[(int) (j % total)], points[j - 2], points[j - 1]));
-//        }
-//        Collections.sort(cos);
-//        Double minCos = cos.get(0);
-//        Double maxCos = cos.get(cos.size() - 1);
-//        boolean isRect = total == 4 && minCos >= -0.1 && maxCos <= 0.3;
-//        boolean isPolygon = (total == 5 && minCos >= -0.34 && maxCos <= -0.27) || (total == 6 && minCos >= -0.55 && maxCos <= -0.45);
-//        if (isRect) {
-//          double ratio = Math.abs(1 - (double) rect.width / rect.height);
-//          drawText(rect.tl(), ratio <= 0.02 ? "SQU" : "RECT");
-//        }
-//        if (isPolygon) {
-//          drawText(rect.tl(), "Polygon");
-//        }
-//      }
+//
+//                  RotatedRect rotatedRect = Imgproc.minAreaRect(new MatOfPoint2f(c.toArray()));
+//                  drawRotatedRect(draw, rotatedRect, green, 4);
+//
+//                }
+//              }
+//      );
+//      drawContours(edges, contours2, -1, new Scalar(200, 0, 0, 0), CV_FILLED);
+//      System.out.println(contours.size());
+//      System.out.println(contours2.size());
 //    }
 
 
-//    Imgproc.Canny(gray, edge, 50, 150, 3, false);
     if (Imgcodecs.imwrite(Constants.imgPath + "result\\gray.png", gray)) {
       System.out.println("..gray.png");
     }
@@ -141,34 +103,7 @@ public class AAA {
     }
 
 
-//    IplImage i = draw;
-
-    //
-//    if(Imgcodecs.imwrite(Constants.imgPath+"result\\edge.png", draw)){
-//      System.out.println("Edge saved to edge.png");
-//    }
-
-
   }
-
-
-//  public BufferedImage Mat2BufferedImage(Mat m) {
-//    // Fastest code
-//    // output can be assigned either to a BufferedImage or to an Image
-//
-//    int type = BufferedImage.TYPE_BYTE_GRAY;
-//    if ( m.channels() > 1 ) {
-//      type = BufferedImage.TYPE_3BYTE_BGR;
-//    }
-//    int bufferSize = m.channels()*m.cols()*m.rows();
-//    byte [] b = new byte[bufferSize];
-//    m.get(0,0,b); // get all the pixels
-//    BufferedImage image = new BufferedImage(m.cols(),m.rows(), type);
-//    final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-//    System.arraycopy(b, 0, targetPixels, 0, b.length);
-//    return image;
-//  }
-
 
   private static double angle(Point pt1, Point pt2, Point pt0) {
     double dx1 = pt1.x - pt0.x;
