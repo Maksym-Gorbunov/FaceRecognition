@@ -1,27 +1,21 @@
 package com.pages.Page7;
 
 import com.constants.Constants;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
 import org.opencv.core.*;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
-import static org.bytedeco.javacpp.helper.opencv_core.CV_RGB;
 import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_core.cvPoint;
-import static org.bytedeco.javacpp.opencv_highgui.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.opencv.imgproc.Imgproc.contourArea;
 import static org.opencv.imgproc.Imgproc.drawContours;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,26 +23,30 @@ import java.util.List;
 
 public class AAA {
 
-  private static Mat img, gray, draw, edges;
-
-
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 
     Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
     Mat source = Imgcodecs.imread(Constants.imgPath + "car6.jpg");
-    Mat temp = new Mat();
     Mat gray = new Mat();
+    Mat grayOpen = new Mat();
+    Mat grayClose = new Mat();
     Mat topHat = new Mat();
     Mat blackHat = new Mat();
     Mat grayPlusTopHat = new Mat();
     Mat grayPlusTopHatMinusBlackHat = new Mat();
+    Mat blur = new Mat();
+    Mat blurPlus5 = new Mat();
+    Mat threshold = new Mat();
+    Mat contoursImg = new Mat();
 
     //gray scale
     Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
+
     //topHat
     Imgproc.morphologyEx(gray, topHat, Imgproc.MORPH_TOPHAT, kernel);
+
     //blackHat
     Imgproc.morphologyEx(gray, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
 
@@ -56,14 +54,74 @@ public class AAA {
     Core.add(gray, topHat, grayPlusTopHat);
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
 
+    //blur, blur plus kernel of 5
+    Imgproc.morphologyEx(grayPlusTopHatMinusBlackHat, blur, Imgproc.CV_BLUR, kernel);
+    Core.add(blur, Scalar.all(5), blurPlus5);
+
+
+    //threshold, javadoc: threshold(src, dst, thresh, maxval, type)
+    Imgproc.threshold(blurPlus5, threshold, 200, 255,Imgproc.THRESH_BINARY_INV);
+//    Imgproc.threshold(blurPlus5, threshold, 19, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY_INV);
 
 
 
+
+
+
+    //contours
+    List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+    Mat hierarchy = new Mat();
+
+    Imgproc.findContours(threshold, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+    if (contours != null) {
+      drawContours(source, contours, -1, new Scalar(0, 0, 255, 0), CV_FILLED);
+    }
+
+
+
+    Imgcodecs.imwrite(Constants.imgPath + "result\\source.jpg", source);
     Imgcodecs.imwrite(Constants.imgPath + "result\\gray.jpg", gray);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\grayOpen.jpg", grayOpen);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\grayClose.jpg", grayClose);
     Imgcodecs.imwrite(Constants.imgPath + "result\\topHat.jpg", topHat);
     Imgcodecs.imwrite(Constants.imgPath + "result\\blackHat.jpg", blackHat);
     Imgcodecs.imwrite(Constants.imgPath + "result\\grayPlusTopHat.jpg", grayPlusTopHat);
     Imgcodecs.imwrite(Constants.imgPath + "result\\grayPlusTopHatMinusBlackHat.jpg", grayPlusTopHatMinusBlackHat);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\blur.jpg", blur);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\blurPlus5.jpg", blurPlus5);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\threshold.jpg", threshold);
+
+
+
+    String licencenumbers = recognizeText(Constants.imgPath + "result\\threshold.jpg");
+
+    System.out.println("Licencenumbers: "+licencenumbers);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -77,7 +135,6 @@ public class AAA {
 
 //    cvCvtColor(source, gray, CV_BGR2GRAY);
 
-//    Imgproc.morphologyEx(source, temp, Imgproc.MORPH_OPEN, kernel);
 //    Imgproc.morphologyEx(source, gray, Imgproc.COLOR_RGB2GRAY, kernel);
 //    Imgproc.morphologyEx(temp, destination, Imgproc.MORPH_CLOSE, kernel);
 //    Imgproc.morphologyEx(source, gray, Imgproc.MORPH_GRADIENT, kernel);
@@ -145,24 +202,22 @@ public class AAA {
     System.out.println("...done");
   }
 
-  private static double angle(Point pt1, Point pt2, Point pt0) {
-    double dx1 = pt1.x - pt0.x;
-    double dy1 = pt1.y - pt0.y;
-    double dx2 = pt2.x - pt0.x;
-    double dy2 = pt2.y - pt0.y;
-    return (dx1 * dx2 + dy1 * dy2) / Math.sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
-  }
 
-  private static void drawText(Point ofs, String text) {
-    Imgproc.putText(img, text, ofs, 1, 0.5, new Scalar(255, 255, 25));
-  }
+  public static String recognizeText(String imgPath){
+    Tesseract tesseract = new Tesseract();
+    String TESS_DATA = Constants.projectPath+"\\lib\\tesseract-OCR\\";
+    tesseract.setDatapath(TESS_DATA);
+    String result = "";
 
+    try {
+      // Recognize text with OCR
+      result = tesseract.doOCR(new File(imgPath));
+    } catch (TesseractException e) {
+      e.printStackTrace();
+    }
 
-  public static void drawRotatedRect(Mat image, RotatedRect rotatedRect, Scalar color, int thickness) {
-    Point[] vertices = new Point[4];
-    rotatedRect.points(vertices);
-    MatOfPoint points = new MatOfPoint(vertices);
-    Imgproc.drawContours(image, Collections.singletonList(points), -1, color, thickness);
+    return result;
+
   }
 
 }
