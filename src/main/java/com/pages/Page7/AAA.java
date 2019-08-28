@@ -90,7 +90,11 @@ public class AAA {
     Imgproc.findContours(threshold,contours,new Mat(), RETR_TREE,Imgproc.CHAIN_APPROX_SIMPLE);
 
 
+    Mat licencenumber = new Mat();
+    Mat mask_image = new Mat();
+
     // find appropriate bounding rectangles
+    int i = 0;
     for (MatOfPoint contour : contours) {
       MatOfPoint2f areaPoints = new MatOfPoint2f(contour.toArray());
       RotatedRect boundingRect = Imgproc.minAreaRect(areaPoints);
@@ -110,8 +114,19 @@ public class AAA {
         // test horizontal ROI orientation
         if (rect.width > rect.height) {
           Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
+
+
+          //////////////////////////////////
+          mask_image = new Mat(source.size(), CV_8U, new Scalar(0,0,0,0));
+//          licencenumber = new Mat(rect.size(), CV_8U, new Scalar(0,0,0,0));
+//          licencenumber = new Mat(new Size(boundingRect.size.width, boundingRect.size.height), CV_8U, new Scalar(0,0,0,0));
+
+          drawContours(mask_image, contours, i, new Scalar(255), CV_FILLED);
+
+          source.copyTo(licencenumber, mask_image);
         }
       }
+      i++;
     }
 
 
@@ -205,15 +220,15 @@ public class AAA {
     Imgcodecs.imwrite(imgPath + "result\\grayPlusTopHatMinusBlackHat.jpg", grayPlusTopHatMinusBlackHat);
     Imgcodecs.imwrite(imgPath + "result\\blur.jpg", blur);
     Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
+    Imgcodecs.imwrite(imgPath + "result\\mask.jpg", mask_image);
+    Imgcodecs.imwrite(imgPath + "result\\licencenumber.jpg", licencenumber);
 
 
 
 
 
-//    String licencenumbers = recognizeText(imgPath + "result\\cont.jpg");
-//    String licencenumbers = recognizeText(imgPath + "result\\source.jpg");
-
-//    System.out.println("Licencenumbers: " + licencenumbers);
+    String licencenumbersText = recognizeText(imgPath + "result\\licencenumber.jpg");
+    System.out.println("Licencenumbers: " + licencenumbersText);
 
 
     System.out.println("...done");
