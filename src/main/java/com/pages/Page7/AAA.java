@@ -5,16 +5,19 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.opencv.core.*;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import static com.constants.Constants.imgPath;
 import static org.bytedeco.javacpp.opencv_core.*;
-import static org.opencv.imgproc.Imgproc.contourArea;
-import static org.opencv.imgproc.Imgproc.drawContours;
+import static org.bytedeco.javacpp.opencv_imgproc.cvContourArea;
+import static org.opencv.highgui.HighGui.*;
+import static org.opencv.imgproc.Imgproc.*;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -23,6 +26,7 @@ import org.opencv.core.Mat;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -42,7 +46,6 @@ public class AAA {
     Mat grayPlusTopHat = new Mat();
     Mat grayPlusTopHatMinusBlackHat = new Mat();
     Mat blur = new Mat();
-    Mat blurPlus5 = new Mat();
     Mat threshold = new Mat();
     Mat contoursImg = new Mat();
 
@@ -59,28 +62,117 @@ public class AAA {
     Core.add(gray, topHat, grayPlusTopHat);
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
 
-    //blur, blur plus kernel of 5
-//    Imgproc.morphologyEx(grayPlusTopHatMinusBlackHat, blur, Imgproc.CV_BLUR, kernel);
+    //blur + kernel of 5
     Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
-    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blurPlus5, new Size(5, 5), 1);
 
-    Core.add(blur, Scalar.all(5), blurPlus5);
-
-
-    //threshold, javadoc: threshold(src, dst, thresh, maxval, type)
-    Imgproc.threshold(blurPlus5, threshold, 200, 255, Imgproc.THRESH_BINARY_INV);
-//    Imgproc.threshold(blurPlus5, threshold, 19, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY_INV);
+    //threshold
+    Imgproc.threshold(blur, threshold, 200, 255, Imgproc.THRESH_BINARY_INV);
 
 
-    //
 
-    Mat cannyOutput = threshold;
-//    Imgproc.Canny(threshold, cannyOutput, threshold, threshold * 2);
+  ////////////////////////////////////////////////////////////////////////////
+
+//    Mat a = new Mat();
+    //javadoc: distanceTransform(src, dst, distanceType, maskSize, dstType)
+//    distanceTransform(threshold, a, CV_DIST_L2,3);
+
+
+
+
+
+
+
+
+    // Find total markers
+    List<MatOfPoint> contours = new ArrayList<>();
+    Mat hierarchy = new Mat();
+    Mat markers = Mat.zeros(threshold.size(), CvType.CV_32S);
+    Imgproc.findContours(threshold,contours,new Mat(), RETR_TREE,Imgproc.CHAIN_APPROX_SIMPLE);
+
+
+    // find appropriate bounding rectangles
+    for (MatOfPoint contour : contours) {
+      MatOfPoint2f areaPoints = new MatOfPoint2f(contour.toArray());
+      RotatedRect boundingRect = Imgproc.minAreaRect(areaPoints);
+
+      double rectangleArea = boundingRect.size.area();
+      Scalar green = new Scalar(0, 255, 0, 255);
+
+      // test min ROI area in pixels
+      if ((rectangleArea > 3000) && (rectangleArea < 5000)) {
+        Point rotated_rect_points[] = new Point[4];
+        boundingRect.points(rotated_rect_points);
+
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
+
+        // test horizontal ROI orientation
+        if (rect.width > rect.height) {
+          Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
+        }
+      }
+    }
+
+
+
+
+
+
+
+
+    ////////////////////////////////////////////////////////
+    /*
+    for(int i=0; i<contours.size(); i++){
+      // manual set index to 17
+      double areaC = contourArea(contours.get(17), false);
+      System.out.println(areaC);
+      Imgproc.drawContours(source, contours, 17, new Scalar(0,0,255,0),2);
+    }
+    */
+    ///////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+//    cvtColor(threshold, threshold, Imgproc.COLOR_RGBA2RGB, 0);
+//
+//
+//
+//    Imgproc.watershed(threshold, markers);
+//
+//    System.out.println(markers.rows());
+//    System.out.println(markers.cols());
+
+
+
+//    drawContours(threshold, (List<MatOfPoint>) markers, -1, new Scalar(200, 0, 0, 0), CV_FILLED);
+
+
+
+
+
+
+    Imgcodecs.imwrite(imgPath + "result\\markers.jpg", markers);
+
+
+
 
 
 
 
     //CONTOURS
+    /*
+    Mat cont = new Mat();
+    cont = source;
+    cont.setTo(new Scalar(0,0,0,0));
+
     List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
     List<MatOfPoint> contours2 = new ArrayList<MatOfPoint>();
     Mat hierarchy = new Mat();
@@ -88,16 +180,18 @@ public class AAA {
     Scalar green = new Scalar(81, 190, 0);
     if (contours != null) {
       contours.stream().forEach((c) -> {
-                double areaC;
-                areaC = contourArea(c, false);
-                if (c.height() >15 && c.height()<40) {
+                double areaC = contourArea(c, false);
+                if (areaC>50 && areaC<1000) {
                   System.out.println("area: " + c.size());
                   contours2.add(c);
                 }
               }
       );
-      drawContours(source, contours2, -1, new Scalar(200, 0, 0, 0), CV_FILLED);
+      drawContours(cont, contours2, -1, new Scalar(200, 0, 0, 0), CV_FILLED);
     }
+*/
+
+
 
     Imgcodecs.imwrite(imgPath + "result\\source.jpg", source);
     Imgcodecs.imwrite(imgPath + "result\\gray.jpg", gray);
@@ -108,14 +202,16 @@ public class AAA {
     Imgcodecs.imwrite(imgPath + "result\\grayPlusTopHat.jpg", grayPlusTopHat);
     Imgcodecs.imwrite(imgPath + "result\\grayPlusTopHatMinusBlackHat.jpg", grayPlusTopHatMinusBlackHat);
     Imgcodecs.imwrite(imgPath + "result\\blur.jpg", blur);
-    Imgcodecs.imwrite(imgPath + "result\\blurPlus5.jpg", blurPlus5);
     Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
-    Imgcodecs.imwrite(imgPath + "result\\cannyOtput.jpg", cannyOutput);
 
 
-    String licencenumbers = recognizeText(imgPath + "result\\threshold.jpg");
 
-    System.out.println("Licencenumbers: " + licencenumbers);
+
+
+//    String licencenumbers = recognizeText(imgPath + "result\\cont.jpg");
+//    String licencenumbers = recognizeText(imgPath + "result\\source.jpg");
+
+//    System.out.println("Licencenumbers: " + licencenumbers);
 
 
     System.out.println("...done");
@@ -150,6 +246,10 @@ public class AAA {
 //    }
 //    return result;
 //  }
+
+
+
+
 
 
 }
