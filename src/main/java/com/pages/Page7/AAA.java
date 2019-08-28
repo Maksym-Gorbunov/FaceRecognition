@@ -98,8 +98,10 @@ public class AAA {
       double rectangleArea = boundingRect.size.area();
       Scalar green = new Scalar(0, 255, 0, 255);
 
-      // test min ROI area in pixels
-      if ((rectangleArea > 3000) && (rectangleArea < 5000) && (boundingRect.size.width > boundingRect.size.height*2)) {
+      // validate contour rectangle area and sides attitude
+      if ((rectangleArea > 1000) && (rectangleArea < 7000)
+              && (boundingRect.size.width > boundingRect.size.height*2)
+              && (boundingRect.size.width < boundingRect.size.height*6)) {
         Point rotated_rect_points[] = new Point[4];
         boundingRect.points(rotated_rect_points);
 
