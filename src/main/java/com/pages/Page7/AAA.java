@@ -99,7 +99,7 @@ public class AAA {
       Scalar green = new Scalar(0, 255, 0, 255);
 
       // test min ROI area in pixels
-      if ((rectangleArea > 3000) && (rectangleArea < 5000)) {
+      if ((rectangleArea > 3000) && (rectangleArea < 5000) && (boundingRect.size.width > boundingRect.size.height*2)) {
         Point rotated_rect_points[] = new Point[4];
         boundingRect.points(rotated_rect_points);
 
