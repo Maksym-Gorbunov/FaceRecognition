@@ -1,5 +1,7 @@
 package com.pages.Page7;
 
+//import com.constants.Constants;
+
 import com.constants.Constants;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -11,12 +13,15 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
 import static com.constants.Constants.imgPath;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.opencv.imgproc.Imgproc.*;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +29,12 @@ import java.util.List;
 
 public class LicensePlateRecognition {
 
-  public static void main(String[] args) {
+  public void findLicensePlate(String imgagePath) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
     Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
-    Mat sourceORG = Imgcodecs.imread(imgPath + "car6.jpg");
+//    Mat sourceORG = Imgcodecs.imread(imgPath + "car6.jpg");
+    Mat sourceORG = Imgcodecs.imread(imgagePath);
     Mat source = new Mat();
     sourceORG.copyTo(source);
 
@@ -55,6 +61,7 @@ public class LicensePlateRecognition {
     Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
     //threshold
     Imgproc.threshold(blur, threshold, 200, 255, Imgproc.THRESH_BINARY_INV);
+//    Imgproc.threshold(blur, threshold, 200, 255, Imgproc.THRESH_BINARY_INV);
     ///////////////////////////// FILTERS END ///////////////////////////////////////
 
 
@@ -64,6 +71,7 @@ public class LicensePlateRecognition {
     Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     Mat licensePlate = new Mat();
     Mat countryPlate = new Mat();
+    Mat countryPlate2 = new Mat();
 
     // find appropriate bounding rectangles
     int i = 0;
@@ -93,13 +101,12 @@ public class LicensePlateRecognition {
           licensePlate = new Mat(sourceORG, rectLicenceNumbers);
 
 
-
           ///////////////////////  COUNTRY RECTANGLE  //////////////////////////
           Point rotatedRectLeftPoints[] = new Point[4];
 
           double width = rectLicenceNumbers.size().height * 0.4;
           Point leftTop = new Point(rectLicenceNumbers.tl().x - width, rectLicenceNumbers.tl().y);
-          Point bottomRight = new Point(rectLicenceNumbers.br().x- rectLicenceNumbers.size().width, rectLicenceNumbers.br().y);
+          Point bottomRight = new Point(rectLicenceNumbers.br().x - rectLicenceNumbers.size().width, rectLicenceNumbers.br().y);
 
 
           Rect rectLEFT = new Rect(leftTop, bottomRight);
@@ -108,13 +115,15 @@ public class LicensePlateRecognition {
           countryPlate = new Mat(sourceORG, rectLEFT);
 
 
+          countryPlate.copyTo(countryPlate2);
+
+          countryPlate2 = filterCountryPlate(countryPlate);
 
 
         }
       }
       i++;
     }
-
 
 
     Imgcodecs.imwrite(imgPath + "result\\markers.jpg", markers);
@@ -129,22 +138,55 @@ public class LicensePlateRecognition {
     Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
     Imgcodecs.imwrite(imgPath + "result\\licensePlate.jpg", licensePlate);
     Imgcodecs.imwrite(imgPath + "result\\countryPlate.jpg", countryPlate);
+    Imgcodecs.imwrite(imgPath + "result\\countryPlate2.jpg", countryPlate2);
 
 
-
-    String licencenumbersText = recognizeText(imgPath + "result\\licensePlate.jpg");
-    System.out.println("License numbers: " + licencenumbersText);
-
-    String countryText = recognizeText(imgPath + "result\\countryPlate.jpg");
-    System.out.println("Country: " + countryText);
+    if (licensePlate != null && countryPlate != null && countryPlate2 != null) {
+      String licencenumbersText = recognizeText(imgPath + "result\\licensePlate.jpg");
+      System.out.println("License numbers: " + licencenumbersText);
+      String countryText = recognizeText(imgPath + "result\\countryPlate.jpg");
+      System.out.println("Country: " + countryText);
+      String countryText2 = recognizeText(imgPath + "result\\countryPlate2.jpg");
+      System.out.println("Country: " + countryText2);
+    }
 
 
     System.out.println("...done");
   }
 
 
+  private Mat filterCountryPlate(Mat source) {
+    //gray scale
+    Mat gray = new Mat();
+    Mat topHat = new Mat();
+    Mat blackHat = new Mat();
+    Mat grayPlusTopHat = new Mat();
+    Mat grayPlusTopHatMinusBlackHat = new Mat();
+    Mat blur = new Mat();
+    Mat threshold = new Mat();
+    Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+
+    Mat temp = new Mat();
+
+    Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
+//    Imgproc.cvtColor(temp, temp, MORPH_CLOSE);
+    //topHat
+    Imgproc.morphologyEx(gray, topHat, Imgproc.MORPH_TOPHAT, kernel);
+    //blackHat
+    Imgproc.morphologyEx(gray, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
+    //grays cale + topHat - blackHat
+    Core.add(gray, topHat, grayPlusTopHat);
+    Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
 
 
+    //blur + kernel of 5
+    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
+    Imgproc.cvtColor(grayPlusTopHatMinusBlackHat, temp, MORPH_CLOSE);
+    //threshold
+//    Imgproc.threshold(blur, threshold, 100, 255, Imgproc.THRESH_BINARY_INV);
+
+    return temp;
+  }
 
 
   // Recognize text with Tesseract-OCR from image file
