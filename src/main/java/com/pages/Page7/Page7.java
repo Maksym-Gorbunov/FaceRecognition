@@ -19,17 +19,15 @@ public class Page7 extends JPanel implements Pages {
   private JPanel tab7;
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
-//  private File file = null;
   private ImagePanel imagePanel;
   private JList jList;
+  private JTextField resultField = new JTextField();
 
   private DefaultListModel<ImgFile> data = new DefaultListModel<>();
-  private JTextField resultField = new JTextField();
   private LicensePlateRecognizer recognizer;
-//  private String result;
-//  private String selectedImgFile = "";
-
+  private String result;
   private ImgFile selectedImgFile;
+  private int selectedIndex;
 
 
   public Page7(Gui gui) {
@@ -45,36 +43,42 @@ public class Page7 extends JPanel implements Pages {
 
   private void addListeners() {
 
+    //open btn
     openBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         JFileChooser fc = new JFileChooser(Constants.imgPath);
         fc.setMultiSelectionEnabled(true);
         if (fc.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
-          File[] files =  fc.getSelectedFiles();
+          File[] files = fc.getSelectedFiles();
           for (File file : files) {
             ImgFile imgFile = new ImgFile(file.getAbsolutePath());
             data.addElement(imgFile);
           }
         }
+        recognizeBtn.setEnabled(true);
       }
     });
 
+    //recognize btn
     recognizeBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        if(selectedImgFile != null){
-          String result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath() , 100);
-          selectedImgFile.setLicenseNumber(result);
+        recognizeBtn.setEnabled(false);
+        if (selectedImgFile != null) {
+          result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), 100);
           resultField.setText(result);
+          selectedImgFile.setLicenseNumber(result);
         }
       }
     });
 
+    //select list item
     jList.addListSelectionListener(new ListSelectionListener() {
       @Override
       public void valueChanged(ListSelectionEvent arg0) {
         if (!arg0.getValueIsAdjusting()) {
+          recognizeBtn.setEnabled(true);
           selectedImgFile = data.get(jList.getSelectedIndex());
           imagePanel.loadImage(selectedImgFile);
           resultField.setText(selectedImgFile.getLicenseNumber());
@@ -87,22 +91,14 @@ public class Page7 extends JPanel implements Pages {
   private void initComponents() {
     JPanel mainPanel = new JPanel();
     JPanel btnsPanel = new JPanel();
-
     tab7.add(mainPanel);
     tab7.add(btnsPanel);
-
-    //    mainPanel.setPreferredSize(new Dimension(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT));
     JPanel mainLeft = new JPanel();
     JPanel mainRight = new JPanel();
-
-
     mainRight.setPreferredSize(new Dimension(Constants.FRAME_WIDTH - Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT));
-
     mainRight.setBackground(Color.blue);
-
     mainPanel.add(mainLeft);
     mainPanel.add(mainRight);
-
     imagePanel = new ImagePanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT);
     mainLeft.add(imagePanel);
     jList = new JList((ListModel) data);
@@ -112,19 +108,13 @@ public class Page7 extends JPanel implements Pages {
     JScrollPane scrollPane = new JScrollPane(jList);
     jList.setFixedCellWidth(120);
     mainRight.add(scrollPane);
-
-    JLabel resultLabel = new JLabel("RESULT");
-
+    JLabel resultLabel = new JLabel("RESULT: ");
     mainRight.add(resultLabel);
-
     mainRight.add(resultField);
-//    resultField.setText("");
     resultField.setPreferredSize(new Dimension(Constants.FRAME_WIDTH - Constants.VIDEO_WIDTH, 20));
-
-
     btnsPanel.add(openBtn);
     btnsPanel.add(recognizeBtn);
-
+    recognizeBtn.setEnabled(false);
   }
 
 }
