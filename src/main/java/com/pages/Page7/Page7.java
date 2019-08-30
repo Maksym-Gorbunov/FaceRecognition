@@ -20,6 +20,7 @@ public class Page7 extends JPanel implements Pages {
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
   private ImagePanel imagePanel;
+  private ImagePanel imagePanel2;
   private JList jList;
   private JTextField resultField = new JTextField();
 
@@ -29,6 +30,10 @@ public class Page7 extends JPanel implements Pages {
   private ImgFile selectedImgFile;
   private int selectedIndex;
   private JSlider thrashSlider;
+
+  private int width = 300;
+  private int height = 220;
+
 
   public Page7(Gui gui) {
     this.gui = gui;
@@ -100,11 +105,13 @@ public class Page7 extends JPanel implements Pages {
     mainRight.setBackground(Color.blue);
     mainPanel.add(mainLeft);
     mainPanel.add(mainRight);
-    imagePanel = new ImagePanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT);
+    imagePanel = new ImagePanel(width, height);
+    imagePanel2 = new ImagePanel(width, height);
     mainLeft.add(imagePanel);
+    mainLeft.add(imagePanel2);
     jList = new JList((ListModel) data);
     jList.setFixedCellWidth(20);
-    jList.setVisibleRowCount(20);
+    jList.setVisibleRowCount(15);
     jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     JScrollPane scrollPane = new JScrollPane(jList);
     jList.setFixedCellWidth(120);
@@ -123,7 +130,8 @@ public class Page7 extends JPanel implements Pages {
     thrashSlider.setMajorTickSpacing(50);
     thrashSlider.setPaintTicks(true);
     thrashSlider.setPaintLabels(true);
-    btnsPanel.add(thrashSlider);
+    mainLeftBottom.add(thrashSlider);
+    //toDo add grid on mailLeft
   }
 
 }
