@@ -63,12 +63,11 @@ public class Page7 extends JPanel implements Pages {
     recognizeBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-
-        System.out.println(data.get(jList.getSelectedIndex()));
-        System.out.println(data.get(jList.getSelectedIndex()).getLicenseNumber());
-
-//        result = recognizer.findLicensePlate(Constants.imgPath + "cars\\" + selectedImgFile, 100);
-//        resultField.setText(result);
+        if(selectedImgFile != null){
+          String result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath() , 100);
+          selectedImgFile.setLicenseNumber(result);
+          resultField.setText(result);
+        }
       }
     });
 
@@ -77,6 +76,8 @@ public class Page7 extends JPanel implements Pages {
       public void valueChanged(ListSelectionEvent arg0) {
         if (!arg0.getValueIsAdjusting()) {
           selectedImgFile = data.get(jList.getSelectedIndex());
+          imagePanel.loadImage(selectedImgFile);
+          resultField.setText(selectedImgFile.getLicenseNumber());
         }
       }
     });
@@ -117,7 +118,7 @@ public class Page7 extends JPanel implements Pages {
     mainRight.add(resultLabel);
 
     mainRight.add(resultField);
-    resultField.setText("res");
+//    resultField.setText("");
     resultField.setPreferredSize(new Dimension(Constants.FRAME_WIDTH - Constants.VIDEO_WIDTH, 20));
 
 
