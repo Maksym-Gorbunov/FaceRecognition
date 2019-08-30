@@ -25,27 +25,41 @@ import java.util.List;
 
 
 public class LicensePlateRecognizer {
-
-  private String licenseNumber = "";
-  private Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
-  private Mat sourceORG;
-  private Mat source = new Mat();
-  private Mat gray = new Mat();
-  private Mat topHat = new Mat();
-  private Mat blackHat = new Mat();
-  private Mat grayPlusTopHat = new Mat();
-  private Mat grayPlusTopHatMinusBlackHat = new Mat();
-  private Mat blur = new Mat();
-  private Mat threshold = new Mat();
-  private Scalar green = new Scalar(0, 255, 0, 255);
-  private Scalar red = new Scalar(0, 0, 255, 255);
+//
+//  private String licenseNumber = "";
+//  private Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+//  private Mat sourceORG;
+//  private Mat source = new Mat();
+//  private Mat gray = new Mat();
+//  private Mat topHat = new Mat();
+//  private Mat blackHat = new Mat();
+//  private Mat grayPlusTopHat = new Mat();
+//  private Mat grayPlusTopHatMinusBlackHat = new Mat();
+//  private Mat blur = new Mat();
+//  private Mat threshold = new Mat();
+//  private Scalar green = new Scalar(0, 255, 0, 255);
+//  private Scalar red = new Scalar(0, 0, 255, 255);
 
 
   // Searching license plate on image and recognize it
   public String findLicensePlate(String imagePath, int thresh) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    sourceORG = Imgcodecs.imread(imagePath);
+
+    String licenseNumber = "";
+    Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+    Mat sourceORG = Imgcodecs.imread(imagePath);
+    Mat source = new Mat();
     sourceORG.copyTo(source);
+    Mat gray = new Mat();
+    Mat topHat = new Mat();
+    Mat blackHat = new Mat();
+    Mat grayPlusTopHat = new Mat();
+    Mat grayPlusTopHatMinusBlackHat = new Mat();
+    Mat blur = new Mat();
+    Mat threshold = new Mat();
+    Scalar green = new Scalar(0, 255, 0, 255);
+    Scalar red = new Scalar(0, 0, 255, 255);
+
     ///////////////////////////// FILTERS START ///////////////////////////////////////
     Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
     Imgproc.morphologyEx(gray, topHat, Imgproc.MORPH_TOPHAT, kernel);
@@ -97,8 +111,6 @@ public class LicensePlateRecognizer {
       i++;
     }
 
-    System.out.println(licenseNumber);
-
     //save files
     Imgcodecs.imwrite(imgPath + "result\\markers.jpg", markers);
     Imgcodecs.imwrite(imgPath + "result\\source.jpg", source);
@@ -112,6 +124,8 @@ public class LicensePlateRecognizer {
     Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
     Imgcodecs.imwrite(imgPath + "result\\countryPlate.jpg", countryPlate);
     Imgcodecs.imwrite(imgPath + "result\\countryPlate2.jpg", countryPlate2);
+
+    System.out.println("findLicensePlate: " + licenseNumber);
 
     if (licenseNumber.equals(null) || licenseNumber == null || licenseNumber.equals("")) {
       return "not found";
@@ -167,6 +181,8 @@ public class LicensePlateRecognizer {
     }
 
     String filteredResult = result.replaceAll("[^A-Z0-9]", "");
+
+    System.out.println("recognizeText: " + filteredResult);
     return filteredResult;
   }
 }
