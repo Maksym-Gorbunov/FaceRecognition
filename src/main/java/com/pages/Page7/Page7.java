@@ -28,7 +28,7 @@ public class Page7 extends JPanel implements Pages {
   private String result;
   private ImgFile selectedImgFile;
   private int selectedIndex;
-
+  private JSlider thrashSlider;
 
   public Page7(Gui gui) {
     this.gui = gui;
@@ -66,7 +66,8 @@ public class Page7 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
         if (selectedImgFile != null) {
-          result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), 100);
+          int thresh = thrashSlider.getValue();
+          result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), thresh);
           resultField.setText(result);
           selectedImgFile.setLicenseNumber(result);
         }
@@ -115,6 +116,14 @@ public class Page7 extends JPanel implements Pages {
     btnsPanel.add(openBtn);
     btnsPanel.add(recognizeBtn);
     recognizeBtn.setEnabled(false);
+
+
+    thrashSlider = new JSlider(JSlider.HORIZONTAL, 0, 250, 80);
+    thrashSlider.setMinorTickSpacing(10);
+    thrashSlider.setMajorTickSpacing(50);
+    thrashSlider.setPaintTicks(true);
+    thrashSlider.setPaintLabels(true);
+    btnsPanel.add(thrashSlider);
   }
 
 }
