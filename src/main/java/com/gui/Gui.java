@@ -80,7 +80,7 @@ public class Gui extends JFrame {
     tab7 = new Page7(Gui.this);
     tab8 = new Page8(Gui.this);
 
-    tabs.setSelectedIndex(7);
+    tabs.setSelectedIndex(6);
   }
 
   private void createMenuBar() {
