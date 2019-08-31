@@ -130,8 +130,9 @@ public class Page7 extends JPanel implements Pages {
     thrashSlider.setMajorTickSpacing(50);
     thrashSlider.setPaintTicks(true);
     thrashSlider.setPaintLabels(true);
-    mainLeftBottom.add(thrashSlider);
+//    mainLeftBottom.add(thrashSlider);
     //toDo add grid on mailLeft
+    // change design op page 7, need more
   }
 
 }
