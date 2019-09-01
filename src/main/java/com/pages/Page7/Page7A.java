@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.awt.*;
 
-public class Page7 extends JPanel implements Pages {
+public class Page7A extends JPanel implements Pages {
 
   private JFrame gui;
   private JPanel tab7;
@@ -35,7 +35,7 @@ public class Page7 extends JPanel implements Pages {
   private int height = 220;
 
 
-  public Page7(Gui gui) {
+  public Page7A(Gui gui) {
     this.gui = gui;
     tab7 = gui.getTab7();
     initComponents();
