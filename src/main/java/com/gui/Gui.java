@@ -51,14 +51,14 @@ public class Gui extends JFrame {
     tab7 = new JPanel();
     tab8 = new JPanel();
     //////////////////////////////////////////////////////////////////////
-//    tab1.setBackground(Color.CYAN);
-//    tab2.setBackground(Color.CYAN);
-//    tab3.setBackground(Color.CYAN);
-//    tab4.setBackground(Color.CYAN);
-//    tab5.setBackground(Color.CYAN);
-//    tab6.setBackground(Color.CYAN);
-//    tab7.setBackground(Color.CYAN);
-//    tab8.setBackground(Color.CYAN);
+    tab1.setBackground(Color.CYAN);
+    tab2.setBackground(Color.CYAN);
+    tab3.setBackground(Color.CYAN);
+    tab4.setBackground(Color.CYAN);
+    tab5.setBackground(Color.CYAN);
+    tab6.setBackground(Color.CYAN);
+    tab7.setBackground(Color.CYAN);
+    tab8.setBackground(Color.CYAN);
     //////////////////////////////////////////////////////////////////////
     tabs.addTab("Webbcam", tab1);
     tabs.addTab("MongoDB", tab2);

@@ -44,7 +44,7 @@ public class LicensePlateRecognizer {
 //  private int thresh;
 
   // Searching license plate on image and recognize it
-  public String findLicensePlate(String imagePath, int thresh) {
+  public String findLicensePlate(String imagePath, int thresh, int blurValue) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
     licenseNumber = "";
@@ -67,7 +67,8 @@ public class LicensePlateRecognizer {
     Imgproc.morphologyEx(gray, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
     Core.add(gray, topHat, grayPlusTopHat);
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
-    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
+    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(blurValue, blurValue), 1);
+//    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
 
 
 

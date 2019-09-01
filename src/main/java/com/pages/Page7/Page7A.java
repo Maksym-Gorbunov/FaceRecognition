@@ -109,6 +109,7 @@ public class Page7A extends JPanel implements Pages {
     imagePanel2 = new ImagePanel(width, height);
     mainLeft.add(imagePanel);
     mainLeft.add(imagePanel2);
+
     jList = new JList((ListModel) data);
     jList.setFixedCellWidth(20);
     jList.setVisibleRowCount(15);
@@ -119,6 +120,7 @@ public class Page7A extends JPanel implements Pages {
     JLabel resultLabel = new JLabel("RESULT: ");
     mainRight.add(resultLabel);
     mainRight.add(resultField);
+
     resultField.setPreferredSize(new Dimension(Constants.FRAME_WIDTH - Constants.VIDEO_WIDTH, 20));
     btnsPanel.add(openBtn);
     btnsPanel.add(recognizeBtn);
