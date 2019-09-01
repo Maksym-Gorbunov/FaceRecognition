@@ -136,6 +136,9 @@ public class Page7 extends JPanel implements Pages {
     //toDo add grid on mailLeft
     //toDo add grid on mailLeft
     //toDo add grid on mailLeft
+    //toDo add grid on mailLeft
+    //toDo add grid on mailLeft
+    //toDo add grid on mailLeft
     // change design op page 7, need more
   }
 
