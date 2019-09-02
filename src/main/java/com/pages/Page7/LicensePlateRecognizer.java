@@ -41,7 +41,9 @@ public class LicensePlateRecognizer {
   private Scalar red = new Scalar(0, 0, 255, 255);
   private List<MatOfPoint> contours;
   private Mat licensePlate;
-//  private int thresh;
+  //  private int thresh;
+  private Mat[] filteredImages = new Mat[2];
+
 
   // Searching license plate on image and recognize it
   public String findLicensePlate(String imagePath, int thresh, int blurValue) {
@@ -68,29 +70,29 @@ public class LicensePlateRecognizer {
     Core.add(gray, topHat, grayPlusTopHat);
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
     Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(blurValue, blurValue), 1);
-//    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
-
-
-
 
     Imgproc.threshold(blur, threshold, thresh, 255, Imgproc.THRESH_BINARY_INV);
     Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     contors();
-//    if(licenseNumber.length()<5){
-//      Imgproc.threshold(blur, threshold, 100, 255, Imgproc.THRESH_BINARY_INV);
-//      Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-//      contors();
-//    }
-//    if(licenseNumber.length()<5){
-//      Imgproc.threshold(blur, threshold, 150, 255, Imgproc.THRESH_BINARY_INV);
-//      Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-//      contors();
-//    }
-
+    if (threshold != null) {
+      Mat t = new Mat();
+      threshold.copyTo(t);
+      filteredImages[0] = t;
+    }
+    if (source != null) {
+      Mat s = new Mat();
+      source.copyTo(s);
+      filteredImages[1] = s;
+    }
     if (licenseNumber.equals(null) || licenseNumber == null || licenseNumber.equals("")) {
       return "not found";
     }
     return licenseNumber;
+  }
+
+
+  public Mat[] getFilteredImages() {
+    return filteredImages;
   }
 
 
