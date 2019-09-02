@@ -11,14 +11,11 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
 import static com.constants.Constants.imgPath;
 import static org.opencv.imgproc.Imgproc.*;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +27,7 @@ public class LicensePlateRecognizer {
   private Mat kernel;
   private Mat sourceORG;
   private Mat source;
+  private Mat licensePlateImg;
   private Mat gray;
   private Mat topHat;
   private Mat blackHat;
@@ -42,7 +40,7 @@ public class LicensePlateRecognizer {
   private List<MatOfPoint> contours;
   private Mat licensePlate;
   //  private int thresh;
-  private Mat[] filteredImages = new Mat[2];
+  private Mat[] filteredImages = new Mat[3];
 
 
   // Searching license plate on image and recognize it
@@ -62,6 +60,10 @@ public class LicensePlateRecognizer {
     blur = new Mat();
     threshold = new Mat();
     contours = new ArrayList<>();
+    licensePlateImg = new Mat();
+
+
+
 
     ///////////////////////////// FILTERS START ///////////////////////////////////////
     Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
@@ -84,6 +86,12 @@ public class LicensePlateRecognizer {
       source.copyTo(s);
       filteredImages[1] = s;
     }
+    if(licensePlateImg != null){
+      Mat l = new Mat();
+      licensePlateImg.copyTo(l);
+      filteredImages[2] = l;
+    }
+
     if (licenseNumber.equals(null) || licenseNumber == null || licenseNumber.equals("")) {
       return "not found";
     }
@@ -94,6 +102,10 @@ public class LicensePlateRecognizer {
   public Mat[] getFilteredImages() {
     return filteredImages;
   }
+
+
+
+
 
 
   private Mat filterPlateImage(Mat sourceImage) {
@@ -138,14 +150,14 @@ public class LicensePlateRecognizer {
       MatOfPoint2f pointsArea = new MatOfPoint2f(contour.toArray());
       RotatedRect rectRot = Imgproc.minAreaRect(pointsArea);
       // validate contour by area
-      if ((rectRot.size.area() > 2000) && (rectRot.size.area() < 7000)) {
+      if ((rectRot.size.area() > 500) && (rectRot.size.area() < 7000)) {
         Point rotated_rect_points[] = new Point[4];
         rectRot.points(rotated_rect_points);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
         //validate contour by side ratio
         if ((rect.width > 3 * rect.height) && (rect.width < 6 * rect.height)) {
           //draw green rect around valid contour
-          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 2);
+          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 3);
           licensePlate = new Mat(sourceORG, rect);
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
@@ -153,6 +165,7 @@ public class LicensePlateRecognizer {
             Imgcodecs.imwrite(imgPath + "result\\licensePlate" + i + ".jpg", licensePlate);
             String tempText = recognizeText(imgPath + "result\\licensePlate" + i + ".jpg");
             if (tempText.length() > licenseNumber.length()) {
+              licensePlateImg = licensePlate;
               licenseNumber = tempText;
             }
           }
@@ -172,5 +185,23 @@ public class LicensePlateRecognizer {
     Imgcodecs.imwrite(imgPath + "result\\grayPlusTopHatMinusBlackHat.jpg", grayPlusTopHatMinusBlackHat);
     Imgcodecs.imwrite(imgPath + "result\\blur.jpg", blur);
     Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
+  }
+
+
+
+
+  public void test(Mat sourceImage) {
+    Mat grayImage = new Mat();
+    Mat tempImage = new Mat();
+
+    Imgcodecs.imwrite(imgPath + "result\\000.jpg", sourceImage);
+
+    Scalar minBlue = new Scalar(0, 0, 0, 0);
+    Scalar maxBlue = new Scalar(255, 0, 0, 0);
+
+    Core.inRange(sourceImage, minBlue, maxBlue, tempImage);
+
+    Imgcodecs.imwrite(imgPath + "result\\111.jpg", tempImage);
+
   }
 }

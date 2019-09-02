@@ -11,6 +11,7 @@ public class ImgFile extends File {
   private String licenseNumber = "- - -";
   private Mat thresholdImg = null;
   private Mat contoursImg = null;
+  private Mat licensePlateImg = null;
 
   public ImgFile(String pathname) {
     super(pathname);
@@ -44,5 +45,13 @@ public class ImgFile extends File {
 
   public void setContoursImg(Mat contoursImg) {
     this.contoursImg = contoursImg;
+  }
+
+  public Mat getLicensePlateImg() {
+    return licensePlateImg;
+  }
+
+  public void setLicensePlateImg(Mat licensePlateImg) {
+    this.licensePlateImg = licensePlateImg;
   }
 }
