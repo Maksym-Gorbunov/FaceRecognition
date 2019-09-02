@@ -11,11 +11,14 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
 import static com.constants.Constants.imgPath;
 import static org.opencv.imgproc.Imgproc.*;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +66,6 @@ public class LicensePlateRecognizer {
     licensePlateImg = new Mat();
 
 
-
-
     ///////////////////////////// FILTERS START ///////////////////////////////////////
     Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
     Imgproc.morphologyEx(gray, topHat, Imgproc.MORPH_TOPHAT, kernel);
@@ -86,7 +87,7 @@ public class LicensePlateRecognizer {
       source.copyTo(s);
       filteredImages[1] = s;
     }
-    if(licensePlateImg != null){
+    if (licensePlateImg != null) {
       Mat l = new Mat();
       licensePlateImg.copyTo(l);
       filteredImages[2] = l;
@@ -102,10 +103,6 @@ public class LicensePlateRecognizer {
   public Mat[] getFilteredImages() {
     return filteredImages;
   }
-
-
-
-
 
 
   private Mat filterPlateImage(Mat sourceImage) {
@@ -157,7 +154,8 @@ public class LicensePlateRecognizer {
         //validate contour by side ratio
         if ((rect.width > 3 * rect.height) && (rect.width < 6 * rect.height)) {
           //draw green rect around valid contour
-          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 3);
+//          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 3);
+          Imgproc.rectangle(source, rect.tl(), rect.br(), red, 3);
           licensePlate = new Mat(sourceORG, rect);
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
@@ -167,6 +165,7 @@ public class LicensePlateRecognizer {
             if (tempText.length() > licenseNumber.length()) {
               licensePlateImg = licensePlate;
               licenseNumber = tempText;
+              Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
             }
           }
         }
@@ -186,8 +185,6 @@ public class LicensePlateRecognizer {
     Imgcodecs.imwrite(imgPath + "result\\blur.jpg", blur);
     Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
   }
-
-
 
 
   public void test(Mat sourceImage) {

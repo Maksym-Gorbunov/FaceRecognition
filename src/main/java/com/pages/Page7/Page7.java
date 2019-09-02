@@ -103,7 +103,6 @@ public class Page7 extends JPanel implements Pages {
             imgContoursPanel.clear();
           }
 
-          System.out.println(recognizer.getFilteredImages()[2].empty());
           if (recognizer.getFilteredImages()[2] != null && !recognizer.getFilteredImages()[2].empty()) {
             selectedImgFile.setLicensePlateImg(recognizer.getFilteredImages()[2]);
             imgLicensePlatePanel.loadMatImage(recognizer.getFilteredImages()[2]);
