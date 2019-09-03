@@ -4,8 +4,9 @@ import com.constants.Constants;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
+import org.bytedeco.javacpp.opencv_core;
 import org.opencv.core.*;
-import org.opencv.core.Point;
+//import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
@@ -14,12 +15,14 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import static com.constants.Constants.imgPath;
+import static org.opencv.core.Core.flip;
+import static org.opencv.core.Core.transpose;
 import static org.opencv.imgproc.Imgproc.*;
 
-import org.opencv.core.Core;
+import org.opencv.core.Core.*;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-
+//import org.opencv_core;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +50,7 @@ public class LicensePlateRecognizer {
   private Mat licensePlate;
   private Mat[] filteredImages = new Mat[3];
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
+  private Mat getLicensePlateTemp;
 
 
   // Searching license plate on image and recognize it
@@ -183,10 +187,17 @@ public class LicensePlateRecognizer {
 
 
           //rotation test here
-          RotatedRect rectRot2 = new RotatedRect();
-          rectRot2 = rectRot.clone();
-          rectRot2.angle = rectRot.angle + 30;
-          Imgproc.rectangle(threshold, rect.tl(), rect.br(), red, 1);
+//          RotatedRect rectRot2 = new RotatedRect();
+//          rectRot2 = rectRot.clone();
+//          rectRot2.angle = -90;
+//          Point rotated_rect_points2[] = new Point[4];
+//          rectRot2.points(rotated_rect_points2);
+//          Rect rect2 = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points2));
+//
+//
+//
+//          Imgproc.rectangle(source, rect2.tl(), rect2.br(), blue, 2);
+
 
 
 
@@ -197,6 +208,9 @@ public class LicensePlateRecognizer {
 
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
+
+            rotateImage(licensePlate, 20);
+
             licensePlate = filterPlateImage(licensePlate);
             Imgcodecs.imwrite(imgPath + "result\\licensePlate" + i + ".jpg", licensePlate);
             String tempText = recognizeText(imgPath + "result\\licensePlate" + i + ".jpg");
@@ -236,4 +250,22 @@ public class LicensePlateRecognizer {
     Core.inRange(sourceImage, minBlue, maxBlue, tempImage);
     Imgcodecs.imwrite(imgPath + "result\\111.jpg", tempImage);
   }
+
+
+
+
+  private void rotateImage(Mat img, int angle){
+    Mat source = new Mat();
+    img.copyTo(source);
+//    Mat source = Imgcodecs.imread(Constants.imgPath+"cars\\regnums\\COS799.jpg");
+    Mat rotMat = new Mat(2, 3, CvType.CV_32FC1);
+    Mat destination = new Mat(source.rows(), source.cols(), source.type());
+    Point center = new Point(destination.cols() / 2, destination.rows() / 2);
+    rotMat = Imgproc.getRotationMatrix2D(center, angle, 1);
+    Imgproc.warpAffine(source, destination, rotMat, destination.size());
+    Imgcodecs.imwrite(Constants.imgPath+"result\\rotated.jpg", destination);
+  }
+
+
+
 }
