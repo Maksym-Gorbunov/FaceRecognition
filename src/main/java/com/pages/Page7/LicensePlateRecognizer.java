@@ -40,29 +40,24 @@ public class LicensePlateRecognizer {
   private Mat grayPlusTopHatMinusBlackHat;
   private Mat blur;
   private Mat threshold;
+  private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
   private List<MatOfPoint> contours;
   private Mat licensePlate;
   private Mat[] filteredImages = new Mat[3];
+  private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
 
 
   // Searching license plate on image and recognize it
   public String findLicensePlate(String imagePath, int thresh, int blurValue) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    try {
-      FileUtils.deleteDirectory(new File(imgPath + "result"));
-      File dir = new File(imgPath + "result");
-      dir.mkdir();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
+    clearFolder(imgPath + "result");
     licenseNumber = "";
     kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
-
     Mat largeImage = new Mat();
     sourceORG = new Mat();
+    //resize image
     largeImage = Imgcodecs.imread(imagePath);
     float w = largeImage.width();
     float h = largeImage.height();
@@ -71,8 +66,6 @@ public class LicensePlateRecognizer {
     h = w / ratio;
     Imgproc.resize(largeImage, sourceORG, new Size(w, h));
     Imgcodecs.imwrite(imgPath + "result\\aaa.jpg", sourceORG);
-
-
     source = new Mat();
     sourceORG.copyTo(source);
     gray = new Mat();
@@ -84,18 +77,10 @@ public class LicensePlateRecognizer {
     threshold = new Mat();
     contours = new ArrayList<>();
     licensePlateImg = new Mat();
-
-
-    ///////////////////////////// FILTERS START ///////////////////////////////////////
-    Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
-    Imgproc.morphologyEx(gray, topHat, Imgproc.MORPH_TOPHAT, kernel);
-    Imgproc.morphologyEx(gray, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
-    Core.add(gray, topHat, grayPlusTopHat);
-    Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
-    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(blurValue, blurValue), 1);
-
-    Imgproc.threshold(blur, threshold, thresh, 255, Imgproc.THRESH_BINARY_INV);
-    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    licensePlate = new Mat();
+    //filter
+    filterImage(thresh, blurValue);
+    //check contours
     contors();
     if (threshold != null) {
       Mat t = new Mat();
@@ -112,11 +97,31 @@ public class LicensePlateRecognizer {
       licensePlateImg.copyTo(l);
       filteredImages[2] = l;
     }
-
     if (licenseNumber.equals(null) || licenseNumber == null || licenseNumber.equals("")) {
       return "not found";
     }
     return licenseNumber;
+  }
+
+  private void clearFolder(String folderPath) {
+    try {
+      FileUtils.deleteDirectory(new File(folderPath));
+      File dir = new File(folderPath);
+      dir.mkdir();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void filterImage(int thresh, int blurValue) {
+    Imgproc.cvtColor(source, gray, Imgproc.COLOR_RGB2GRAY);
+    Imgproc.morphologyEx(gray, topHat, Imgproc.MORPH_TOPHAT, kernel);
+    Imgproc.morphologyEx(gray, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
+    Core.add(gray, topHat, grayPlusTopHat);
+    Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
+    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(blurValue, blurValue), 1);
+    Imgproc.threshold(blur, threshold, thresh, 255, Imgproc.THRESH_BINARY_INV);
+    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
   }
 
 
@@ -168,20 +173,28 @@ public class LicensePlateRecognizer {
       RotatedRect rectRot = Imgproc.minAreaRect(pointsArea);
       // validate contour by area
       if ((rectRot.size.area() > 1500) && (rectRot.size.area() < 10000)) {
-//      if ((rectRot.size.area() > 1500) && (rectRot.size.area() < 10000)) {
         Point rotated_rect_points[] = new Point[4];
         rectRot.points(rotated_rect_points);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
-        //validate contour by side ratio
-//        if ((rect.width > 3 * rect.height) && (rect.width < 6 * rect.height)) {
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
-
-//        if (rect.width < 6 * rect.height) {
-          //draw green rect around valid contour
-//          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 3);
           Imgproc.rectangle(source, rect.tl(), rect.br(), red, 3);
           Imgproc.rectangle(threshold, rect.tl(), rect.br(), red, 3);
           licensePlate = new Mat(sourceORG, rect);
+
+
+          //rotation test here
+          RotatedRect rectRot2 = new RotatedRect();
+          rectRot2 = rectRot.clone();
+          rectRot2.angle = rectRot.angle + 30;
+          Imgproc.rectangle(threshold, rect.tl(), rect.br(), red, 1);
+
+
+
+
+
+
+
+
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
             licensePlate = filterPlateImage(licensePlate);
@@ -192,6 +205,7 @@ public class LicensePlateRecognizer {
               licenseNumber = tempText;
               Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
               Imgproc.rectangle(threshold, rect.tl(), rect.br(), green, 3);
+              System.out.println(rectRot.angle);
             }
           }
         }
