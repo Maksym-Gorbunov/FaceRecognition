@@ -192,7 +192,7 @@ public class Page7 extends JPanel implements Pages {
     imgTabPane.add("Contours", imgContoursPanel);
     imgTabPane.add("LPlate", imgLicensePlatePanel);
 
-    topLeft.setBackground(Color.yellow);
+//    topLeft.setBackground(Color.yellow);
 
     topLeft.add(imgTabPane);
 

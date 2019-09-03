@@ -152,7 +152,8 @@ public class LicensePlateRecognizer {
         rectRot.points(rotated_rect_points);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
         //validate contour by side ratio
-        if ((rect.width > 3 * rect.height) && (rect.width < 6 * rect.height)) {
+//        if ((rect.width > 3 * rect.height) && (rect.width < 6 * rect.height)) {
+        if ((rect.width > 2 * rect.height) && (rect.width < 6 * rect.height)) {
           //draw green rect around valid contour
 //          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 3);
           Imgproc.rectangle(source, rect.tl(), rect.br(), red, 3);
