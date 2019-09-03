@@ -212,10 +212,13 @@ public class Page7 extends JPanel implements Pages {
     JLabel resultLabel = new JLabel("RESULT: ");
     topRight.add(resultLabel);
     topRight.add(resultField);
+    JPanel btns = new JPanel();
+    btns.add(openBtn);
+    btns.add(recognizeBtn);
+    topRight.add(btns);
 
-
-    bottomRight.add(openBtn);
-    bottomRight.add(recognizeBtn);
+//    bottomRight.add(openBtn);
+//    bottomRight.add(recognizeBtn);
 
     bottomLeft.setLayout(new GridLayout(3, 2));
 

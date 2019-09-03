@@ -3,6 +3,7 @@ package com.pages.Page7;
 import com.constants.Constants;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -20,6 +21,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +55,21 @@ public class LicensePlateRecognizer {
     licenseNumber = "";
     kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
     sourceORG = Imgcodecs.imread(imagePath);
+
+
+    try {
+      FileUtils.deleteDirectory(new File(imgPath + "result"));
+      File dir = new File(imgPath + "result");
+      dir.mkdir();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    Mat resizedImg = new Mat();
+    Imgproc.resize(sourceORG, resizedImg, new Size(800, 533));
+    sourceORG = resizedImg;
+    Imgcodecs.imwrite(imgPath + "result\\aaa.jpg", sourceORG);
+
+
     source = new Mat();
     sourceORG.copyTo(source);
     gray = new Mat();
@@ -147,16 +164,19 @@ public class LicensePlateRecognizer {
       MatOfPoint2f pointsArea = new MatOfPoint2f(contour.toArray());
       RotatedRect rectRot = Imgproc.minAreaRect(pointsArea);
       // validate contour by area
-      if ((rectRot.size.area() > 500) && (rectRot.size.area() < 7000)) {
+      if ((rectRot.size.area() > 1500) && (rectRot.size.area() < 10000)) {
+//      if ((rectRot.size.area() > 1500) && (rectRot.size.area() < 10000)) {
         Point rotated_rect_points[] = new Point[4];
         rectRot.points(rotated_rect_points);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
         //validate contour by side ratio
 //        if ((rect.width > 3 * rect.height) && (rect.width < 6 * rect.height)) {
-        if ((rect.width > 2 * rect.height) && (rect.width < 6 * rect.height)) {
+//        if ((rect.width > 1.2 * rect.height) && (rect.width < 6 * rect.height)) {
+        if (rect.width < 6 * rect.height) {
           //draw green rect around valid contour
 //          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 3);
           Imgproc.rectangle(source, rect.tl(), rect.br(), red, 3);
+          Imgproc.rectangle(threshold, rect.tl(), rect.br(), red, 3);
           licensePlate = new Mat(sourceORG, rect);
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
@@ -167,6 +187,7 @@ public class LicensePlateRecognizer {
               licensePlateImg = licensePlate;
               licenseNumber = tempText;
               Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
+              Imgproc.rectangle(threshold, rect.tl(), rect.br(), green, 3);
             }
           }
         }
