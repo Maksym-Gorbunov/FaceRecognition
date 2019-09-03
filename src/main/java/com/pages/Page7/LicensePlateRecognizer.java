@@ -44,19 +44,12 @@ public class LicensePlateRecognizer {
   private Scalar red = new Scalar(0, 0, 255, 255);
   private List<MatOfPoint> contours;
   private Mat licensePlate;
-  //  private int thresh;
   private Mat[] filteredImages = new Mat[3];
 
 
   // Searching license plate on image and recognize it
   public String findLicensePlate(String imagePath, int thresh, int blurValue) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-    licenseNumber = "";
-    kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
-    sourceORG = Imgcodecs.imread(imagePath);
-
-
     try {
       FileUtils.deleteDirectory(new File(imgPath + "result"));
       File dir = new File(imgPath + "result");
@@ -64,9 +57,19 @@ public class LicensePlateRecognizer {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    Mat resizedImg = new Mat();
-    Imgproc.resize(sourceORG, resizedImg, new Size(800, 533));
-    sourceORG = resizedImg;
+
+    licenseNumber = "";
+    kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+
+    Mat largeImage = new Mat();
+    sourceORG = new Mat();
+    largeImage = Imgcodecs.imread(imagePath);
+    float w = largeImage.width();
+    float h = largeImage.height();
+    float ratio = w / h;
+    w = 800;
+    h = w / ratio;
+    Imgproc.resize(largeImage, sourceORG, new Size(w, h));
     Imgcodecs.imwrite(imgPath + "result\\aaa.jpg", sourceORG);
 
 
@@ -171,8 +174,9 @@ public class LicensePlateRecognizer {
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
         //validate contour by side ratio
 //        if ((rect.width > 3 * rect.height) && (rect.width < 6 * rect.height)) {
-//        if ((rect.width > 1.2 * rect.height) && (rect.width < 6 * rect.height)) {
-        if (rect.width < 6 * rect.height) {
+        if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
+
+//        if (rect.width < 6 * rect.height) {
           //draw green rect around valid contour
 //          Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0), 3);
           Imgproc.rectangle(source, rect.tl(), rect.br(), red, 3);
@@ -212,15 +216,10 @@ public class LicensePlateRecognizer {
   public void test(Mat sourceImage) {
     Mat grayImage = new Mat();
     Mat tempImage = new Mat();
-
     Imgcodecs.imwrite(imgPath + "result\\000.jpg", sourceImage);
-
     Scalar minBlue = new Scalar(0, 0, 0, 0);
     Scalar maxBlue = new Scalar(255, 0, 0, 0);
-
     Core.inRange(sourceImage, minBlue, maxBlue, tempImage);
-
     Imgcodecs.imwrite(imgPath + "result\\111.jpg", tempImage);
-
   }
 }
