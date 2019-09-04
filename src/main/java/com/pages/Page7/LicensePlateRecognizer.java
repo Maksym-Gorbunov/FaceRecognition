@@ -51,14 +51,20 @@ public class LicensePlateRecognizer {
   private Mat[] filteredImages = new Mat[3];
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
   private Mat getLicensePlateTemp;
+  private Mat rotated1;
+  private Mat rotated2;
+  private String temp1;
+  private String temp2;
 
 
   // Searching license plate on image and recognize it
-  public String findLicensePlate(String imagePath, int thresh, int blurValue) {
+  public String findLicensePlate(String imagePath, int thresh, int blurValue, boolean rotation) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     clearFolder(imgPath + "result");
     licenseNumber = "";
     kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+    rotated1 = new Mat();
+    rotated2 = new Mat();
     Mat largeImage = new Mat();
     sourceORG = new Mat();
     //resize image
@@ -82,10 +88,15 @@ public class LicensePlateRecognizer {
     contours = new ArrayList<>();
     licensePlateImg = new Mat();
     licensePlate = new Mat();
+    temp1 = "";
+    temp2 = "";
+
+
+
     //filter
     filterImage(thresh, blurValue);
     //check contours
-    contors();
+    contors(rotation);
     if (threshold != null) {
       Mat t = new Mat();
       threshold.copyTo(t);
@@ -170,7 +181,7 @@ public class LicensePlateRecognizer {
   }
 
 
-  private void contors() {
+  private void contors(boolean rotation) {
     int i = 0;
     for (MatOfPoint contour : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(contour.toArray());
@@ -185,40 +196,52 @@ public class LicensePlateRecognizer {
           Imgproc.rectangle(threshold, rect.tl(), rect.br(), red, 3);
           licensePlate = new Mat(sourceORG, rect);
 
+          licensePlate = filterPlateImage(licensePlate);
+
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
-
+            System.out.println("rotation: "+rotation);
             //rotation
-            int angle = (int) rectRot.angle;
-            Mat rotated1 = new Mat();
-            Mat rotated2 = new Mat();
-            rotated1 = rotateImage(licensePlate, angle);
-            rotated2 = rotateImage(licensePlate, -angle);
+            if (rotation) {
+              int angle = (int) rectRot.angle;
 
-            Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "A.jpg", rotated1);
-            Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "B.jpg", rotated2);
+              rotated1 = rotateImage(licensePlate, angle);
+              rotated2 = rotateImage(licensePlate, -angle);
+              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "A.jpg", rotated1);
+              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "B.jpg", rotated2);
 
-
-
-
-
-
-            licensePlate = filterPlateImage(licensePlate);
+              temp1 = recognizeText(imgPath + "result\\rotated" + i + "A.jpg");
+              temp2 = recognizeText(imgPath + "result\\rotated" + i + "B.jpg");
+              String tempText = temp1;
+              if (temp2.length() > temp1.length()) {
+                tempText = temp2;
+              }
+              if (tempText.length() > licenseNumber.length()) {
+                licensePlateImg = licensePlate;
+                licenseNumber = tempText;
+                Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
+                Imgproc.rectangle(threshold, rect.tl(), rect.br(), green, 3);
+              }
+            }
+          } else {
+//            licensePlate = filterPlateImage(licensePlate);
             Imgcodecs.imwrite(imgPath + "result\\licensePlate" + i + ".jpg", licensePlate);
             String tempText = recognizeText(imgPath + "result\\licensePlate" + i + ".jpg");
+
             if (tempText.length() > licenseNumber.length()) {
               licensePlateImg = licensePlate;
               licenseNumber = tempText;
               Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
               Imgproc.rectangle(threshold, rect.tl(), rect.br(), green, 3);
-//              System.out.println(rectRot.angle);
             }
           }
         }
+
       }
       i++;
     }
-  }
+
+}
 
   public void saveImages() {
     Imgcodecs.imwrite(imgPath + "result\\source.jpg", source);
@@ -258,7 +281,6 @@ public class LicensePlateRecognizer {
       rotatedAngle = -angle;
       System.out.println("plus");
     }
-
     Mat temp = new Mat();
     img.copyTo(temp);
     Mat rotatedImg = new Mat(2, 3, CvType.CV_32FC1);

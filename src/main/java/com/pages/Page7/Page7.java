@@ -26,6 +26,7 @@ public class Page7 extends JPanel implements Pages {
   private ImagePanel imgLicensePlatePanel;
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
+  private JButton rotationBtn = new JButton("rotation");
   private JList jList;
   private JTextField resultField = new JTextField("result field");
   private DefaultListModel<ImgFile> data = new DefaultListModel<>();
@@ -36,6 +37,8 @@ public class Page7 extends JPanel implements Pages {
   private JSlider blurSlider;
   private int width = 400;
   private int height = 300;
+  boolean rotation = true;
+
 
 
   public Page7(Gui gui) {
@@ -79,7 +82,7 @@ public class Page7 extends JPanel implements Pages {
         if (selectedImgFile != null) {
           int thresh = thrashSlider.getValue();
           int blur = blurSlider.getValue();
-          result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), thresh, blur);
+          result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), thresh, blur, rotation);
           resultField.setText(result);
           selectedImgFile.setLicenseNumber(result);
 
