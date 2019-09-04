@@ -50,7 +50,6 @@ public class LicensePlateRecognizer {
   private Mat licensePlate;
   private Mat[] filteredImages = new Mat[3];
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
-  private Mat getLicensePlateTemp;
 
 
   // Searching license plate on image and recognize it
@@ -180,36 +179,18 @@ public class LicensePlateRecognizer {
         Point rotated_rect_points[] = new Point[4];
         rectRot.points(rotated_rect_points);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
-        if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
+        if (true) {
+//        if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
           Imgproc.rectangle(source, rect.tl(), rect.br(), red, 3);
           Imgproc.rectangle(threshold, rect.tl(), rect.br(), red, 3);
           licensePlate = new Mat(sourceORG, rect);
-
-
-          //rotation test here
-//          RotatedRect rectRot2 = new RotatedRect();
-//          rectRot2 = rectRot.clone();
-//          rectRot2.angle = -90;
-//          Point rotated_rect_points2[] = new Point[4];
-//          rectRot2.points(rotated_rect_points2);
-//          Rect rect2 = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points2));
-//
-//
-//
-//          Imgproc.rectangle(source, rect2.tl(), rect2.br(), blue, 2);
-
-
-
-
-
-
-
-
-
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
 
-            rotateImage(licensePlate, 20);
+            int angle = (int) rectRot.angle;
+            rotateImage(licensePlate, angle, i);
+            System.out.println(i + ": " + angle);
+
 
             licensePlate = filterPlateImage(licensePlate);
             Imgcodecs.imwrite(imgPath + "result\\licensePlate" + i + ".jpg", licensePlate);
@@ -252,20 +233,31 @@ public class LicensePlateRecognizer {
   }
 
 
-
-
-  private void rotateImage(Mat img, int angle){
+  private void rotateImage(Mat img, int angle, int i) {
+    int rotatedAngle = 0;
+//    angle = Math.abs(angle);
+    if(angle == 0){
+      return;
+    }
+    if (angle < 0) {
+      rotatedAngle = 90-Math.abs(angle);
+      System.out.println("minus");
+    }
+    if (angle > 0 ) {
+      rotatedAngle = -angle;
+    }
+//    else {
+//      rotatedAngle = -(90 - angle);
+//    }
     Mat source = new Mat();
     img.copyTo(source);
-//    Mat source = Imgcodecs.imread(Constants.imgPath+"cars\\regnums\\COS799.jpg");
     Mat rotMat = new Mat(2, 3, CvType.CV_32FC1);
     Mat destination = new Mat(source.rows(), source.cols(), source.type());
     Point center = new Point(destination.cols() / 2, destination.rows() / 2);
-    rotMat = Imgproc.getRotationMatrix2D(center, angle, 1);
+    rotMat = Imgproc.getRotationMatrix2D(center, rotatedAngle, 1);
     Imgproc.warpAffine(source, destination, rotMat, destination.size());
-    Imgcodecs.imwrite(Constants.imgPath+"result\\rotated.jpg", destination);
+    Imgcodecs.imwrite(Constants.imgPath + "result\\rotated" + i + ".jpg", destination);
   }
-
 
 
 }
