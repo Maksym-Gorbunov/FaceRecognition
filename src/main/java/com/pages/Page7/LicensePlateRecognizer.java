@@ -4,6 +4,7 @@ import com.constants.Constants;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -28,6 +29,11 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 
 import org.opencv.core.MatOfByte;
+
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+
+//import java.awt.geom.*;
 
 
 public class LicensePlateRecognizer {
@@ -298,11 +304,35 @@ public class LicensePlateRecognizer {
   public void ttt() {
     String inputPath = imgPath + "test\\rotated39A.jpg";
     Mat img = Imgcodecs.imread(inputPath);
-    System.out.println(recognizeText(img));
+//    System.out.println(recognizeText(img));
 
     int angle = skewDetectPixelRotation(img);
     System.out.println("angle=" + angle);
 
+
+    BufferedImage buffer = null;
+    try {
+      buffer = Mat2BufferedImage(img);
+
+      AffineTransform tx = new AffineTransform();
+      tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+      tx.shear(-0.5, 0);
+      tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+
+      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+//      BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
+      BufferedImage newImage = new BufferedImage(buffer.getWidth()*2, buffer.getHeight()*2, buffer.getType());
+      op.filter(buffer, newImage);
+
+
+      File output = new File(imgPath + "test\\buff.jpg");
+      ImageIO.write(newImage, "jpg", output);
+
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
 
   }
