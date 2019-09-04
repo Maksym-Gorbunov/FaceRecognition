@@ -4,9 +4,8 @@ import com.constants.Constants;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
-import org.bytedeco.javacpp.opencv_core;
 import org.opencv.core.*;
-//import org.opencv.core.Point;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
@@ -15,18 +14,20 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import static com.constants.Constants.imgPath;
-import static org.opencv.core.Core.flip;
-import static org.opencv.core.Core.transpose;
 import static org.opencv.imgproc.Imgproc.*;
 
-import org.opencv.core.Core.*;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-//import org.opencv_core;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
+
+import org.opencv.core.MatOfByte;
 
 
 public class LicensePlateRecognizer {
@@ -90,7 +91,6 @@ public class LicensePlateRecognizer {
     licensePlate = new Mat();
     temp1 = "";
     temp2 = "";
-
 
 
     //filter
@@ -180,6 +180,33 @@ public class LicensePlateRecognizer {
     return result;
   }
 
+  static BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
+    MatOfByte mob = new MatOfByte();
+    Imgcodecs.imencode(".jpg", matrix, mob);
+    byte ba[] = mob.toArray();
+
+    BufferedImage bi = ImageIO.read(new ByteArrayInputStream(ba));
+    return bi;
+  }
+
+  public String recognizeText(Mat img) {
+    BufferedImage bufferedImage = null;
+    Tesseract tesseract = new Tesseract();
+    String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
+    tesseract.setDatapath(TESS_DATA);
+    String result = "";
+    try {
+      bufferedImage = Mat2BufferedImage(img);
+      result = tesseract.doOCR(bufferedImage);
+    } catch (TesseractException e) {
+      e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    result = result.replaceAll("[^A-Z0-9]", "");
+    return result;
+  }
+
 
   private void contors(boolean rotation) {
     int i = 0;
@@ -198,11 +225,15 @@ public class LicensePlateRecognizer {
 
           licensePlate = filterPlateImage(licensePlate);
 
+
+          //toDo if angle in +-OK diapazon => easy recognition, remove rotate from Page7???
+
+
           //recognize licence plate
           if (licensePlate != null && !licensePlate.empty()) {
-            System.out.println("rotation: "+rotation);
             //rotation
             if (rotation) {
+              System.out.println("with rotation");
               int angle = (int) rectRot.angle;
 
               rotated1 = rotateImage(licensePlate, angle);
@@ -217,13 +248,21 @@ public class LicensePlateRecognizer {
                 tempText = temp2;
               }
               if (tempText.length() > licenseNumber.length()) {
-                licensePlateImg = licensePlate;
                 licenseNumber = tempText;
                 Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
                 Imgproc.rectangle(threshold, rect.tl(), rect.br(), green, 3);
+                if (tempText == temp1) {
+                  licensePlateImg = rotated1;
+                } else {
+                  licensePlateImg = rotated2;
+                }
+                System.out.println(i + " : " + rectRot.angle);
               }
             }
+
+
           } else {
+            System.out.println("without rotation");
 //            licensePlate = filterPlateImage(licensePlate);
             Imgcodecs.imwrite(imgPath + "result\\licensePlate" + i + ".jpg", licensePlate);
             String tempText = recognizeText(imgPath + "result\\licensePlate" + i + ".jpg");
@@ -241,7 +280,7 @@ public class LicensePlateRecognizer {
       i++;
     }
 
-}
+  }
 
   public void saveImages() {
     Imgcodecs.imwrite(imgPath + "result\\source.jpg", source);
@@ -256,6 +295,19 @@ public class LicensePlateRecognizer {
   }
 
 
+  public void ttt() {
+    String inputPath = imgPath + "test\\rotated39A.jpg";
+    Mat img = Imgcodecs.imread(inputPath);
+    System.out.println(recognizeText(img));
+
+    int angle = skewDetectPixelRotation(img);
+    System.out.println("angle=" + angle);
+
+
+
+  }
+
+
   public void test(Mat sourceImage) {
     Mat grayImage = new Mat();
     Mat tempImage = new Mat();
@@ -267,6 +319,7 @@ public class LicensePlateRecognizer {
   }
 
 
+  // Rotate license plate
   private Mat rotateImage(Mat img, int angle) {
     Imgcodecs.imwrite(imgPath + "result\\img.jpg", img);
     int rotatedAngle = 0;
@@ -291,5 +344,136 @@ public class LicensePlateRecognizer {
     return destination;
   }
 
+
+  public void computeSkew(String inFile, String outputFile) {
+    //Load this image in grayscale
+    Mat img = Imgcodecs.imread(inFile, Imgcodecs.IMREAD_GRAYSCALE);
+
+    //Binarize it
+    //Use adaptive threshold if necessary
+    //Imgproc.adaptiveThreshold(img, img, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 15, 40);
+    Imgproc.threshold(img, img, 200, 255, THRESH_BINARY);
+
+    //Invert the colors (because objects are represented as white pixels, and the background is represented by black pixels)
+    Core.bitwise_not(img, img);
+    Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+
+    //We can now perform our erosion, we must declare our rectangle-shaped structuring element and call the erode function
+    Imgproc.erode(img, img, element);
+
+    //Find all white pixels
+    Mat wLocMat = Mat.zeros(img.size(), img.type());
+    Core.findNonZero(img, wLocMat);
+
+    //Create an empty Mat and pass it to the function
+    MatOfPoint matOfPoint = new MatOfPoint(wLocMat);
+
+    //Translate MatOfPoint to MatOfPoint2f in order to user at a next step
+    MatOfPoint2f mat2f = new MatOfPoint2f();
+    matOfPoint.convertTo(mat2f, CvType.CV_32FC2);
+
+    //Get rotated rect of white pixels
+    RotatedRect rotatedRect = Imgproc.minAreaRect(mat2f);
+
+    Point[] vertices = new Point[4];
+    rotatedRect.points(vertices);
+    List<MatOfPoint> boxContours = new ArrayList<>();
+    boxContours.add(new MatOfPoint(vertices));
+    Imgproc.drawContours(img, boxContours, 0, new Scalar(128, 128, 128), -1);
+
+    double resultAngle = rotatedRect.angle;
+    if (rotatedRect.size.width > rotatedRect.size.height) {
+      rotatedRect.angle += 90.f;
+    }
+
+    //Or
+    //rotatedRect.angle = rotatedRect.angle < -45 ? rotatedRect.angle + 90.f : rotatedRect.angle;
+
+    Mat result = deskew(Imgcodecs.imread(inFile), rotatedRect.angle);
+    Imgcodecs.imwrite(outputFile, result);
+
+  }
+
+  public Mat deskew(Mat src, double angle) {
+    Point center = new Point(src.width() / 2, src.height() / 2);
+    Mat rotImage = Imgproc.getRotationMatrix2D(center, angle, 1.0);
+    //1.0 means 100 % scale
+    Size size = new Size(src.width(), src.height());
+    Imgproc.warpAffine(src, src, rotImage, size, Imgproc.INTER_LINEAR + Imgproc.CV_WARP_FILL_OUTLIERS);
+    return src;
+  }
+
+
+  private static int skewDetectPixelRotation(Mat mat) {
+    int[] projections = null;
+    int[] angle_measure = new int[181];
+
+    for (int theta = 0; theta <= 180; theta = theta + 5) {
+      projections = new int[mat.rows()];
+      for (int i = 0; i < mat.rows(); i++) {
+        double[] pixVal;
+        for (int j = 0; j < mat.cols(); j++) {
+          pixVal = mat.get(i, j);
+          if (pixVal[0] == 0)//black pixel
+          {
+            int new_row = rotate(i, j, theta, mat);
+            if (new_row >= 0 && new_row < mat.rows())
+              projections[new_row]++;
+          }
+        }
+      }
+      Mat tempMat = mat.clone();
+      for (int r = 0; r < mat.rows(); r++) {
+        DrawProjection(r, projections[r], tempMat);
+      }
+      //Highgui.imwrite(DEST_PATH+"/out_"+theta+".jpg",tempMat);
+      angle_measure[theta] = criterion_func(projections);
+
+    }
+    int angle = 0;
+    int val = 0;
+    for (int i = 0; i < angle_measure.length; i++) {
+      if (val < angle_measure[i]) {
+        val = angle_measure[i];
+        angle = i;
+      }
+    }
+    return angle;
+  }
+
+  //Rotation about the center of the image
+  private static int rotate(double y1, double x1, int theta, Mat mat) {
+    int x0 = mat.cols() / 2;
+    int y0 = mat.rows() / 2;
+
+    int new_col = (int) ((x1 - x0) * Math.cos(Math.toRadians(theta)) - (y1 - y0) * Math.sin(Math.toRadians(theta)) + x0);
+    int new_row = (int) ((x1 - x0) * Math.sin(Math.toRadians(theta)) + (y1 - y0) * Math.cos(Math.toRadians(theta)) + y0);
+
+    return new_row;
+
+  }
+
+  private static void DrawProjection(int rownum, int projCount, Mat image) {
+    final Point pt1 = new Point(0, -1);
+    final Point pt2 = new Point();
+    pt1.y = rownum;
+    pt2.x = projCount;
+    pt2.y = rownum;
+//    Core.line(image, pt1, pt2, COLOR_GREEN);
+  }
+
+  private static int criterion_func(int[] projections) {
+    int max = 0;
+    //use below code for image rotation
+    //for(int i=0;i<projections.length-1;i++)
+    //result+=Math.pow((projections[i+1]-projections[i]), 2);
+    for (int i = 0; i < projections.length; i++) {
+      if (max < projections[i]) {
+        max = projections[i];
+      }
+    }
+
+    return max;
+  }
 
 }

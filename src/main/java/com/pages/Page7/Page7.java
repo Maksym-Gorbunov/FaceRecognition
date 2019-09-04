@@ -49,7 +49,7 @@ public class Page7 extends JPanel implements Pages {
 
     recognizer = new LicensePlateRecognizer();
 
-
+    recognizer.ttt();
   }
 
   private void addListeners() {
@@ -85,6 +85,8 @@ public class Page7 extends JPanel implements Pages {
           result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), thresh, blur, rotation);
           resultField.setText(result);
           selectedImgFile.setLicenseNumber(result);
+
+
 
 
 
