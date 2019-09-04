@@ -315,14 +315,14 @@ public class LicensePlateRecognizer {
       buffer = Mat2BufferedImage(img);
 
       AffineTransform tx = new AffineTransform();
-      tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+//      tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
       tx.shear(-0.5, 0);
-      tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+//      tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
 
       AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
 
 //      BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
-      BufferedImage newImage = new BufferedImage(buffer.getWidth()*2, buffer.getHeight()*2, buffer.getType());
+      BufferedImage newImage = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
       op.filter(buffer, newImage);
 
 
