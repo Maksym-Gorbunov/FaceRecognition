@@ -97,6 +97,32 @@ public class LPR {
   }
 
 
+  // Rotate license plate image
+  private Mat rotateImage(Mat img, int angle) {
+    Imgcodecs.imwrite(imgPath + "result\\img.jpg", img);
+    int rotatedAngle = 0;
+    if (angle == 0) {
+      return img;
+    }
+    if (angle < 0) {
+      rotatedAngle = 90 - Math.abs(angle);
+      System.out.println("minus");
+    }
+    if (angle > 0) {
+      rotatedAngle = -angle;
+      System.out.println("plus");
+    }
+    Mat temp = new Mat();
+    img.copyTo(temp);
+    Mat rotatedImg = new Mat(2, 3, CvType.CV_32FC1);
+    Mat destination = new Mat(img.rows(), img.cols(), img.type());
+    Point center = new Point(destination.cols() / 2, destination.rows() / 2);
+    rotatedImg = Imgproc.getRotationMatrix2D(center, rotatedAngle, 1);
+    Imgproc.warpAffine(temp, destination, rotatedImg, destination.size());
+    return destination;
+  }
+
+
   // Filter main image, method translated from Python->C++
   private Mat filterImage(Mat img, int thresh) {
     int blurValue = 5;
