@@ -49,7 +49,10 @@ public class Page7 extends JPanel implements Pages {
 
     recognizer = new LicensePlateRecognizer();
 
-    recognizer.ttt();
+//    recognizer.ttt();
+
+    LPR lpr = new LPR();
+    lpr.recognize(Constants.imgPath+"cars\\regnums\\COS799.jpg");
   }
 
   private void addListeners() {
@@ -67,7 +70,6 @@ public class Page7 extends JPanel implements Pages {
           }
         }
         if (!data.isEmpty()) {
-
           jList.setSelectedIndex(0);
           recognizeBtn.setEnabled(true);
         }
@@ -85,16 +87,6 @@ public class Page7 extends JPanel implements Pages {
           result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), thresh, blur, rotation);
           resultField.setText(result);
           selectedImgFile.setLicenseNumber(result);
-
-
-
-
-
-
-          //load filtered images
-//          imgFilteredPanel.loadMatImage(selectedImgFile.getThresholdImg());
-//          imgContoursPanel.loadMatImage(selectedImgFile.getContoursImg());
-//          imgLicensePlatePanel.loadMatImage(selectedImgFile.getLicensePlateImg());
           if (recognizer.getFilteredImages()[0] != null && !recognizer.getFilteredImages()[0].empty()) {
             selectedImgFile.setThresholdImg(recognizer.getFilteredImages()[0]);
             imgFilteredPanel.loadMatImage(recognizer.getFilteredImages()[0]);
@@ -107,7 +99,6 @@ public class Page7 extends JPanel implements Pages {
           } else {
             imgContoursPanel.clear();
           }
-
           if (recognizer.getFilteredImages()[2] != null && !recognizer.getFilteredImages()[2].empty()) {
             selectedImgFile.setLicensePlateImg(recognizer.getFilteredImages()[2]);
             imgLicensePlatePanel.loadMatImage(recognizer.getFilteredImages()[2]);

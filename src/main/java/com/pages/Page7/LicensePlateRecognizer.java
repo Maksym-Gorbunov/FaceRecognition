@@ -57,11 +57,12 @@ public class LicensePlateRecognizer {
   private Mat[] filteredImages = new Mat[3];
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
   private Mat getLicensePlateTemp;
-  private Mat rotated1;
-  private Mat rotated2;
-  private String temp1;
-  private String temp2;
-
+  private Mat rotatedPlate1;
+  private Mat rotatedPlate2;
+  //  private String temp1;
+//  private String temp2;
+  private Mat cuttedPlate;
+  private Mat cuttedP;
 
   // Searching license plate on image and recognize it
   public String findLicensePlate(String imagePath, int thresh, int blurValue, boolean rotation) {
@@ -69,8 +70,8 @@ public class LicensePlateRecognizer {
     clearFolder(imgPath + "result");
     licenseNumber = "";
     kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
-    rotated1 = new Mat();
-    rotated2 = new Mat();
+    rotatedPlate1 = new Mat();
+    rotatedPlate2 = new Mat();
     Mat largeImage = new Mat();
     sourceORG = new Mat();
     //resize image
@@ -94,8 +95,8 @@ public class LicensePlateRecognizer {
     contours = new ArrayList<>();
     licensePlateImg = new Mat();
     licensePlate = new Mat();
-    temp1 = "";
-    temp2 = "";
+//    temp1 = "";
+//    temp2 = "";
 
 
     //filter
@@ -259,28 +260,60 @@ public class LicensePlateRecognizer {
               System.out.println("with rotation");
               int angle = (int) rectRot.angle;
 
-              rotated1 = rotateImage(licensePlate, angle);
-              rotated2 = rotateImage(licensePlate, -angle);
-              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "A.jpg", rotated1);
-              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "B.jpg", rotated2);
+              rotatedPlate1 = rotateImage(licensePlate, angle);
+              rotatedPlate2 = rotateImage(licensePlate, -angle);
 
-              temp1 = recognizeText(imgPath + "result\\rotated" + i + "A.jpg");
-              temp2 = recognizeText(imgPath + "result\\rotated" + i + "B.jpg");
-              String tempText = temp1;
-              if (temp2.length() > temp1.length()) {
-                tempText = temp2;
-              }
-              if (tempText.length() > licenseNumber.length()) {
-                licenseNumber = tempText;
-                Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
-                Imgproc.rectangle(threshold, rect.tl(), rect.br(), green, 3);
-                if (tempText == temp1) {
-                  licensePlateImg = rotated1;
+              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "A.jpg", rotatedPlate1);
+              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "B.jpg", rotatedPlate2);
+
+//              rotatedPlate1 = Imgcodecs.imread(imgPath + "result\\rotated" + i + "A.jpg");
+//              rotatedPlate2 = Imgcodecs.imread(imgPath + "result\\rotated" + i + "B.jpg");
+
+
+              BufferedImage cuttedAndShearedImg1;
+              BufferedImage cuttedAndShearedImg2;
+
+              if ((rotatedPlate1 != null) && (rotatedPlate2 != null)) {
+//                System.out.println("222");
+                cuttedAndShearedImg1 = cutAndShearRotatedPlate(rotatedPlate1);
+                cuttedAndShearedImg2 = cutAndShearRotatedPlate(rotatedPlate2);
+                if ((cuttedAndShearedImg1 != null) && (cuttedAndShearedImg2 != null)) {
+//                  System.out.println("333");
+                  String tempText = "";
+                  String tempText1 = recognizeText(cuttedAndShearedImg1);
+                  String tempText2 = recognizeText(cuttedAndShearedImg2);
+
+                  if (tempText2.length() > tempText1.length()) {
+                    System.out.println("444");
+                    tempText = tempText2;
+                    licensePlateImg = rotatedPlate1;
+                  } else {
+                    tempText = tempText1;
+                    licensePlateImg = rotatedPlate2;
+                  }
+                  if (tempText.length() > licenseNumber.length()) {
+                    licenseNumber = tempText;
+                    Imgproc.rectangle(source, rect.tl(), rect.br(), green, 3);
+                    Imgproc.rectangle(threshold, rect.tl(), rect.br(), green, 3);
+//                    if (tempText.equals() == temp1) {
+//                      licensePlateImg = rotatedPlate1;
+//                    } else {
+//                      licensePlateImg = rotatedPlate2;
+//                    }
+                    System.out.println(i + " : " + rectRot.angle);
+                  }
                 } else {
-                  licensePlateImg = rotated2;
+                  System.out.println("undef");
                 }
-                System.out.println(i + " : " + rectRot.angle);
               }
+
+
+//              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "A.jpg", rotatedPlate1);
+//              Imgcodecs.imwrite(imgPath + "result\\rotated" + i + "B.jpg", rotatedPlate2);
+//
+//              temp1 = recognizeText(imgPath + "result\\rotated" + i + "A.jpg");
+//              temp2 = recognizeText(imgPath + "result\\rotated" + i + "B.jpg");
+
             }
 
 
@@ -322,7 +355,7 @@ public class LicensePlateRecognizer {
     // Cut off plate from horizontal rotated plate image
     Mat copy = new Mat();
     img.copyTo(copy);
-    Mat cuttedPlate = new Mat();
+//    Mat cuttedP = new Mat();
     List<MatOfPoint> contours = new ArrayList<>();
     Mat threshold = new Mat();
     Mat gray = new Mat();
@@ -330,25 +363,36 @@ public class LicensePlateRecognizer {
     Imgproc.threshold(gray, threshold, 80, 255, Imgproc.THRESH_BINARY_INV);
     Imgcodecs.imwrite(imgPath + "\\test\\thresholedPlate.jpg", threshold);
     Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    System.out.println("AAAA");
     for (MatOfPoint c : contours) {
+      System.out.println("BBBB");
       MatOfPoint2f points = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
       int imgArea = (int) threshold.size().area();
       if ((rotatedRect2.size.area() > imgArea * 0.3) && (rotatedRect2.size.area() < imgArea * 0.9)) {
+        System.out.println("CCCC");
         angle = rotatedRect2.angle;
-        Point rotated_rect_points[] = new Point[4];
-        rotatedRect2.points(rotated_rect_points);
-        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
+        Point rotRectPoints[] = new Point[4];
+        rotatedRect2.points(rotRectPoints);
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
+        System.out.println("1a");
         Imgproc.rectangle(copy, rect.tl(), rect.br(), red, 2);
         Imgcodecs.imwrite(imgPath + "test\\copy.jpg", copy);
+        System.out.println("1b");
         System.out.println("*** " + rotatedRect2.angle);
-        cuttedPlate = new Mat(img, rect);
-        Imgcodecs.imwrite(imgPath + "test\\cuttedPlate.jpg", cuttedPlate);
+//        cuttedPlate = new Mat(copy, rect);
+        cuttedP = new Mat(img, rect);
+        System.out.println("1c");
+        Imgcodecs.imwrite(imgPath + "test\\cuttedPlate.jpg", cuttedP);
+        System.out.println("1d");
       }
     }
     //shear cutted plate with
     BufferedImage buffer = null;
+    System.out.println("11111");
     try {
+      System.out.println("22222");
+      System.out.println("cuttedPlate: " + cuttedPlate == null);
       buffer = Mat2BufferedImage(cuttedPlate);
       AffineTransform tx = new AffineTransform();
       //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
@@ -362,6 +406,8 @@ public class LicensePlateRecognizer {
       File output = new File(imgPath + "test\\buff.jpg");
       ImageIO.write(shearedPLate, "jpg", output);
       System.out.println(recognizeText(shearedPLate));
+      //todo extra filter() on plate ???
+
       return shearedPLate;
     } catch (Exception e) {
       e.printStackTrace();
