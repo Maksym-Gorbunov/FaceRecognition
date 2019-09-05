@@ -34,10 +34,11 @@ public class LPR {
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
+  private Mat originalImg;
   private Mat originalContoursImg;
   private Mat filteredContoursImg;
 
-  static BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
+  private BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
     MatOfByte mob = new MatOfByte();
     Imgcodecs.imencode(".jpg", matrix, mob);
     byte ba[] = mob.toArray();
@@ -48,54 +49,56 @@ public class LPR {
   public void recognize(String path) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     Mat original = Imgcodecs.imread(path);
+    originalImg = new Mat();
     originalContoursImg = new Mat();
     filteredContoursImg = new Mat();
-    Mat filtered = filterImage(original);
+    int thresh = 150;
+    Mat filtered = filterImage(original, thresh);
+    original.copyTo(originalImg);
     original.copyTo(originalContoursImg);
     filtered.copyTo(filteredContoursImg);
 
     contours(filtered);
 
 
-    if(!filteredContoursImg.empty()){
-      Imgcodecs.imwrite(imgPath+"aaa\\filteredContoursImage.jpg", filteredContoursImg);
-      System.out.println("111");
+    if (!filteredContoursImg.empty()) {
+      Imgcodecs.imwrite(imgPath + "aaa\\filteredContoursImage.jpg", filteredContoursImg);
     }
-    if(!originalContoursImg.empty()){
-      Imgcodecs.imwrite(imgPath+"aaa\\contoursImage.jpg", originalContoursImg);
-      System.out.println("222");
+    if (!originalContoursImg.empty()) {
+      Imgcodecs.imwrite(imgPath + "aaa\\contoursImage.jpg", originalContoursImg);
     }
   }
 
-  private void contours(Mat img) {
-    Mat temp = new Mat();
-
-    img.copyTo(temp);
+  private void contours(Mat filtered) {
+//    Mat temp = new Mat();
+//    filtered.copyTo(temp);
     List<MatOfPoint> contours = new ArrayList<>();
-    Imgproc.findContours(img, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    Imgproc.findContours(filtered, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     int i = 0;
+    Mat contourImage = new Mat();
     for (MatOfPoint contour : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(contour.toArray());
       RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
-      if ((rotatedRectangle.size.area() > 1500) && (rotatedRectangle.size.area() < 10000)) {
+      if ((rotatedRectangle.size.area() > 2000) && (rotatedRectangle.size.area() < 15000)) {
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
-          System.out.println(i);
           Imgproc.rectangle(originalContoursImg, rect.tl(), rect.br(), red, 3);
           Imgproc.rectangle(filteredContoursImg, rect.tl(), rect.br(), red, 3);
-//          licensePlate = new Mat(sourceORG, rect);
-//          licensePlate = filterPlateImage(licensePlate);
+          contourImage = new Mat(filtered, rect);
+//          contourImage = new Mat(originalImg, rect);
+          Imgcodecs.imwrite(imgPath+"aaa\\"+i+".jpg", contourImage);
+          //toDo rotate and transform, get angle from rect, work with original or filtered???
         }
       }
       i++;
     }
   }
 
+
   // Filter main image, method translated from Python->C++
-  private Mat filterImage(Mat img) {
-    int thresh = 80;
+  private Mat filterImage(Mat img, int thresh) {
     int blurValue = 5;
     Mat temp = new Mat();
     img.copyTo(temp);
