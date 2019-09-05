@@ -4,7 +4,6 @@ import com.constants.Constants;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -318,70 +317,68 @@ public class LicensePlateRecognizer {
     Imgcodecs.imwrite(imgPath + "result\\threshold.jpg", threshold);
   }
 
+  public BufferedImage cutAndShearRotatedPlate(Mat img) {
+    double angle = 0;
+    // Cut off plate from horizontal rotated plate image
+    Mat copy = new Mat();
+    img.copyTo(copy);
+    Mat cuttedPlate = new Mat();
+    List<MatOfPoint> contours = new ArrayList<>();
+    Mat threshold = new Mat();
+    Mat gray = new Mat();
+    Imgproc.cvtColor(copy, gray, Imgproc.COLOR_RGB2GRAY);
+    Imgproc.threshold(gray, threshold, 80, 255, Imgproc.THRESH_BINARY_INV);
+    Imgcodecs.imwrite(imgPath + "\\test\\thresholedPlate.jpg", threshold);
+    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    for (MatOfPoint c : contours) {
+      MatOfPoint2f points = new MatOfPoint2f(c.toArray());
+      RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
+      int imgArea = (int) threshold.size().area();
+      if ((rotatedRect2.size.area() > imgArea * 0.3) && (rotatedRect2.size.area() < imgArea * 0.9)) {
+        angle = rotatedRect2.angle;
+        Point rotated_rect_points[] = new Point[4];
+        rotatedRect2.points(rotated_rect_points);
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
+        Imgproc.rectangle(copy, rect.tl(), rect.br(), red, 2);
+        Imgcodecs.imwrite(imgPath + "test\\copy.jpg", copy);
+        System.out.println("*** " + rotatedRect2.angle);
+        cuttedPlate = new Mat(img, rect);
+        Imgcodecs.imwrite(imgPath + "test\\cuttedPlate.jpg", cuttedPlate);
+      }
+    }
+    //shear cutted plate with
+    BufferedImage buffer = null;
+    try {
+      buffer = Mat2BufferedImage(cuttedPlate);
+      AffineTransform tx = new AffineTransform();
+      //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+      tx.shear(angle, 0);
+      //tx.shear(-0.4, 0);
+      //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+      //BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
+      BufferedImage shearedPLate = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
+      op.filter(buffer, shearedPLate);
+      File output = new File(imgPath + "test\\buff.jpg");
+      ImageIO.write(shearedPLate, "jpg", output);
+      System.out.println(recognizeText(shearedPLate));
+      return shearedPLate;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
 
   public void ttt() {
     String inputPath = imgPath + "test\\rotated39A.jpg";
     Mat img = Imgcodecs.imread(inputPath);
-
-    ////////////////////CONTOURS//////////////////////////////
-    Mat copy = new Mat();
-    img.copyTo(copy);
-    List<MatOfPoint> conts = new ArrayList<>();
-    Mat thresholdCopy = new Mat();
-    Mat gray = new Mat();
-
-    Imgproc.cvtColor(copy, gray, Imgproc.COLOR_RGB2GRAY);
-
-    Imgproc.threshold(gray, thresholdCopy, 80, 255, Imgproc.THRESH_BINARY_INV);
-    Imgcodecs.imwrite(imgPath+"\\test\\th.jpg", thresholdCopy);
-
-    Imgproc.findContours(thresholdCopy, conts, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-
-
-    int i = 0;
-    for (MatOfPoint c : conts) {
-      MatOfPoint2f points = new MatOfPoint2f(c.toArray());
-      RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
-      int imgArea = (int) thresholdCopy.size().area();
-//      if ((rectRot.size.area() > 1500) && (rectRot.size.area() < 10000)) {
-      if (rotatedRect2.size.area() > imgArea*0.3 && rotatedRect2.size.area()<imgArea*0.9) {
-        Point rotated_rect_points[] = new Point[4];
-        rotatedRect2.points(rotated_rect_points);
-        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
-
-        if (true) {
-//        if ((rect.width > rect.height)) {
-          Imgproc.rectangle(copy, rect.tl(), rect.br(), red, 2);
-          Imgcodecs.imwrite(imgPath + "test\\copy.jpg", copy);
-//          licensePlate = new Mat(sourceORG, rect);
-        }
-      }
+    BufferedImage cuttedAndShearedImg = cutAndShearRotatedPlate(img);
+    if (cuttedAndShearedImg != null) {
+      String text = recognizeText(cuttedAndShearedImg);
+    } else {
+      System.out.println("undef");
     }
-
-    //////////////////////////////////////////////////
-
-    /*
-      int angle = skewDetectPixelRotation(img);
-      System.out.println("angle=" + angle);
-      BufferedImage buffer = null;
-      try {
-        buffer = Mat2BufferedImage(img);
-        AffineTransform tx = new AffineTransform();
-//      tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
-        tx.shear(-0.4, 0);
-//      tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-//      BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
-        BufferedImage newImage = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
-        op.filter(buffer, newImage);
-        File output = new File(imgPath + "test\\buff.jpg");
-        ImageIO.write(newImage, "jpg", output);
-        System.out.println(recognizeText(newImage));
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    */
-
   }
 
 
