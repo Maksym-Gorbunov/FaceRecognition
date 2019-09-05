@@ -142,7 +142,7 @@ public class LicensePlateRecognizer {
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
     Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(blurValue, blurValue), 1);
     Imgproc.threshold(blur, threshold, thresh, 255, Imgproc.THRESH_BINARY_INV);
-    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+//    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
   }
 
 
@@ -213,14 +213,32 @@ public class LicensePlateRecognizer {
     return result;
   }
 
+  public String recognizeText(BufferedImage bufferedImage) {
+    Tesseract tesseract = new Tesseract();
+    String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
+    tesseract.setDatapath(TESS_DATA);
+    String result = "";
+    try {
+      result = tesseract.doOCR(bufferedImage);
+    } catch (TesseractException e) {
+      e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    result = result.replaceAll("[^A-Z0-9]", "");
+    return result;
+  }
+
 
   private void contors(boolean rotation) {
+    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     int i = 0;
     for (MatOfPoint contour : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(contour.toArray());
       RotatedRect rectRot = Imgproc.minAreaRect(pointsArea);
       // validate contour by area
       if ((rectRot.size.area() > 1500) && (rectRot.size.area() < 10000)) {
+//      if ((rectRot.size.area() > 5000) && (rectRot.size.area() < 7000)) {
         Point rotated_rect_points[] = new Point[4];
         rectRot.points(rotated_rect_points);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
@@ -304,36 +322,65 @@ public class LicensePlateRecognizer {
   public void ttt() {
     String inputPath = imgPath + "test\\rotated39A.jpg";
     Mat img = Imgcodecs.imread(inputPath);
-//    System.out.println(recognizeText(img));
 
-    int angle = skewDetectPixelRotation(img);
-    System.out.println("angle=" + angle);
+    ////////////////////CONTOURS//////////////////////////////
+    Mat copy = new Mat();
+    img.copyTo(copy);
+    List<MatOfPoint> conts = new ArrayList<>();
+    Mat thresholdCopy = new Mat();
+    Mat gray = new Mat();
 
+    Imgproc.cvtColor(copy, gray, Imgproc.COLOR_RGB2GRAY);
 
-    BufferedImage buffer = null;
-    try {
-      buffer = Mat2BufferedImage(img);
+    Imgproc.threshold(gray, thresholdCopy, 80, 255, Imgproc.THRESH_BINARY_INV);
+    Imgcodecs.imwrite(imgPath+"\\test\\th.jpg", thresholdCopy);
 
-      AffineTransform tx = new AffineTransform();
-//      tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
-      tx.shear(-0.5, 0);
-//      tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
-
-      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-
-//      BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
-      BufferedImage newImage = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
-      op.filter(buffer, newImage);
+    Imgproc.findContours(thresholdCopy, conts, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
 
-      File output = new File(imgPath + "test\\buff.jpg");
-      ImageIO.write(newImage, "jpg", output);
+    int i = 0;
+    for (MatOfPoint c : conts) {
+      MatOfPoint2f points = new MatOfPoint2f(c.toArray());
+      RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
+      int imgArea = (int) thresholdCopy.size().area();
+//      if ((rectRot.size.area() > 1500) && (rectRot.size.area() < 10000)) {
+      if (rotatedRect2.size.area() > imgArea*0.3 && rotatedRect2.size.area()<imgArea*0.9) {
+        Point rotated_rect_points[] = new Point[4];
+        rotatedRect2.points(rotated_rect_points);
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotated_rect_points));
 
-
-    } catch (Exception e) {
-      e.printStackTrace();
+        if (true) {
+//        if ((rect.width > rect.height)) {
+          Imgproc.rectangle(copy, rect.tl(), rect.br(), red, 2);
+          Imgcodecs.imwrite(imgPath + "test\\copy.jpg", copy);
+//          licensePlate = new Mat(sourceORG, rect);
+        }
+      }
     }
 
+    //////////////////////////////////////////////////
+
+    /*
+      int angle = skewDetectPixelRotation(img);
+      System.out.println("angle=" + angle);
+      BufferedImage buffer = null;
+      try {
+        buffer = Mat2BufferedImage(img);
+        AffineTransform tx = new AffineTransform();
+//      tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+        tx.shear(-0.4, 0);
+//      tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+//      BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage newImage = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
+        op.filter(buffer, newImage);
+        File output = new File(imgPath + "test\\buff.jpg");
+        ImageIO.write(newImage, "jpg", output);
+        System.out.println(recognizeText(newImage));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    */
 
   }
 
