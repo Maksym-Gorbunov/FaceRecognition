@@ -22,6 +22,7 @@ import org.opencv.core.Mat;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.image.BufferedImage;
@@ -75,8 +76,8 @@ public class LPR {
     Mat rotated = new Mat();
     Mat rotated1 = new Mat();
     Mat rotated2 = new Mat();
-//    Mat temp = new Mat();
-//    filtered.copyTo(temp);
+    BufferedImage buffPlate1;
+    BufferedImage buffPlate2;
     List<MatOfPoint> contours = new ArrayList<>();
     Imgproc.findContours(filtered, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     int i = 0;
@@ -89,21 +90,24 @@ public class LPR {
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
+          //toDo, check average color in contour, if white >50%
           Imgproc.rectangle(originalContoursImg, rect.tl(), rect.br(), red, 3);
           Imgproc.rectangle(filteredContoursImg, rect.tl(), rect.br(), red, 3);
           contourImage = new Mat(filtered, rect);
 //          contourImage = new Mat(originalImg, rect);
-          Imgcodecs.imwrite(imgPath+"aaa\\"+i+".jpg", contourImage);
+          Imgcodecs.imwrite(imgPath + "aaa\\" + i + ".jpg", contourImage);
           //toDo rotate and transform, get angle from rect, work with original or filtered???
 
           int angle = (int) rotatedRectangle.angle;
 
           rotated1 = rotateImage(contourImage, angle);
           rotated2 = rotateImage(contourImage, -angle);
-          Imgcodecs.imwrite(imgPath+"aaa\\rotated"+i+"A.jpg", rotated1);
-          Imgcodecs.imwrite(imgPath+"aaa\\rotated"+i+"B.jpg", rotated2);
+          Imgcodecs.imwrite(imgPath + "aaa\\rotated" + i + "A.jpg", rotated1);
+          Imgcodecs.imwrite(imgPath + "aaa\\rotated" + i + "B.jpg", rotated2);
 
-//          cutAndShearRotatedPlate(rotated);
+          buffPlate1 = cutAndShearRotatedPlate(rotated1, i, 'A');
+          buffPlate2 = cutAndShearRotatedPlate(rotated2, i, 'B');
+          System.out.println("done");
         }
       }
       i++;
@@ -111,58 +115,49 @@ public class LPR {
   }
 
 
-
-
-
-
-
-
-
-
-  public BufferedImage cutAndShearRotatedPlate(Mat img) {
-    /*
+  public BufferedImage cutAndShearRotatedPlate(Mat img, int i, char c) {
     double angle = 0;
     // Cut off plate from horizontal rotated plate image
+    BufferedImage shearedPLate;
     Mat copy = new Mat();
     img.copyTo(copy);
-//    Mat cuttedP = new Mat();
+    Mat cuttedPlate = new Mat();
     List<MatOfPoint> contours = new ArrayList<>();
-    Mat threshold = new Mat();
-    Mat gray = new Mat();
-    Imgproc.cvtColor(copy, gray, Imgproc.COLOR_RGB2GRAY);
-    Imgproc.threshold(gray, threshold, 80, 255, Imgproc.THRESH_BINARY_INV);
-    Imgcodecs.imwrite(imgPath + "\\test\\thresholedPlate.jpg", threshold);
-    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-    System.out.println("AAAA");
-    for (MatOfPoint c : contours) {
-      System.out.println("BBBB");
-      MatOfPoint2f points = new MatOfPoint2f(c.toArray());
+    Imgproc.findContours(copy, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    for (MatOfPoint contour : contours) {
+      MatOfPoint2f points = new MatOfPoint2f(contour.toArray());
       RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
-      int imgArea = (int) threshold.size().area();
-      if ((rotatedRect2.size.area() > imgArea * 0.3) && (rotatedRect2.size.area() < imgArea * 0.9)) {
-        System.out.println("CCCC");
+      double imgArea = copy.size().area();
+      double rotArea = rotatedRect2.size.area();
+      if ((rotArea > imgArea * 0.3) && (rotArea < imgArea * 0.9)) {
         angle = rotatedRect2.angle;
         Point rotRectPoints[] = new Point[4];
         rotatedRect2.points(rotRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
-        System.out.println("1a");
-        Imgproc.rectangle(copy, rect.tl(), rect.br(), red, 2);
-        Imgcodecs.imwrite(imgPath + "test\\copy.jpg", copy);
-        System.out.println("1b");
-        System.out.println("*** " + rotatedRect2.angle);
-//        cuttedPlate = new Mat(copy, rect);
-        cuttedP = new Mat(img, rect);
-        System.out.println("1c");
-        Imgcodecs.imwrite(imgPath + "test\\cuttedPlate.jpg", cuttedP);
-        System.out.println("1d");
+        Imgproc.rectangle(img, rect.tl(), rect.br(), red, 2);
+        cuttedPlate = new Mat(img, rect);
+        Imgcodecs.imwrite(imgPath + "aaa\\contourPlate" + i + c + ".jpg", img);
+        Imgcodecs.imwrite(imgPath + "aaa\\copy" + i + c + ".jpg", copy);
+        Imgcodecs.imwrite(imgPath + "aaa\\cuttedPlate" + i + c + ".jpg", cuttedPlate);
+        shearedPLate = shearImage(cuttedPlate, angle);
+        if (shearedPLate != null) {
+          File output = new File(imgPath + "aaa\\buff" + i + c + ".jpg");
+          try {
+            ImageIO.write(shearedPLate, "jpg", output);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+        return shearedPLate;
       }
     }
-    //shear cutted plate with
+    return null;
+  }
+
+  //shear cutted plate with rotated rectangle angle
+  private BufferedImage shearImage(Mat cuttedPlate, double angle) {
     BufferedImage buffer = null;
-    System.out.println("11111");
     try {
-      System.out.println("22222");
-      System.out.println("cuttedPlate: " + cuttedPlate == null);
       buffer = Mat2BufferedImage(cuttedPlate);
       AffineTransform tx = new AffineTransform();
       //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
@@ -170,32 +165,15 @@ public class LPR {
       //tx.shear(-0.4, 0);
       //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
       AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-      //BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
       BufferedImage shearedPLate = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
       op.filter(buffer, shearedPLate);
-      File output = new File(imgPath + "test\\buff.jpg");
-      ImageIO.write(shearedPLate, "jpg", output);
-      System.out.println(recognizeText(shearedPLate));
       //todo extra filter() on plate ???
-
       return shearedPLate;
     } catch (Exception e) {
       e.printStackTrace();
     }
-    */
     return null;
   }
-
-
-
-
-
-
-
-
-
-
-
 
 
   // Rotate license plate image
