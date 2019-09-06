@@ -19,6 +19,8 @@ import static org.opencv.imgproc.Imgproc.*;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,13 +95,107 @@ public class LPR {
 //          contourImage = new Mat(originalImg, rect);
           Imgcodecs.imwrite(imgPath+"aaa\\"+i+".jpg", contourImage);
           //toDo rotate and transform, get angle from rect, work with original or filtered???
-          rotated = rotateImage(contourImage, (int) rotatedRectangle.angle);
-          Imgcodecs.imwrite(imgPath+"aaa\\rotated"+i+".jpg", rotated);
+
+          int angle = (int) rotatedRectangle.angle;
+
+          rotated1 = rotateImage(contourImage, angle);
+          rotated2 = rotateImage(contourImage, -angle);
+          Imgcodecs.imwrite(imgPath+"aaa\\rotated"+i+"A.jpg", rotated1);
+          Imgcodecs.imwrite(imgPath+"aaa\\rotated"+i+"B.jpg", rotated2);
+
+//          cutAndShearRotatedPlate(rotated);
         }
       }
       i++;
     }
   }
+
+
+
+
+
+
+
+
+
+
+  public BufferedImage cutAndShearRotatedPlate(Mat img) {
+    /*
+    double angle = 0;
+    // Cut off plate from horizontal rotated plate image
+    Mat copy = new Mat();
+    img.copyTo(copy);
+//    Mat cuttedP = new Mat();
+    List<MatOfPoint> contours = new ArrayList<>();
+    Mat threshold = new Mat();
+    Mat gray = new Mat();
+    Imgproc.cvtColor(copy, gray, Imgproc.COLOR_RGB2GRAY);
+    Imgproc.threshold(gray, threshold, 80, 255, Imgproc.THRESH_BINARY_INV);
+    Imgcodecs.imwrite(imgPath + "\\test\\thresholedPlate.jpg", threshold);
+    Imgproc.findContours(threshold, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    System.out.println("AAAA");
+    for (MatOfPoint c : contours) {
+      System.out.println("BBBB");
+      MatOfPoint2f points = new MatOfPoint2f(c.toArray());
+      RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
+      int imgArea = (int) threshold.size().area();
+      if ((rotatedRect2.size.area() > imgArea * 0.3) && (rotatedRect2.size.area() < imgArea * 0.9)) {
+        System.out.println("CCCC");
+        angle = rotatedRect2.angle;
+        Point rotRectPoints[] = new Point[4];
+        rotatedRect2.points(rotRectPoints);
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
+        System.out.println("1a");
+        Imgproc.rectangle(copy, rect.tl(), rect.br(), red, 2);
+        Imgcodecs.imwrite(imgPath + "test\\copy.jpg", copy);
+        System.out.println("1b");
+        System.out.println("*** " + rotatedRect2.angle);
+//        cuttedPlate = new Mat(copy, rect);
+        cuttedP = new Mat(img, rect);
+        System.out.println("1c");
+        Imgcodecs.imwrite(imgPath + "test\\cuttedPlate.jpg", cuttedP);
+        System.out.println("1d");
+      }
+    }
+    //shear cutted plate with
+    BufferedImage buffer = null;
+    System.out.println("11111");
+    try {
+      System.out.println("22222");
+      System.out.println("cuttedPlate: " + cuttedPlate == null);
+      buffer = Mat2BufferedImage(cuttedPlate);
+      AffineTransform tx = new AffineTransform();
+      //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+      tx.shear(angle, 0);
+      //tx.shear(-0.4, 0);
+      //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+      //BufferedImage newImage = new BufferedImage(buffer.getHeight(), buffer.getWidth(), BufferedImage.TYPE_INT_ARGB);
+      BufferedImage shearedPLate = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
+      op.filter(buffer, shearedPLate);
+      File output = new File(imgPath + "test\\buff.jpg");
+      ImageIO.write(shearedPLate, "jpg", output);
+      System.out.println(recognizeText(shearedPLate));
+      //todo extra filter() on plate ???
+
+      return shearedPLate;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    */
+    return null;
+  }
+
+
+
+
+
+
+
+
+
+
+
 
 
   // Rotate license plate image
