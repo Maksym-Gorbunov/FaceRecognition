@@ -70,6 +70,7 @@ public class LPR {
     if (!originalContoursImg.empty()) {
       Imgcodecs.imwrite(imgPath + "aaa\\contoursImage.jpg", originalContoursImg);
     }
+    System.out.println("...done...");
   }
 
   private void contours(Mat filtered) {
@@ -93,13 +94,11 @@ public class LPR {
           //toDo, check average color in contour, if white >50%
           Imgproc.rectangle(originalContoursImg, rect.tl(), rect.br(), red, 3);
           Imgproc.rectangle(filteredContoursImg, rect.tl(), rect.br(), red, 3);
+//          contourImage = new Mat(filtered, rect);
           contourImage = new Mat(filtered, rect);
-//          contourImage = new Mat(originalImg, rect);
           Imgcodecs.imwrite(imgPath + "aaa\\" + i + ".jpg", contourImage);
           //toDo rotate and transform, get angle from rect, work with original or filtered???
-
           int angle = (int) rotatedRectangle.angle;
-
           rotated1 = rotateImage(contourImage, angle);
           rotated2 = rotateImage(contourImage, -angle);
           Imgcodecs.imwrite(imgPath + "aaa\\rotated" + i + "A.jpg", rotated1);
@@ -107,11 +106,25 @@ public class LPR {
 
           buffPlate1 = cutAndShearRotatedPlate(rotated1, i, 'A');
           buffPlate2 = cutAndShearRotatedPlate(rotated2, i, 'B');
-          System.out.println("done");
+
+          extraFilter(buffPlate1);
+
+
+          String tempText1 = recognizeText(buffPlate1);
+          String tempText2 = recognizeText(buffPlate2);
+
+          System.out.println(i+"A: "+tempText1);
+          System.out.println(i+"B: "+tempText2);
+
         }
       }
       i++;
     }
+  }
+
+  private void extraFilter(BufferedImage buffedPlate) {
+    Mat img = new Mat(buffedPlate);
+
   }
 
 
@@ -185,11 +198,9 @@ public class LPR {
     }
     if (angle < 0) {
       rotatedAngle = 90 - Math.abs(angle);
-      System.out.println("minus");
     }
     if (angle > 0) {
       rotatedAngle = -angle;
-      System.out.println("plus");
     }
     Mat temp = new Mat();
     img.copyTo(temp);
@@ -229,50 +240,62 @@ public class LPR {
   }
 
   public String recognizeText(String imgPath) {
+    if ((imgPath == null) || (imgPath.equals(""))) {
+      return "";
+    }
     Tesseract tesseract = new Tesseract();
     String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
     tesseract.setDatapath(TESS_DATA);
-    String result = "";
     try {
+      String result = "";
       result = tesseract.doOCR(new File(imgPath));
+      result = result.replaceAll("[^A-Z0-9]", "");
+      return result;
     } catch (TesseractException e) {
       e.printStackTrace();
     }
-    result = result.replaceAll("[^A-Z0-9]", "");
-    return result;
+    return "";
   }
 
   public String recognizeText(Mat img) {
+    if (img == null) {
+      return "";
+    }
     BufferedImage bufferedImage = null;
     Tesseract tesseract = new Tesseract();
     String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
     tesseract.setDatapath(TESS_DATA);
-    String result = "";
     try {
+      String result = "";
       bufferedImage = Mat2BufferedImage(img);
       result = tesseract.doOCR(bufferedImage);
+      result = result.replaceAll("[^A-Z0-9]", "");
+      return result;
     } catch (TesseractException e) {
       e.printStackTrace();
     } catch (Exception e) {
       e.printStackTrace();
     }
-    result = result.replaceAll("[^A-Z0-9]", "");
-    return result;
+    return "";
   }
 
   public String recognizeText(BufferedImage bufferedImage) {
+    if (bufferedImage == null) {
+      return "";
+    }
     Tesseract tesseract = new Tesseract();
     String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
     tesseract.setDatapath(TESS_DATA);
-    String result = "";
     try {
+      String result = "";
       result = tesseract.doOCR(bufferedImage);
+      result = result.replaceAll("[^A-Z0-9]", "");
+      return result;
     } catch (TesseractException e) {
       e.printStackTrace();
     } catch (Exception e) {
       e.printStackTrace();
     }
-    result = result.replaceAll("[^A-Z0-9]", "");
-    return result;
+    return "";
   }
 }
