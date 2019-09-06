@@ -107,12 +107,16 @@ public class LPR {
           buffPlate1 = cutAndShearRotatedPlate(rotated1, i, 'A');
           buffPlate2 = cutAndShearRotatedPlate(rotated2, i, 'B');
 
+          //toDo experiment with buff
+          extraFilter(buffPlate1, i, "A");
+//          extraFilter(buffPlate2, i, "B");
+
 
           String tempText1 = recognizeText(buffPlate1);
           String tempText2 = recognizeText(buffPlate2);
 
-          System.out.println(i+"A: "+tempText1);
-          System.out.println(i+"B: "+tempText2);
+          System.out.println(i + "A: " + tempText1);
+          System.out.println(i + "B: " + tempText2);
 
         }
       }
@@ -121,9 +125,35 @@ public class LPR {
   }
 
   //toDo invert black and white, mayby extra contours filtering???
-  private Mat extraFilter(Mat img) {
+  private Mat extraFilter(BufferedImage bufferedImage, int i, char c) {
+    Mat img = bufferedImage2Mat(bufferedImage);
+    List<MatOfPoint> contours = new ArrayList<>();
+    Imgproc.findContours(img, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    Mat contourImage = new Mat();
+    img.copyTo(contourImage);
+    for (MatOfPoint contour : contours) {
+      MatOfPoint2f pointsArea = new MatOfPoint2f(contour.toArray());
+      RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
+      if (rotatedRectangle.size.area() > img.size().area() * 0.6) {
+        Point rotatedRectPoints[] = new Point[4];
+        rotatedRectangle.points(rotatedRectPoints);
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
+        Imgproc.rectangle(originalContoursImg, rect.tl(), rect.br(), red, 3);
+        Imgproc.rectangle(filteredContoursImg, rect.tl(), rect.br(), red, 3);
+        contourImage = new Mat(img, rect);
+        Imgcodecs.imwrite(imgPath+"aaa\\extraContour"+i+c+".jpg" , contourImage);
+      }
+    }
 
-    return img;
+
+    Mat inverted = new Mat();
+    Core.bitwise_not(contourImage, inverted);
+//    Core.bitwise_not(img, inverted);
+    return inverted;
+  }
+
+  private Mat bufferedImage2Mat(BufferedImage bufferedImage) {
+
   }
 
 
@@ -150,10 +180,12 @@ public class LPR {
         cuttedPlate = new Mat(img, rect);
         Imgcodecs.imwrite(imgPath + "aaa\\contourPlate" + i + c + ".jpg", img);
         Imgcodecs.imwrite(imgPath + "aaa\\copy" + i + c + ".jpg", copy);
-        Imgcodecs.imwrite(imgPath + "aaa\\cuttedPlate" + i + c + ".jpg", cuttedPlate);
 
-        //toDO experiment
-        cuttedPlate = extraFilter(cuttedPlate);
+//        toDO experiment
+
+//        cuttedPlate = extraFilter(cuttedPlate, i, c);
+
+        Imgcodecs.imwrite(imgPath + "aaa\\cuttedPlate" + i + c + ".jpg", cuttedPlate);
 
         shearedPLate = shearImage(cuttedPlate, angle);
         if (shearedPLate != null) {
