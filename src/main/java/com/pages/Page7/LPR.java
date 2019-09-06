@@ -107,8 +107,6 @@ public class LPR {
           buffPlate1 = cutAndShearRotatedPlate(rotated1, i, 'A');
           buffPlate2 = cutAndShearRotatedPlate(rotated2, i, 'B');
 
-          extraFilter(buffPlate1);
-
 
           String tempText1 = recognizeText(buffPlate1);
           String tempText2 = recognizeText(buffPlate2);
@@ -122,9 +120,10 @@ public class LPR {
     }
   }
 
-  private void extraFilter(BufferedImage buffedPlate) {
-    Mat img = new Mat(buffedPlate);
+  //toDo invert black and white, mayby extra contours filtering???
+  private Mat extraFilter(Mat img) {
 
+    return img;
   }
 
 
@@ -152,6 +151,10 @@ public class LPR {
         Imgcodecs.imwrite(imgPath + "aaa\\contourPlate" + i + c + ".jpg", img);
         Imgcodecs.imwrite(imgPath + "aaa\\copy" + i + c + ".jpg", copy);
         Imgcodecs.imwrite(imgPath + "aaa\\cuttedPlate" + i + c + ".jpg", cuttedPlate);
+
+        //toDO experiment
+        cuttedPlate = extraFilter(cuttedPlate);
+
         shearedPLate = shearImage(cuttedPlate, angle);
         if (shearedPLate != null) {
           File output = new File(imgPath + "aaa\\buff" + i + c + ".jpg");
