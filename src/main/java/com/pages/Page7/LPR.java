@@ -70,6 +70,9 @@ public class LPR {
   }
 
   private void contours(Mat filtered) {
+    Mat rotated = new Mat();
+    Mat rotated1 = new Mat();
+    Mat rotated2 = new Mat();
 //    Mat temp = new Mat();
 //    filtered.copyTo(temp);
     List<MatOfPoint> contours = new ArrayList<>();
@@ -90,6 +93,8 @@ public class LPR {
 //          contourImage = new Mat(originalImg, rect);
           Imgcodecs.imwrite(imgPath+"aaa\\"+i+".jpg", contourImage);
           //toDo rotate and transform, get angle from rect, work with original or filtered???
+          rotated = rotateImage(contourImage, (int) rotatedRectangle.angle);
+          Imgcodecs.imwrite(imgPath+"aaa\\rotated"+i+".jpg", rotated);
         }
       }
       i++;
