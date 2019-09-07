@@ -20,7 +20,7 @@ public class Page7 extends JPanel implements Pages {
 
   private JFrame gui;
   private JPanel tab7;
-  private ImagePanel imgOriginalPanel;
+  private ImagePanel originalPanel;
   private ImagePanel imgFilteredPanel;
   private ImagePanel imgContoursPanel;
   private ImagePanel imgLicensePlatePanel;
@@ -29,10 +29,10 @@ public class Page7 extends JPanel implements Pages {
   private JButton rotationBtn = new JButton("rotation");
   private JList jList;
   private JTextField resultField = new JTextField("result field");
-  private DefaultListModel<ImgFile> data = new DefaultListModel<>();
-  private LicensePlateRecognizer recognizer;
+  private DefaultListModel<ImgObject> data = new DefaultListModel<>();
+  private LPR recognizer;
   private String result;
-  private ImgFile selectedImgFile;
+  private ImgObject selectedImgFile;
   private JSlider thrashSlider;
   private JSlider blurSlider;
   private int width = 400;
@@ -47,12 +47,10 @@ public class Page7 extends JPanel implements Pages {
     initComponents();
     addListeners();
 
-    recognizer = new LicensePlateRecognizer();
+    recognizer = new LPR();
 
-//    recognizer.ttt();
-
-    LPR lpr = new LPR();
-    lpr.recognize(Constants.imgPath+"cars\\regnums\\COS799.jpg");
+    recognizer.recognize(Constants.imgPath+"cars\\regnums\\COS799.jpg");
+//    lpr.recognize(Constants.imgPath+"cars\\regnums\\PUZ157.jpg");
   }
 
   private void addListeners() {
@@ -65,7 +63,7 @@ public class Page7 extends JPanel implements Pages {
         if (fc.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           File[] files = fc.getSelectedFiles();
           for (File file : files) {
-            ImgFile imgFile = new ImgFile(file.getAbsolutePath());
+            ImgObject imgFile = new ImgObject(file.getAbsolutePath());
             data.addElement(imgFile);
           }
         }
@@ -82,29 +80,7 @@ public class Page7 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
         if (selectedImgFile != null) {
-          int thresh = thrashSlider.getValue();
-          int blur = blurSlider.getValue();
-          result = recognizer.findLicensePlate(selectedImgFile.getAbsolutePath(), thresh, blur, rotation);
-          resultField.setText(result);
-          selectedImgFile.setLicenseNumber(result);
-          if (recognizer.getFilteredImages()[0] != null && !recognizer.getFilteredImages()[0].empty()) {
-            selectedImgFile.setThresholdImg(recognizer.getFilteredImages()[0]);
-            imgFilteredPanel.loadMatImage(recognizer.getFilteredImages()[0]);
-          } else {
-            imgFilteredPanel.clear();
-          }
-          if (recognizer.getFilteredImages()[1] != null && !recognizer.getFilteredImages()[1].empty()) {
-            selectedImgFile.setContoursImg(recognizer.getFilteredImages()[1]);
-            imgContoursPanel.loadMatImage(recognizer.getFilteredImages()[1]);
-          } else {
-            imgContoursPanel.clear();
-          }
-          if (recognizer.getFilteredImages()[2] != null && !recognizer.getFilteredImages()[2].empty()) {
-            selectedImgFile.setLicensePlateImg(recognizer.getFilteredImages()[2]);
-            imgLicensePlatePanel.loadMatImage(recognizer.getFilteredImages()[2]);
-          } else {
-            imgLicensePlatePanel.clear();
-          }
+          System.out.println("recognize");
         }
       }
     });
@@ -116,24 +92,8 @@ public class Page7 extends JPanel implements Pages {
         if (!arg0.getValueIsAdjusting()) {
           recognizeBtn.setEnabled(true);
           selectedImgFile = data.get(jList.getSelectedIndex());
-          imgOriginalPanel.loadImage(selectedImgFile);
-          if (selectedImgFile.getThresholdImg() != null) {
-            imgFilteredPanel.loadMatImage(selectedImgFile.getThresholdImg());
-          } else {
-            imgFilteredPanel.clear();
-          }
-          if (selectedImgFile.getContoursImg() != null) {
-            imgContoursPanel.loadMatImage(selectedImgFile.getContoursImg());
-          } else {
-            imgContoursPanel.clear();
-          }
-          if (selectedImgFile.getLicensePlateImg() != null) {
-            imgLicensePlatePanel.loadMatImage(selectedImgFile.getLicensePlateImg());
-          } else {
-            imgLicensePlatePanel.clear();
-          }
+          originalPanel.loadImage(selectedImgFile);
 
-          resultField.setText(selectedImgFile.getLicenseNumber());
         }
       }
     });
@@ -162,42 +122,29 @@ public class Page7 extends JPanel implements Pages {
     JPanel topRight = new JPanel();
     JPanel bottomLeft = new JPanel();
     JPanel bottomRight = new JPanel();
-
-//    tab7.setLayout(new GridLayout(2,2));
-
     top.add(topLeft);
     top.add(topRight);
     bottom.add(bottomLeft);
     bottom.add(bottomRight);
     tab7.add(top);
     tab7.add(bottom);
-
     topLeft.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.7), height + 40));
     topRight.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.3), height + 40));
-
     bottomLeft.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.7), 200));
     bottomRight.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.3), 200));
-
     JTabbedPane imgTabPane = new JTabbedPane();
-    imgOriginalPanel = new ImagePanel(width, height);
+    originalPanel = new ImagePanel(width, height);
     imgFilteredPanel = new ImagePanel(width, height);
     imgContoursPanel = new ImagePanel(width, height);
     imgLicensePlatePanel = new ImagePanel(width, height);
-    imgTabPane.add("Original", imgOriginalPanel);
+    imgTabPane.add("Original", originalPanel);
     imgTabPane.add("Filtered", imgFilteredPanel);
     imgTabPane.add("Contours", imgContoursPanel);
     imgTabPane.add("LPlate", imgLicensePlatePanel);
-
-//    topLeft.setBackground(Color.yellow);
-
     topLeft.add(imgTabPane);
-
-
     topRight.setLayout(new BoxLayout(topRight, BoxLayout.Y_AXIS));
     topRight.setBorder(new EmptyBorder(10, 10, 10, 10));
     bottomLeft.setBorder(new EmptyBorder(0, 10, 0, 0));
-
-
     jList = new JList((ListModel) data);
     jList.setFixedCellWidth(20);
     jList.setVisibleRowCount(15);
@@ -212,12 +159,7 @@ public class Page7 extends JPanel implements Pages {
     btns.add(openBtn);
     btns.add(recognizeBtn);
     topRight.add(btns);
-
-//    bottomRight.add(openBtn);
-//    bottomRight.add(recognizeBtn);
-
     bottomLeft.setLayout(new GridLayout(3, 2));
-
     thrashSlider = new JSlider(JSlider.HORIZONTAL, 0, 250, 80);
     thrashSlider.setMinorTickSpacing(10);
     thrashSlider.setMajorTickSpacing(50);
@@ -225,18 +167,13 @@ public class Page7 extends JPanel implements Pages {
     thrashSlider.setPaintLabels(true);
     bottomLeft.add(thrashSlider);
     bottomLeft.add(new JLabel("Thresh"));
-
-    blurSlider = new JSlider(JSlider.HORIZONTAL, 0, 15, 3);
+    blurSlider = new JSlider(JSlider.HORIZONTAL, 0, 10, 5);
     blurSlider.setMinorTickSpacing(1);
     blurSlider.setMajorTickSpacing(5);
     blurSlider.setPaintTicks(true);
     blurSlider.setPaintLabels(true);
     bottomLeft.add(blurSlider);
     bottomLeft.add(new JLabel("Blur"));
-
-
     recognizeBtn.setEnabled(false);
   }
-
-
 }

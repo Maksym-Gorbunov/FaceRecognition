@@ -12,13 +12,10 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
 import static com.constants.Constants.imgPath;
 import static org.opencv.imgproc.Imgproc.*;
-
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.io.File;
@@ -28,18 +25,18 @@ import java.util.List;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
-
 import org.opencv.core.MatOfByte;
-
+import java.awt.image.DataBufferByte;
 
 public class LPR {
+  private ImgObject image;
   private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
-  private Mat originalImg;
-  private Mat originalContoursImg;
-  private Mat filteredContoursImg;
+  //  private Mat originalImg;
+//  private Mat originalContoursImg;
+//  private Mat filteredContoursImg;
 
   private BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
     MatOfByte mob = new MatOfByte();
@@ -51,25 +48,12 @@ public class LPR {
 
   public void recognize(String path) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    Mat original = Imgcodecs.imread(path);
-    originalImg = new Mat();
-    originalContoursImg = new Mat();
-    filteredContoursImg = new Mat();
+    image = new ImgObject(path);
     int thresh = 150;
-    Mat filtered = filterImage(original, thresh);
-    original.copyTo(originalImg);
-    original.copyTo(originalContoursImg);
-    filtered.copyTo(filteredContoursImg);
-
+    Mat filtered = filterImage(image.getOriginal(), thresh);
     contours(filtered);
 
-
-    if (!filteredContoursImg.empty()) {
-      Imgcodecs.imwrite(imgPath + "aaa\\filteredContoursImage.jpg", filteredContoursImg);
-    }
-    if (!originalContoursImg.empty()) {
-      Imgcodecs.imwrite(imgPath + "aaa\\contoursImage.jpg", originalContoursImg);
-    }
+    image.saveImages(imgPath+"\\lpr\\");
     System.out.println("...done...");
   }
 
@@ -92,31 +76,31 @@ public class LPR {
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
           //toDo, check average color in contour, if white >50%
-          Imgproc.rectangle(originalContoursImg, rect.tl(), rect.br(), red, 3);
-          Imgproc.rectangle(filteredContoursImg, rect.tl(), rect.br(), red, 3);
+          Imgproc.rectangle(image.getOriginal(), rect.tl(), rect.br(), red, 3);
+          Imgproc.rectangle(image.getFiltered(), rect.tl(), rect.br(), red, 3);
 //          contourImage = new Mat(filtered, rect);
           contourImage = new Mat(filtered, rect);
-          Imgcodecs.imwrite(imgPath + "aaa\\" + i + ".jpg", contourImage);
+          Imgcodecs.imwrite(imgPath + "lpr\\" + i + ".jpg", contourImage);
           //toDo rotate and transform, get angle from rect, work with original or filtered???
-          int angle = (int) rotatedRectangle.angle;
-          rotated1 = rotateImage(contourImage, angle);
-          rotated2 = rotateImage(contourImage, -angle);
-          Imgcodecs.imwrite(imgPath + "aaa\\rotated" + i + "A.jpg", rotated1);
-          Imgcodecs.imwrite(imgPath + "aaa\\rotated" + i + "B.jpg", rotated2);
+//          int angle = (int) rotatedRectangle.angle;
+//          rotated1 = rotateImage(contourImage, angle);
+//          rotated2 = rotateImage(contourImage, -angle);
+//          Imgcodecs.imwrite(imgPath + "lpr\\rotated" + i + "A.jpg", rotated1);
+//          Imgcodecs.imwrite(imgPath + "lpr\\rotated" + i + "B.jpg", rotated2);
 
-          buffPlate1 = cutAndShearRotatedPlate(rotated1, i, 'A');
-          buffPlate2 = cutAndShearRotatedPlate(rotated2, i, 'B');
+//          buffPlate1 = cutAndShearRotatedPlate(rotated1, i, 'A');
+//          buffPlate2 = cutAndShearRotatedPlate(rotated2, i, 'B');
 
           //toDo experiment with buff
-          extraFilter(buffPlate1, i, "A");
-//          extraFilter(buffPlate2, i, "B");
+//          extraFilter(buffPlate1, i, 'A');
+//          extraFilter(buffPlate2, i, 'B');
 
 
-          String tempText1 = recognizeText(buffPlate1);
-          String tempText2 = recognizeText(buffPlate2);
-
-          System.out.println(i + "A: " + tempText1);
-          System.out.println(i + "B: " + tempText2);
+//          String tempText1 = recognizeText(buffPlate1);
+//          String tempText2 = recognizeText(buffPlate2);
+//
+//          System.out.println(i + "A: " + tempText1);
+//          System.out.println(i + "B: " + tempText2);
 
         }
       }
@@ -126,6 +110,9 @@ public class LPR {
 
   //toDo invert black and white, mayby extra contours filtering???
   private Mat extraFilter(BufferedImage bufferedImage, int i, char c) {
+    if (bufferedImage == null) {
+      return null;
+    }
     Mat img = bufferedImage2Mat(bufferedImage);
     List<MatOfPoint> contours = new ArrayList<>();
     Imgproc.findContours(img, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -138,10 +125,11 @@ public class LPR {
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-        Imgproc.rectangle(originalContoursImg, rect.tl(), rect.br(), red, 3);
-        Imgproc.rectangle(filteredContoursImg, rect.tl(), rect.br(), red, 3);
+        Imgproc.rectangle(img, rect.tl(), rect.br(), red, 3);
+//        Imgproc.rectangle(filteredContoursImg, rect.tl(), rect.br(), red, 3);
         contourImage = new Mat(img, rect);
-        Imgcodecs.imwrite(imgPath+"aaa\\extraContour"+i+c+".jpg" , contourImage);
+        Imgcodecs.imwrite(imgPath + "lpr\\extraC" + i + c + ".jpg", img);
+        Imgcodecs.imwrite(imgPath + "lpr\\extraContour" + i + c + ".jpg", contourImage);
       }
     }
 
@@ -152,8 +140,12 @@ public class LPR {
     return inverted;
   }
 
-  private Mat bufferedImage2Mat(BufferedImage bufferedImage) {
-
+  private Mat bufferedImage2Mat(BufferedImage bi) {
+    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
+//    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
+    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+    mat.put(0, 0, data);
+    return mat;
   }
 
 
@@ -178,18 +170,18 @@ public class LPR {
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
         Imgproc.rectangle(img, rect.tl(), rect.br(), red, 2);
         cuttedPlate = new Mat(img, rect);
-        Imgcodecs.imwrite(imgPath + "aaa\\contourPlate" + i + c + ".jpg", img);
-        Imgcodecs.imwrite(imgPath + "aaa\\copy" + i + c + ".jpg", copy);
+        Imgcodecs.imwrite(imgPath + "lpr\\contourPlate" + i + c + ".jpg", img);
+        Imgcodecs.imwrite(imgPath + "lpr\\copy" + i + c + ".jpg", copy);
 
 //        toDO experiment
 
 //        cuttedPlate = extraFilter(cuttedPlate, i, c);
 
-        Imgcodecs.imwrite(imgPath + "aaa\\cuttedPlate" + i + c + ".jpg", cuttedPlate);
+        Imgcodecs.imwrite(imgPath + "lpr\\cuttedPlate" + i + c + ".jpg", cuttedPlate);
 
         shearedPLate = shearImage(cuttedPlate, angle);
         if (shearedPLate != null) {
-          File output = new File(imgPath + "aaa\\buff" + i + c + ".jpg");
+          File output = new File(imgPath + "lpr\\buff" + i + c + ".jpg");
           try {
             ImageIO.write(shearedPLate, "jpg", output);
           } catch (IOException e) {
@@ -268,9 +260,9 @@ public class LPR {
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
     Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(blurValue, blurValue), 1);
     Imgproc.threshold(blur, threshold, thresh, 255, Imgproc.THRESH_BINARY_INV);
-    Imgcodecs.imwrite(imgPath + "aaa\\filteredImage.jpg", threshold);
-    Imgcodecs.imwrite(imgPath + "aaa\\originalImage.jpg", img);
-    Imgcodecs.imwrite(imgPath + "aaa\\tempImage.jpg", temp);
+    Imgcodecs.imwrite(imgPath + "lpr\\filteredImage.jpg", threshold);
+    Imgcodecs.imwrite(imgPath + "lpr\\originalImage.jpg", img);
+    Imgcodecs.imwrite(imgPath + "lpr\\tempImage.jpg", temp);
     return threshold;
   }
 
