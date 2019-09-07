@@ -8,29 +8,38 @@ import java.io.File;
 import org.apache.commons.io.FilenameUtils;
 
 
-public class ImgObject extends File {
+public class ImgObject {
 
+  private File file;
   private String licenseNumber = "";
-  private Mat original = new Mat();
-  private Mat filtered = new Mat();
-  private Mat contours = new Mat();
+  private Mat original;
+  private Mat filtered;
+  private Mat contours;
+  private String outPath;
 
   //Constructor
   public ImgObject(File file) {
-    super(file.getAbsolutePath());
+    this.file = file;
     original = Imgcodecs.imread(file.getAbsolutePath());
+
   }
 
   @Override
   public String toString() {
-    return super.getName();
+    return file.getName();
   }
 
 
-  public void saveImages(String path) {
-    Imgcodecs.imwrite(path+"\\original.jpg", original);
-    Imgcodecs.imwrite(path+"\\filtered.jpg", filtered);
-    Imgcodecs.imwrite(path+"\\contours.jpg", contours);
+  public void saveImages(String outPath) {
+    if ((original != null) && (!original.empty())) {
+      Imgcodecs.imwrite(outPath + "\\original.jpg", original);
+    }
+    if ((filtered != null) && (!filtered.empty())) {
+      Imgcodecs.imwrite(outPath + "\\filtered.jpg", filtered);
+    }
+    if ((contours != null) && (!contours.empty())) {
+      Imgcodecs.imwrite(outPath + "\\contours.jpg", contours);
+    }
   }
 
   // Getters & Settters
@@ -65,5 +74,13 @@ public class ImgObject extends File {
 
   public void setContours(Mat contours) {
     this.contours = contours;
+  }
+
+  public File getFile() {
+    return file;
+  }
+
+  public void setFile(File file) {
+    this.file = file;
   }
 }

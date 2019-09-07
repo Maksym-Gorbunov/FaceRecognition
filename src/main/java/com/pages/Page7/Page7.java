@@ -63,8 +63,8 @@ public class Page7 extends JPanel implements Pages {
         if (fc.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           File[] files = fc.getSelectedFiles();
           for (File file : files) {
-            ImgObject imgFile = new ImgObject(file.getAbsolutePath());
-            data.addElement(imgFile);
+//            ImgObject imgFile = new ImgObject(file.getAbsolutePath());
+//            data.addElement(imgFile);
           }
         }
         if (!data.isEmpty()) {
@@ -92,7 +92,7 @@ public class Page7 extends JPanel implements Pages {
         if (!arg0.getValueIsAdjusting()) {
           recognizeBtn.setEnabled(true);
           selectedImgFile = data.get(jList.getSelectedIndex());
-          originalPanel.loadImage(selectedImgFile);
+//          originalPanel.loadImage(selectedImgFile);
 
         }
       }
