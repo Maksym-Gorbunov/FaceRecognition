@@ -21,23 +21,22 @@ public class Page7 extends JPanel implements Pages {
   private JFrame gui;
   private JPanel tab7;
   private ImagePanel originalPanel;
-  private ImagePanel imgFilteredPanel;
-  private ImagePanel imgContoursPanel;
-  private ImagePanel imgLicensePlatePanel;
+  private ImagePanel filteredPanel;
+  private ImagePanel contoursPanel;
+  private ImagePanel licensePlatePanel;
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
-  private JButton rotationBtn = new JButton("rotation");
   private JList jList;
-  private JTextField resultField = new JTextField("result field");
+  private JTextField resultField = new JTextField("RESULT:");
   private DefaultListModel<ImgObject> data = new DefaultListModel<>();
-//  private LPR recognizer;
+  private Recognizer recognizer;
   private String result;
-  private ImgObject selectedImgFile;
+  private ImgObject selectedObject;
   private JSlider thrashSlider;
   private JSlider blurSlider;
   private int width = 400;
   private int height = 300;
-  boolean rotation = true;
+//  boolean rotation = true;
 
 
 
@@ -47,8 +46,8 @@ public class Page7 extends JPanel implements Pages {
     initComponents();
     addListeners();
 
-//    recognizer = new LPR();
-
+    recognizer = new Recognizer();
+//    recognizer.recognize();
 //    recognizer.recognize(Constants.imgPath+"cars\\regnums\\COS799.jpg");
 //    lpr.recognize(Constants.imgPath+"cars\\regnums\\PUZ157.jpg");
   }
@@ -63,8 +62,8 @@ public class Page7 extends JPanel implements Pages {
         if (fc.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           File[] files = fc.getSelectedFiles();
           for (File file : files) {
-//            ImgObject imgFile = new ImgObject(file.getAbsolutePath());
-//            data.addElement(imgFile);
+            ImgObject imgFile = new ImgObject(file);
+            data.addElement(imgFile);
           }
         }
         if (!data.isEmpty()) {
@@ -79,8 +78,11 @@ public class Page7 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
-        if (selectedImgFile != null) {
+        if (selectedObject != null) {
           System.out.println("recognize");
+          selectedObject = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue());
+          updateImages();
+          recognizeBtn.setEnabled(true);
         }
       }
     });
@@ -91,8 +93,8 @@ public class Page7 extends JPanel implements Pages {
       public void valueChanged(ListSelectionEvent arg0) {
         if (!arg0.getValueIsAdjusting()) {
           recognizeBtn.setEnabled(true);
-          selectedImgFile = data.get(jList.getSelectedIndex());
-//          originalPanel.loadImage(selectedImgFile);
+          selectedObject = data.get(jList.getSelectedIndex());
+          originalPanel.loadImage(selectedObject.getFile());
 
         }
       }
@@ -115,6 +117,12 @@ public class Page7 extends JPanel implements Pages {
   }
 
 
+  private void updateImages(){
+    originalPanel.loadMatImage(selectedObject.getOriginal());
+    filteredPanel.loadMatImage(selectedObject.getFiltered());
+    contoursPanel.loadMatImage(selectedObject.getContours());
+  }
+
   private void initComponents() {
     JPanel top = new JPanel();
     JPanel bottom = new JPanel();
@@ -134,13 +142,13 @@ public class Page7 extends JPanel implements Pages {
     bottomRight.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.3), 200));
     JTabbedPane imgTabPane = new JTabbedPane();
     originalPanel = new ImagePanel(width, height);
-    imgFilteredPanel = new ImagePanel(width, height);
-    imgContoursPanel = new ImagePanel(width, height);
-    imgLicensePlatePanel = new ImagePanel(width, height);
+    filteredPanel = new ImagePanel(width, height);
+    contoursPanel = new ImagePanel(width, height);
+    licensePlatePanel = new ImagePanel(width, height);
     imgTabPane.add("Original", originalPanel);
-    imgTabPane.add("Filtered", imgFilteredPanel);
-    imgTabPane.add("Contours", imgContoursPanel);
-    imgTabPane.add("LPlate", imgLicensePlatePanel);
+    imgTabPane.add("Filtered", filteredPanel);
+    imgTabPane.add("Contours", contoursPanel);
+    imgTabPane.add("LPlate", licensePlatePanel);
     topLeft.add(imgTabPane);
     topRight.setLayout(new BoxLayout(topRight, BoxLayout.Y_AXIS));
     topRight.setBorder(new EmptyBorder(10, 10, 10, 10));

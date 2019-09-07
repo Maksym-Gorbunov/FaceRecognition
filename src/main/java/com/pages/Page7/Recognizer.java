@@ -27,32 +27,29 @@ public class Recognizer {
   private Scalar red = new Scalar(0, 0, 255, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
   private String outPath = Constants.imgPath + "lpr\\";
+  private String contourPath = "";
+
+//  public static void main(String[] args) {
+//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//    Recognizer ir = new Recognizer();
+//    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
+//    int thresh = 100;
+//    ir.recognize(f, thresh);
+//  }
 
 
-  public static void main(String[] args) {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    Recognizer ir = new Recognizer();
-    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
-    int thresh = 100;
-    ir.recognize(f, thresh);
-  }
-
-
-  public void recognize(File file, int thresh) {
+  public ImgObject recognize(File file, int thresh) {
     object = new ImgObject(file);
     String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
     outPath = outPath + fileNameWithOutExt + "\\";
     clearFolder(outPath);
     Mat filtered = filterImage(object.getOriginal(), thresh);
-
-//    Mat filtered = new Mat();
-//    object.getOriginal().copyTo(filtered);
-//    filtered = filterImage(filtered, thresh);
-
-
-    object.setFiltered(filtered);
+    Mat filteredCopy = new Mat();
+    filtered.copyTo(filteredCopy);
+    object.setFiltered(filteredCopy);
     List<MatOfPoint> contours = new ArrayList<>();
     contours = findContours(filtered);
+    Mat contourMono = new Mat();
     if ((contours != null) && (contours.size() > 0)) {
       System.out.println("total: " + contours.size());
       int i = 0;
@@ -63,11 +60,42 @@ public class Recognizer {
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
+        //create contour images
+        //toDO ... init in wrong place maybe
+        contourMono = new Mat(filtered, rect);
+//        Mat contourMono = new Mat(filtered, rect);
+//        Mat contourColor = new Mat(object.getOriginal(), rect);
+        //save contour images
+        contourPath = outPath + "\\" + i + "\\";
+        new File(contourPath).mkdirs();
+        Imgcodecs.imwrite(contourPath + "contMono.jpg", contourMono);
+//        Imgcodecs.imwrite(contourPath + "conColor.jpg", contourColor);
 
-        Mat contourMonoImg = new Mat(filtered, rect);
-        Mat contourColorImg = new Mat(object.getContours(), rect);
-        Imgcodecs.imwrite(outPath + "contourMono" + i + ".jpg", contourMonoImg);
-        Imgcodecs.imwrite(outPath + "contourColor" + i + ".jpg", contourColorImg);
+        //rotate contours by rect angle
+
+        Mat rotated1 = rotateImage(contourMono, (int) rotatedRectangle.angle);
+        Mat rotated2 = rotateImage(contourMono, -(int) rotatedRectangle.angle);
+        Imgcodecs.imwrite(contourPath + "rotated1.jpg", rotated1);
+        Imgcodecs.imwrite(contourPath + "rotated2.jpg", rotated2);
+
+        //try to recognize text if not => deep recognize
+        String tempText1 = TextRecognizer.recognizeText(rotated1);
+        String tempText2 = TextRecognizer.recognizeText(rotated2);
+        String tempText = tempText1;
+        if(tempText1.length() < tempText2.length()){
+          tempText = tempText2;
+        }
+        System.out.println("Text "+i+": "+tempText);
+        if(object.getLicenseNumber().length() < tempText.length()){
+          object.setLicenseNumber(tempText);
+        }
+
+        if(object.getLicenseNumber().length() < 5){
+          System.out.println("deep recognition");
+        }
+
+
+
 
 
         i++;
@@ -76,6 +104,7 @@ public class Recognizer {
 
     object.saveImages(outPath);
     System.out.println("...done...");
+    return object;
   }
 
 
@@ -102,6 +131,7 @@ public class Recognizer {
         }
       }
     }
+//    Imgcodecs.imwrite(outPath + "fff.jpg", filtered);
     if (validContours.size() > 0) {
       object.setFiltered(filteredImg);
       object.setContours(contoursImg);

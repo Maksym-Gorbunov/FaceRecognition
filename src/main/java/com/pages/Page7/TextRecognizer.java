@@ -17,7 +17,7 @@ import java.io.File;
 public class TextRecognizer {
   public static String TESS_DATA = Constants.projectPath + "\\lib\\tesseract-OCR\\";
 
-  public String recognizeText(String imgPath) {
+  public static String recognizeText(String imgPath) {
     if ((imgPath == null) || (imgPath.equals(""))) {
       return "";
     }
@@ -34,7 +34,7 @@ public class TextRecognizer {
     return "";
   }
 
-  public String recognizeText(Mat img) {
+  public static String recognizeText(Mat img) {
     if (img == null) {
       return "";
     }
@@ -56,12 +56,11 @@ public class TextRecognizer {
     return "";
   }
 
-  public String recognizeText(BufferedImage bufferedImage) {
+  public static String recognizeText(BufferedImage bufferedImage) {
     if (bufferedImage == null) {
       return "";
     }
     Tesseract tesseract = new Tesseract();
-
     tesseract.setDatapath(TESS_DATA);
     try {
       String result = "";
@@ -77,7 +76,7 @@ public class TextRecognizer {
   }
 
   // Convert Mat to BufferedImage
-  private BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
+  public static BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
     MatOfByte mob = new MatOfByte();
     Imgcodecs.imencode(".jpg", matrix, mob);
     byte ba[] = mob.toArray();
@@ -86,7 +85,7 @@ public class TextRecognizer {
   }
 
   // Convert BufferedImage to Mat
-  private Mat bufferedImage2Mat(BufferedImage bi) {
+  public static Mat bufferedImage2Mat(BufferedImage bi) {
     Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
     //Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
     byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
