@@ -30,7 +30,7 @@ public class Page7 extends JPanel implements Pages {
   private JList jList;
   private JTextField resultField = new JTextField("result field");
   private DefaultListModel<ImgObject> data = new DefaultListModel<>();
-  private LPR recognizer;
+//  private LPR recognizer;
   private String result;
   private ImgObject selectedImgFile;
   private JSlider thrashSlider;
@@ -47,9 +47,9 @@ public class Page7 extends JPanel implements Pages {
     initComponents();
     addListeners();
 
-    recognizer = new LPR();
+//    recognizer = new LPR();
 
-    recognizer.recognize(Constants.imgPath+"cars\\regnums\\COS799.jpg");
+//    recognizer.recognize(Constants.imgPath+"cars\\regnums\\COS799.jpg");
 //    lpr.recognize(Constants.imgPath+"cars\\regnums\\PUZ157.jpg");
   }
 
