@@ -52,10 +52,14 @@ public class Recognizer {
     List<MatOfPoint> contours = new ArrayList<>();
     contours = findContours(filtered);
     Mat contourMono = new Mat();
+
     if ((contours != null) && (contours.size() > 0)) {
       System.out.println("total: " + contours.size());
       int i = 0;
       //work with valid contours
+      Rect bestRect = null;
+
+      // simple recognition
       for (MatOfPoint c : contours) {
         MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
         RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
@@ -96,14 +100,25 @@ public class Recognizer {
         if (object.getLicenseNumber().length() < tempText.length()) {
           object.setLicenseNumber(tempText);
           object.setPlate(tempPlate);
-        }
+          bestRect = rect;
 
-        if (object.getLicenseNumber().length() < 5) {
-          System.out.println("deep recognition");
+
         }
 
 
         i++;
+      }
+      if (object.getLicenseNumber().length() < 5) {
+        bestRect = null;
+        System.out.println("deep recognition");
+      }
+
+      //draw green rect on contours if good result exist
+      if (bestRect != null) {
+        Mat tempContours = new Mat();
+        object.getContours().copyTo(tempContours);
+        Imgproc.rectangle(tempContours, bestRect.tl(), bestRect.br(), green, 3);
+        object.setContours(tempContours);
       }
     }
 
