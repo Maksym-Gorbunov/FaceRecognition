@@ -18,11 +18,11 @@ public class ImgObject {
   private Mat original;
   private Mat filtered;
   private Mat contours;
+  private Mat plate;
   private String outPath;
 
 
-
-  public ImgObject(){
+  public ImgObject() {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
   }
 
@@ -98,5 +98,13 @@ public class ImgObject {
 
   public void setFile(File file) {
     this.file = file;
+  }
+
+  public Mat getPlate() {
+    return plate;
+  }
+
+  public void setPlate(Mat plate) {
+    this.plate = plate;
   }
 }

@@ -89,6 +89,11 @@ public class Page7 extends JPanel implements Pages {
             result.getContours().copyTo(contours);
             selectedObject.setContours(contours);
           }
+          if(result.getPlate() != null){
+            Mat plate = new Mat();
+            result.getPlate().copyTo(plate);
+            selectedObject.setPlate(plate);
+          }
           selectedObject.setLicenseNumber(result.getLicenseNumber());
           updateImages();
 
@@ -141,6 +146,11 @@ public class Page7 extends JPanel implements Pages {
       contoursPanel.loadMatImage(selectedObject.getContours());
     } else {
       contoursPanel.clear();
+    }
+    if(selectedObject.getPlate() != null) {
+      licensePlatePanel.loadMatImage(selectedObject.getPlate());
+    } else {
+      licensePlatePanel.clear();
     }
     licenseNumberTextField.setText(selectedObject.getLicenseNumber());
   }

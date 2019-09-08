@@ -83,21 +83,24 @@ public class Recognizer {
         //try to recognize text if not => deep recognize
         String tempText1 = TextRecognizer.recognizeText(rotated1);
         String tempText2 = TextRecognizer.recognizeText(rotated2);
-        String tempText = tempText1;
-        if(tempText1.length() < tempText2.length()){
+        String tempText;
+        Mat tempPlate = new Mat();
+        if (tempText1.length() < tempText2.length()) {
           tempText = tempText2;
+          rotated2.copyTo(tempPlate);
+        } else {
+          tempText = tempText1;
+          rotated1.copyTo(tempPlate);
         }
-        System.out.println("Text "+i+": "+tempText);
-        if(object.getLicenseNumber().length() < tempText.length()){
+        System.out.println("Text " + i + ": " + tempText);
+        if (object.getLicenseNumber().length() < tempText.length()) {
           object.setLicenseNumber(tempText);
+          object.setPlate(tempPlate);
         }
 
-        if(object.getLicenseNumber().length() < 5){
+        if (object.getLicenseNumber().length() < 5) {
           System.out.println("deep recognition");
         }
-
-
-
 
 
         i++;
