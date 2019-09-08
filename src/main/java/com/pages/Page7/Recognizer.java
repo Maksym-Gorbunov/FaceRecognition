@@ -39,6 +39,7 @@ public class Recognizer {
 
 
   public ImgObject recognize(File file, int thresh) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     object = new ImgObject(file);
     String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
     outPath = outPath + fileNameWithOutExt + "\\";

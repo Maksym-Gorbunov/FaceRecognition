@@ -1,11 +1,14 @@
 package com.pages.Page7;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.File;
 
 import org.apache.commons.io.FilenameUtils;
+import org.opencv.imgproc.Imgproc;
 
 
 public class ImgObject {
@@ -19,9 +22,16 @@ public class ImgObject {
 
   //Constructor
   public ImgObject(File file) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     this.file = file;
-    original = Imgcodecs.imread(file.getAbsolutePath());
-
+    Mat largeImage = Imgcodecs.imread(file.getAbsolutePath());
+    float w = largeImage.width();
+    float h = largeImage.height();
+    float ratio = w / h;
+    w = 800;
+    h = w / ratio;
+    original = new Mat();
+    Imgproc.resize(largeImage, original, new Size(w, h));
   }
 
   @Override
