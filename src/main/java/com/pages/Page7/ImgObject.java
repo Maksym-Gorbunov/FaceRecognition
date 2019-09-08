@@ -19,6 +19,7 @@ public class ImgObject {
   private Mat filtered;
   private Mat contours;
   private Mat plate;
+  private Mat filteredPlate;
   private String outPath;
 
 
@@ -106,5 +107,13 @@ public class ImgObject {
 
   public void setPlate(Mat plate) {
     this.plate = plate;
+  }
+
+  public Mat getFilteredPlate() {
+    return filteredPlate;
+  }
+
+  public void setFilteredPlate(Mat filteredPlate) {
+    this.filteredPlate = filteredPlate;
   }
 }

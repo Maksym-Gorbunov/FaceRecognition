@@ -84,22 +84,32 @@ public class Recognizer {
         Imgcodecs.imwrite(contourPath + "rotated1.jpg", rotated1);
         Imgcodecs.imwrite(contourPath + "rotated2.jpg", rotated2);
 
+        Mat rotatedFiltered1 = filterPlate(rotated1);
+        Mat rotatedFiltered2 = filterPlate(rotated2);
+        Imgcodecs.imwrite(contourPath + "rotatedFiltered1.jpg", rotatedFiltered1);
+        Imgcodecs.imwrite(contourPath + "rotatedFiltered2.jpg", rotatedFiltered2);
+
+
         //try to recognize text if not => deep recognize
-        String tempText1 = TextRecognizer.recognizeText(rotated1);
-        String tempText2 = TextRecognizer.recognizeText(rotated2);
+        String tempText1 = TextRecognizer.recognizeText(rotatedFiltered1);
+        String tempText2 = TextRecognizer.recognizeText(rotatedFiltered2);
         String tempText;
-        Mat tempPlate = new Mat();
+        Mat rotatedPlate = new Mat();
+        Mat rotatedFilteredPlate = new Mat();
         if (tempText1.length() < tempText2.length()) {
           tempText = tempText2;
-          rotated2.copyTo(tempPlate);
+          rotatedFiltered2.copyTo(rotatedFilteredPlate);
+          rotated2.copyTo(rotatedPlate);
         } else {
           tempText = tempText1;
-          rotated1.copyTo(tempPlate);
+          rotatedFiltered1.copyTo(rotatedFilteredPlate);
+          rotated1.copyTo(rotatedPlate);
         }
         System.out.println("Text " + i + ": " + tempText);
         if (object.getLicenseNumber().length() < tempText.length()) {
           object.setLicenseNumber(tempText);
-          object.setPlate(tempPlate);
+          object.setPlate(rotatedPlate);
+          object.setFilteredPlate(rotatedFilteredPlate);
           bestRect = rect;
 
 
@@ -159,6 +169,16 @@ public class Recognizer {
     }
     return null;
   }
+
+
+
+  public Mat filterPlate(Mat img){
+    Mat inverted = new Mat();
+    Core.bitwise_not(img, inverted);
+    return inverted;
+  }
+
+
 
   // Rotate license plate image
   private Mat rotateImage(Mat img, int angle) {

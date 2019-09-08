@@ -26,7 +26,8 @@ public class Page7 extends JPanel implements Pages {
   private ImagePanel originalPanel;
   private ImagePanel filteredPanel;
   private ImagePanel contoursPanel;
-  private ImagePanel licensePlatePanel;
+  private ImagePanel platePanel;
+  private ImagePanel filteredPlatePanel;
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
   private JList jList;
@@ -89,10 +90,15 @@ public class Page7 extends JPanel implements Pages {
             result.getContours().copyTo(contours);
             selectedObject.setContours(contours);
           }
-          if(result.getPlate() != null){
+          if (result.getPlate() != null) {
             Mat plate = new Mat();
             result.getPlate().copyTo(plate);
             selectedObject.setPlate(plate);
+          }
+          if (result.getFilteredPlate() != null) {
+            Mat filteredPlate = new Mat();
+            result.getFilteredPlate().copyTo(filteredPlate);
+            selectedObject.setFilteredPlate(filteredPlate);
           }
           selectedObject.setLicenseNumber(result.getLicenseNumber());
           updateImages();
@@ -147,10 +153,15 @@ public class Page7 extends JPanel implements Pages {
     } else {
       contoursPanel.clear();
     }
-    if(selectedObject.getPlate() != null) {
-      licensePlatePanel.loadMatImage(selectedObject.getPlate());
+    if (selectedObject.getPlate() != null) {
+      platePanel.loadMatImage(selectedObject.getPlate());
     } else {
-      licensePlatePanel.clear();
+      platePanel.clear();
+    }
+    if (selectedObject.getFilteredPlate() != null) {
+      filteredPlatePanel.loadMatImage(selectedObject.getFilteredPlate());
+    } else {
+      filteredPlatePanel.clear();
     }
     licenseNumberTextField.setText(selectedObject.getLicenseNumber());
   }
@@ -176,11 +187,13 @@ public class Page7 extends JPanel implements Pages {
     originalPanel = new ImagePanel(width, height);
     filteredPanel = new ImagePanel(width, height);
     contoursPanel = new ImagePanel(width, height);
-    licensePlatePanel = new ImagePanel(width, height);
+    platePanel = new ImagePanel(width, height);
+    filteredPlatePanel = new ImagePanel(width, height);
     imgTabPane.add("Original", originalPanel);
     imgTabPane.add("Filtered", filteredPanel);
     imgTabPane.add("Contours", contoursPanel);
-    imgTabPane.add("LPlate", licensePlatePanel);
+    imgTabPane.add("LPlate", platePanel);
+    imgTabPane.add("FilteredPlate", filteredPlatePanel);
     topLeft.add(imgTabPane);
     topRight.setLayout(new BoxLayout(topRight, BoxLayout.Y_AXIS));
     topRight.setBorder(new EmptyBorder(10, 10, 10, 10));
