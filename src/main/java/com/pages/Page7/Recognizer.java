@@ -26,6 +26,7 @@ public class Recognizer {
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
+  private String outPathMain = Constants.imgPath + "lpr\\";
   private String outPath = Constants.imgPath + "lpr\\";
   private String contourPath = "";
 
@@ -42,7 +43,7 @@ public class Recognizer {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     object = new ImgObject(file);
     String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
-    outPath = outPath + fileNameWithOutExt + "\\";
+    outPath = outPathMain + fileNameWithOutExt + "\\";
     clearFolder(outPath);
     Mat filtered = filterImage(object.getOriginal(), thresh);
     Mat filteredCopy = new Mat();

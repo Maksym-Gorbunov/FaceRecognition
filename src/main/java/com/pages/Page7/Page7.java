@@ -4,11 +4,14 @@ import com.constants.Constants;
 import com.gui.Gui;
 import com.gui.ImagePanel;
 import com.pages.Pages;
+import org.apache.commons.io.FileUtils;
+import org.opencv.core.Mat;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -39,17 +42,13 @@ public class Page7 extends JPanel implements Pages {
 //  boolean rotation = true;
 
 
-
   public Page7(Gui gui) {
     this.gui = gui;
     tab7 = gui.getTab7();
     initComponents();
     addListeners();
-
+    clearFolder(Constants.imgPath + "lpr\\");
     recognizer = new Recognizer();
-//    recognizer.recognize();
-//    recognizer.recognize(Constants.imgPath+"cars\\regnums\\COS799.jpg");
-//    lpr.recognize(Constants.imgPath+"cars\\regnums\\PUZ157.jpg");
   }
 
   private void addListeners() {
@@ -79,11 +78,25 @@ public class Page7 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
         if (selectedObject != null) {
-          System.out.println("recognize");
-          selectedObject = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue());
+          ImgObject result = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue());
+
+          if (result.getFiltered() != null) {
+            Mat filtered = new Mat();
+            result.getFiltered().copyTo(filtered);
+            selectedObject.setFiltered(filtered);
+          }
+          if (result.getContours() != null) {
+            Mat contours = new Mat();
+            result.getContours().copyTo(contours);
+            selectedObject.setContours(contours);
+          }
+
+          selectedObject.setLicenseNumber(result.getLicenseNumber());
+
+
           updateImages();
-          recognizeBtn.setEnabled(true);
         }
+
       }
     });
 
@@ -94,8 +107,7 @@ public class Page7 extends JPanel implements Pages {
         if (!arg0.getValueIsAdjusting()) {
           recognizeBtn.setEnabled(true);
           selectedObject = data.get(jList.getSelectedIndex());
-          originalPanel.loadImage(selectedObject.getFile());
-
+          updateImages();
         }
       }
     });
@@ -117,10 +129,22 @@ public class Page7 extends JPanel implements Pages {
   }
 
 
-  private void updateImages(){
-    originalPanel.loadMatImage(selectedObject.getOriginal());
-    filteredPanel.loadMatImage(selectedObject.getFiltered());
-    contoursPanel.loadMatImage(selectedObject.getContours());
+  private void updateImages() {
+    if (selectedObject.getOriginal() != null) {
+      originalPanel.loadMatImage(selectedObject.getOriginal());
+    } else {
+      originalPanel.clear();
+    }
+    if (selectedObject.getFiltered() != null) {
+      filteredPanel.loadMatImage(selectedObject.getFiltered());
+    } else {
+      filteredPanel.clear();
+    }
+    if (selectedObject.getContours() != null) {
+      contoursPanel.loadMatImage(selectedObject.getContours());
+    } else {
+      contoursPanel.clear();
+    }
   }
 
   private void initComponents() {
@@ -183,5 +207,15 @@ public class Page7 extends JPanel implements Pages {
     bottomLeft.add(blurSlider);
     bottomLeft.add(new JLabel("Blur"));
     recognizeBtn.setEnabled(false);
+  }
+
+  // Clear folder from old files
+  public void clearFolder(String path) {
+    try {
+      FileUtils.deleteDirectory(new File(path));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    new File(path).mkdirs();
   }
 }

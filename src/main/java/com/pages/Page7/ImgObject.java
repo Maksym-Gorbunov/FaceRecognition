@@ -20,6 +20,12 @@ public class ImgObject {
   private Mat contours;
   private String outPath;
 
+
+
+  public ImgObject(){
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+  }
+
   //Constructor
   public ImgObject(File file) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
