@@ -30,7 +30,7 @@ public class Page7 extends JPanel implements Pages {
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
   private JList jList;
-  private JTextField resultField = new JTextField("RESULT:");
+  private JTextField licenseNumberTextField = new JTextField("");
   private DefaultListModel<ImgObject> data = new DefaultListModel<>();
   private Recognizer recognizer;
   private String result;
@@ -79,7 +79,6 @@ public class Page7 extends JPanel implements Pages {
         recognizeBtn.setEnabled(false);
         if (selectedObject != null) {
           ImgObject result = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue());
-
           if (result.getFiltered() != null) {
             Mat filtered = new Mat();
             result.getFiltered().copyTo(filtered);
@@ -90,11 +89,9 @@ public class Page7 extends JPanel implements Pages {
             result.getContours().copyTo(contours);
             selectedObject.setContours(contours);
           }
-
           selectedObject.setLicenseNumber(result.getLicenseNumber());
-
-
           updateImages();
+
         }
 
       }
@@ -145,6 +142,7 @@ public class Page7 extends JPanel implements Pages {
     } else {
       contoursPanel.clear();
     }
+    licenseNumberTextField.setText(selectedObject.getLicenseNumber());
   }
 
   private void initComponents() {
@@ -186,7 +184,7 @@ public class Page7 extends JPanel implements Pages {
     topRight.add(scrollPane);
     JLabel resultLabel = new JLabel("RESULT: ");
     topRight.add(resultLabel);
-    topRight.add(resultField);
+    topRight.add(licenseNumberTextField);
     JPanel btns = new JPanel();
     btns.add(openBtn);
     btns.add(recognizeBtn);
