@@ -21,6 +21,7 @@ import static org.opencv.imgproc.Imgproc.RETR_TREE;
 
 
 public class Recognizer {
+
   private ImgObject object;
   private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
@@ -38,7 +39,7 @@ public class Recognizer {
 //    ir.recognize(f, thresh);
 //  }
 
-
+  // Filter and search license number on image
   public ImgObject recognize(File file, int thresh) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     object = new ImgObject(file);
@@ -52,11 +53,9 @@ public class Recognizer {
     List<MatOfPoint> contours = new ArrayList<>();
     contours = findContours(filtered);
     Mat contourMono = new Mat();
-
     if ((contours != null) && (contours.size() > 0)) {
       System.out.println("total: " + contours.size());
       int i = 0;
-      //work with valid contours
       Rect bestRect = null;
 
       // simple recognition
@@ -67,30 +66,24 @@ public class Recognizer {
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         //create contour images
-        //toDO ... init in wrong place maybe
+        //toDO ... filter after rotation mayby, filter contours or blackhat...
+        //toDo ... copy same as simple plus shear text by angle from contour???
+        //toDo ... remove -+rotation, from 2 rotation make 1 only
         contourMono = new Mat(filtered, rect);
-//        Mat contourMono = new Mat(filtered, rect);
-//        Mat contourColor = new Mat(object.getOriginal(), rect);
         //save contour images
         contourPath = outPath + "\\" + i + "\\";
         new File(contourPath).mkdirs();
         Imgcodecs.imwrite(contourPath + "contMono.jpg", contourMono);
-//        Imgcodecs.imwrite(contourPath + "conColor.jpg", contourColor);
-
         //rotate contours by rect angle
-
         Mat rotated1 = rotateImage(contourMono, (int) rotatedRectangle.angle);
         Mat rotated2 = rotateImage(contourMono, -(int) rotatedRectangle.angle);
         Imgcodecs.imwrite(contourPath + "rotated1.jpg", rotated1);
         Imgcodecs.imwrite(contourPath + "rotated2.jpg", rotated2);
-
+        //extra plate filter after rotation
         Mat rotatedFiltered1 = filterPlate(rotated1);
         Mat rotatedFiltered2 = filterPlate(rotated2);
         Imgcodecs.imwrite(contourPath + "rotatedFiltered1.jpg", rotatedFiltered1);
         Imgcodecs.imwrite(contourPath + "rotatedFiltered2.jpg", rotatedFiltered2);
-
-
-        //try to recognize text if not => deep recognize
         String tempText1 = TextRecognizer.recognizeText(rotatedFiltered1);
         String tempText2 = TextRecognizer.recognizeText(rotatedFiltered2);
         String tempText;
@@ -111,13 +104,11 @@ public class Recognizer {
           object.setPlate(rotatedPlate);
           object.setFilteredPlate(rotatedFilteredPlate);
           bestRect = rect;
-
-
         }
-
-
         i++;
       }
+
+      // deep recognition
       if (object.getLicenseNumber().length() < 5) {
         bestRect = null;
         System.out.println("deep recognition");
@@ -161,7 +152,6 @@ public class Recognizer {
         }
       }
     }
-//    Imgcodecs.imwrite(outPath + "fff.jpg", filtered);
     if (validContours.size() > 0) {
       object.setFiltered(filteredImg);
       object.setContours(contoursImg);
@@ -172,11 +162,16 @@ public class Recognizer {
 
 
 
-  public Mat filterPlate(Mat img){
+
+
+  // Extra filter for license plate with inversion and ...
+  public Mat filterPlate(Mat img) {
     Mat inverted = new Mat();
     Core.bitwise_not(img, inverted);
     return inverted;
   }
+
+
 
 
 

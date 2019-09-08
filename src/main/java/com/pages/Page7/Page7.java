@@ -40,9 +40,8 @@ public class Page7 extends JPanel implements Pages {
   private JSlider blurSlider;
   private int width = 400;
   private int height = 300;
-//  boolean rotation = true;
 
-
+  // Constructor
   public Page7(Gui gui) {
     this.gui = gui;
     tab7 = gui.getTab7();
@@ -52,7 +51,9 @@ public class Page7 extends JPanel implements Pages {
     recognizer = new Recognizer();
   }
 
+  // Add listeners to UI components
   private void addListeners() {
+
     //open btn
     openBtn.addActionListener(new ActionListener() {
       @Override
@@ -102,9 +103,7 @@ public class Page7 extends JPanel implements Pages {
           }
           selectedObject.setLicenseNumber(result.getLicenseNumber());
           updateImages();
-
         }
-
       }
     });
 
@@ -136,7 +135,7 @@ public class Page7 extends JPanel implements Pages {
 
   }
 
-
+  // Update UI
   private void updateImages() {
     if (selectedObject.getOriginal() != null) {
       originalPanel.loadMatImage(selectedObject.getOriginal());
@@ -166,6 +165,7 @@ public class Page7 extends JPanel implements Pages {
     licenseNumberTextField.setText(selectedObject.getLicenseNumber());
   }
 
+  // Initialize UI components
   private void initComponents() {
     JPanel top = new JPanel();
     JPanel bottom = new JPanel();
