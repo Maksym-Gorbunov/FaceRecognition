@@ -33,26 +33,146 @@ public class Recognizer {
   private String outPathMain = Constants.imgPath + "lpr\\";
   private String outPath = Constants.imgPath + "lpr\\";
   private String contourPath = "";
+  private String contourOutPath = "";
+
 
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     Recognizer ir = new Recognizer();
     File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
+//    File f = new File(Constants.imgPath + "\\cars\\111\\-30.jpg");
     int thresh = 100;
-    ir.recognize(f, thresh);
+    ir.recognize2(f, thresh);
+  }
+
+  private void recognize2(File file, int thresh) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    object = new ImgObject(file);
+    String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
+    outPath = outPathMain + fileNameWithOutExt + "\\";
+    clearFolder(outPath);
+
+    Mat original = copy(object.getOriginal());
+    Mat filtered = filterImage(object.getOriginal(), thresh);
+    object.setFiltered(copy(filtered));
+
+    List<MatOfPoint> contours = new ArrayList<>();
+    contours = findContours(filtered);
+
+    //loop if contours found
+    if ((contours != null) && (contours.size() > 0)) {
+      System.out.println("total: " + contours.size());
+      Rect bestRect = null;
+      List<Mat> plates = new ArrayList<>();
+      Imgcodecs.imwrite(outPath + "threshold.jpg", filtered);
+
+      //loop through valid contours
+      int i = 0;
+      for (MatOfPoint c : contours) {
+        contourOutPath = outPath + i + "\\";
+        new File(contourOutPath).mkdirs();
+
+        //create rect around contour
+        MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
+        RotatedRect rotatedRect = Imgproc.minAreaRect(pointsArea);
+        Point rotatedRectPoints[] = new Point[4];
+        rotatedRect.points(rotatedRectPoints);
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
+        //create contour mini image
+        Mat contourImg = new Mat(filtered, rect);
+        Imgcodecs.imwrite(contourOutPath + "contour.jpg", contourImg);
+        //rotate contours by rect angle
+        Mat rotatedImg = rotateImage2(contourImg, rotatedRect);
+        Imgcodecs.imwrite(contourOutPath + "rotated.jpg", rotatedImg);
+
+        //cut large contour from rotated image
+        Mat cuttedImg = cutLargeContour(rotatedImg);
+
+
+        i++;
+      }
+
+
+    }
+    //contours not found
+    else {
+      System.out.println("Contours not found, change thresh and try again");
+    }
+    object.saveImages(outPath);
+  }
+
+  private Mat cutLargeContour(Mat rotatedImg) {
+    if (rotatedImg == null) {
+      System.out.println("rotated NULL");
+      return null;
+    }
+    Mat copy = copy(rotatedImg);
+    List<MatOfPoint> contours = new ArrayList<>();
+    Imgproc.findContours(copy, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    Mat cuttedImg = new Mat();
+    for (MatOfPoint c : contours) {
+      MatOfPoint2f points = new MatOfPoint2f(c.toArray());
+      RotatedRect rotatedRect = Imgproc.minAreaRect(points);
+      Point rotRectPoints[] = new Point[4];
+      rotatedRect.points(rotRectPoints);
+      Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
+
+      int rectArea = (int) rect.area();
+
+      int imgArea = (int) (0.7 * copy.size().area());
+//      Rect rectCrop = new Rect(rect.x, rect.y, rect.width, rect.height);
+
+      if (rotatedRect != null && copy.width() > rotatedRect.size.width
+              && copy.height() < rotatedRect.size.height) {
+        if (rectArea > imgArea) {
+//        if (bounding_rect != null && mMatInputFrame.width() > bounding_rect.width
+//                && mMatInputFrame.height() > bounding_rect.height)
+          System.out.println("Image: " + imgArea);
+          System.out.println("Rect: " + rectArea);
+          System.out.println("****");
+//        Imgcodecs.imwrite(contourOutPath + "rotatedContours.jpg", copy);
+//        Imgproc.rectangle(copy, rect.tl(), rect.br(), green, 1);
+          //toDo ... CANT CREATE CUTTED_IMG?????
+          cuttedImg = new Mat(rotatedImg, rect);
+//        break;
+//        Mat cuttedImg = new Mat(new Size(rect.width, rect.height), CvType.CV_8UC1);
+//        Mat cuttedImg = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
+
+//        cuttedImg = new Mat(copy, rect);
+//        Imgcodecs.imwrite(contourPath + "cutted.jpg", cuttedImg);
+//        return cuttedImg;
+        }
+      }
+    }
+    return rotatedImg;
   }
 
 
-
-
-
-
-
-
-
-
-
-
+  // Rotate license plate image
+  private Mat rotateImage2(Mat img, RotatedRect rotatedRect) {
+    int angle = (int) rotatedRect.angle;
+    if (rotatedRect.size.width > rotatedRect.size.height) {
+      angle = -angle;
+    }
+    int rotatedAngle = 0;
+    if (angle == 0) {
+      return img;
+    }
+    if (angle < 0) {
+      rotatedAngle = 90 - Math.abs(angle);
+    }
+    if (angle > 0) {
+      rotatedAngle = -angle;
+    }
+    Mat temp = new Mat();
+    img.copyTo(temp);
+    Mat rotatedImg = new Mat(2, 3, CvType.CV_32FC1);
+    Mat destination = new Mat(img.rows(), img.cols(), img.type());
+    Point center = new Point(destination.cols() / 2, destination.rows() / 2);
+    rotatedImg = Imgproc.getRotationMatrix2D(center, rotatedAngle, 1);
+    Imgproc.warpAffine(temp, destination, rotatedImg, destination.size());
+    return destination;
+  }
 
 
   // Filter and search license number on image
@@ -162,7 +282,7 @@ public class Recognizer {
     System.out.println("Total plates: " + plates.size());
     for (Mat plate : plates) {
       BufferedImage shearedPlate = cutAndShearRotatedPlate(plate, angle);
-      if(shearedPlate != null) {
+      if (shearedPlate != null) {
         Mat result = bufferedImage2Mat(shearedPlate);
 
 //        Mat blur = new Mat();
@@ -384,5 +504,15 @@ public class Recognizer {
     byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
     mat.put(0, 0, data);
     return mat;
+  }
+
+
+  private Mat copy(Mat original) {
+    if (original == null) {
+      return null;
+    }
+    Mat copy = new Mat();
+    original.copyTo(copy);
+    return copy;
   }
 }
