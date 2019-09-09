@@ -34,13 +34,26 @@ public class Recognizer {
   private String outPath = Constants.imgPath + "lpr\\";
   private String contourPath = "";
 
-//  public static void main(String[] args) {
-//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//    Recognizer ir = new Recognizer();
-//    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
-//    int thresh = 100;
-//    ir.recognize(f, thresh);
-//  }
+  public static void main(String[] args) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    Recognizer ir = new Recognizer();
+    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
+    int thresh = 100;
+    ir.recognize(f, thresh);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Filter and search license number on image
   public ImgObject recognize(File file, int thresh, double angle) {
@@ -55,8 +68,8 @@ public class Recognizer {
     filtered.copyTo(filteredCopy);
     object.setFiltered(filteredCopy);
     List<MatOfPoint> contours = new ArrayList<>();
-    contours = findContours(filtered);
     Mat contourMono = new Mat();
+    contours = findContours(filtered);
     if ((contours != null) && (contours.size() > 0)) {
       System.out.println("total: " + contours.size());
       int i = 0;
@@ -149,11 +162,23 @@ public class Recognizer {
     System.out.println("Total plates: " + plates.size());
     for (Mat plate : plates) {
       BufferedImage shearedPlate = cutAndShearRotatedPlate(plate, angle);
-      String text = TextRecognizer.recognizeText(shearedPlate);
-      if (object.getLicenseNumber().length() <= text.length()) {
-        object.setLicenseNumber(text);
+      if(shearedPlate != null) {
         Mat result = bufferedImage2Mat(shearedPlate);
-        object.setFilteredPlate(result);
+
+//        Mat blur = new Mat();
+//        Mat threshold = new Mat();
+//        Imgproc.GaussianBlur(result, blur, new Size(3, 3), 1);
+//        Imgproc.threshold(blur, threshold, 120, 255, Imgproc.THRESH_BINARY_INV);
+//        result = threshold;
+
+        String text = TextRecognizer.recognizeText(result);
+//      String text = TextRecognizer.recognizeText(shearedPlate);
+
+        if (object.getLicenseNumber().length() <= text.length()) {
+          object.setLicenseNumber(text);
+          object.setFilteredPlate(result);
+
+        }
       }
     }
 
@@ -176,18 +201,21 @@ public class Recognizer {
       RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
       double imgArea = copy.size().area();
       double rotArea = rotatedRect2.size.area();
-      if (rotArea > imgArea * 0.5) {
 //      if ((rotArea > imgArea * 0.3) && (rotArea < imgArea * 0.9)) {
 //        angle = rotatedRect2.angle/3;
 //        angle = -0.6;
-        Point rotRectPoints[] = new Point[4];
-        rotatedRect2.points(rotRectPoints);
-        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
+      Point rotRectPoints[] = new Point[4];
+      rotatedRect2.points(rotRectPoints);
+
+      Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
+      if (rect.area() > imgArea * 0.5) {
         Imgproc.rectangle(img, rect.tl(), rect.br(), red, 2);
 
         if (img != null && !img.empty() && rect != null) {
+          System.out.println("********");
           System.out.println(i);
           Imgcodecs.imwrite(outPath + "plates\\" + i + "___img.jpg", img);
+          Imgproc.rectangle(copy, rect.tl(), rect.br(), green, 1);
           Imgcodecs.imwrite(outPath + "plates\\" + i + "___copy.jpg", copy);
           cuttedPlate = new Mat(img, rect);
 //        cuttedPlate = new Mat(img, rect);
@@ -282,7 +310,6 @@ public class Recognizer {
     Core.add(inverted, topHat, grayPlusTopHat);
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
     return grayPlusTopHatMinusBlackHat;
-//    return inverted;
   }
 
 

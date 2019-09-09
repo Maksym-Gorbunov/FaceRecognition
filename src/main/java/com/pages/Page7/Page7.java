@@ -23,6 +23,7 @@ public class Page7 extends JPanel implements Pages {
 
   private JFrame gui;
   private JPanel tab7;
+  private JTabbedPane imgTabPane;
   private ImagePanel originalPanel;
   private ImagePanel filteredPanel;
   private ImagePanel contoursPanel;
@@ -116,6 +117,7 @@ public class Page7 extends JPanel implements Pages {
           recognizeBtn.setEnabled(true);
           selectedObject = data.get(jList.getSelectedIndex());
           updateImages();
+          imgTabPane.setSelectedIndex(0);
         }
       }
     });
@@ -190,7 +192,7 @@ public class Page7 extends JPanel implements Pages {
     topRight.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.3), height + 40));
     bottomLeft.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.7), 200));
     bottomRight.setPreferredSize(new Dimension((int) (Constants.FRAME_WIDTH * 0.3), 200));
-    JTabbedPane imgTabPane = new JTabbedPane();
+    imgTabPane = new JTabbedPane();
     originalPanel = new ImagePanel(width, height);
     filteredPanel = new ImagePanel(width, height);
     contoursPanel = new ImagePanel(width, height);
