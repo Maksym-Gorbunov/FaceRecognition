@@ -168,7 +168,20 @@ public class Recognizer {
   public Mat filterPlate(Mat img) {
     Mat inverted = new Mat();
     Core.bitwise_not(img, inverted);
-    return inverted;
+
+
+    Mat topHat = new Mat();
+    Mat blackHat = new Mat();
+    Mat grayPlusTopHat = new Mat();
+    Mat grayPlusTopHatMinusBlackHat = new Mat();
+    Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+    Imgproc.morphologyEx(inverted, topHat, Imgproc.MORPH_TOPHAT, kernel);
+    Imgproc.morphologyEx(inverted, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
+    Core.add(inverted, topHat, grayPlusTopHat);
+    Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
+
+    return grayPlusTopHatMinusBlackHat;
+//    return inverted;
   }
 
 
