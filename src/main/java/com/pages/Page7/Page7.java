@@ -38,6 +38,7 @@ public class Page7 extends JPanel implements Pages {
   private ImgObject selectedObject;
   private JSlider thrashSlider;
   private JSlider blurSlider;
+  private JSlider shearAngleSlider;
   private int width = 400;
   private int height = 300;
 
@@ -80,7 +81,7 @@ public class Page7 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
         if (selectedObject != null) {
-          ImgObject result = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue());
+          ImgObject result = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue(), shearAngleSlider.getValue()*0.1);
           if (result.getFiltered() != null) {
             Mat filtered = new Mat();
             result.getFiltered().copyTo(filtered);
@@ -127,6 +128,12 @@ public class Page7 extends JPanel implements Pages {
     });
 
     blurSlider.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        recognizeBtn.setEnabled(true);
+      }
+    });
+    shearAngleSlider.addChangeListener(new ChangeListener() {
       @Override
       public void stateChanged(ChangeEvent e) {
         recognizeBtn.setEnabled(true);
@@ -213,12 +220,22 @@ public class Page7 extends JPanel implements Pages {
     btns.add(recognizeBtn);
     topRight.add(btns);
     bottomLeft.setLayout(new GridLayout(3, 2));
+
     thrashSlider = new JSlider(JSlider.HORIZONTAL, 0, 250, 80);
     thrashSlider.setMinorTickSpacing(10);
     thrashSlider.setMajorTickSpacing(50);
     thrashSlider.setPaintTicks(true);
     thrashSlider.setPaintLabels(true);
     bottomLeft.add(thrashSlider);
+
+    bottomRight.add(new JLabel("Transformation - Shear angle"));
+    shearAngleSlider = new JSlider(JSlider.HORIZONTAL, -10, 10, -6);
+    shearAngleSlider.setMinorTickSpacing(1);
+    shearAngleSlider.setMajorTickSpacing(5);
+    shearAngleSlider.setPaintTicks(true);
+    shearAngleSlider.setPaintLabels(true);
+    bottomRight.add(shearAngleSlider);
+
     bottomLeft.add(new JLabel("Thresh"));
     blurSlider = new JSlider(JSlider.HORIZONTAL, 0, 10, 5);
     blurSlider.setMinorTickSpacing(1);
@@ -226,6 +243,7 @@ public class Page7 extends JPanel implements Pages {
     blurSlider.setPaintTicks(true);
     blurSlider.setPaintLabels(true);
     bottomLeft.add(blurSlider);
+
     bottomLeft.add(new JLabel("Blur"));
     recognizeBtn.setEnabled(false);
   }
