@@ -36,6 +36,8 @@ public class Recognizer {
   private String contourOutPath = "";
 
 
+  //toDO..TENSOR FLOW
+
 //  public static void main(String[] args) {
 //    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 //    Recognizer ir = new Recognizer();
@@ -57,6 +59,7 @@ public class Recognizer {
     mat.put(0, 0, data);
     return mat;
   }
+
 
   // Find and recognize license plate on image
   public ImgObject recognize(File file, int thresh, int blur ,int plateThresh, double shearAngleFromSlider) {
@@ -143,9 +146,12 @@ public class Recognizer {
     return object;
   }
 
+
+
+
   //////////////// MAT ////////////////////////
   //shear cutted plate with rotated rectangle angle or slider
-  private Mat shearImage(Mat cuttedPlate, RotatedRect rotatedRect, double rotatedRectAngle, double shearAngleFromSlider) {
+  public Mat shearImage(Mat cuttedPlate, RotatedRect rotatedRect, double rotatedRectAngle, double shearAngleFromSlider) {
     double x = 0;
 
     // shear text angle controls from slider if not 0
@@ -186,12 +192,58 @@ public class Recognizer {
   }
 
 
+
+
+  public Mat shearImageFromSlider(Mat cuttedPlate, double shearAngleFromSlider) {
+    double x = 0;
+
+    // shear text angle controls from slider if not 0
+    if (shearAngleFromSlider != 0) {
+      x = shearAngleFromSlider;
+    }
+    // some shear logic algoritm will be here
+//    else {
+//      if (rotatedRect.size.width > rotatedRect.size.height) {
+//        System.out.println("plus");
+//        x = 0.2;
+//      } else {
+//        System.out.println("minus");
+//        x = -0.2;
+//      }
+//    }
+    System.out.println("x = " + x);
+    System.out.println("angle = " + (int) shearAngleFromSlider);
+    BufferedImage buffer = null;
+    try {
+      buffer = Mat2BufferedImage(cuttedPlate);
+      AffineTransform tx = new AffineTransform();
+      //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+      tx.shear(x, 0);
+      //tx.shear(-0.4, 0);
+      //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+      BufferedImage shearedPLateBuffered = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
+      op.filter(buffer, shearedPLateBuffered);
+      File outputfile = new File(contourOutPath + "6.sheared.jpg");
+      ImageIO.write(shearedPLateBuffered, "jpg", outputfile);
+      Mat shearedPLate = bufferedImageToMat(shearedPLateBuffered);
+      return shearedPLate;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+
+
   // Extra filter for license plate with inversion and ...
   public Mat filterPlate(Mat img, int plateThresh) {
     Mat inverted = new Mat();
     Core.bitwise_not(img, inverted);
     Mat topHat = new Mat();
     Mat blackHat = new Mat();
+    Mat threshold = new Mat();
+    Mat blur = new Mat();
     Mat grayPlusTopHat = new Mat();
     Mat grayPlusTopHatMinusBlackHat = new Mat();
     Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
@@ -201,8 +253,10 @@ public class Recognizer {
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
 
     Imgcodecs.imwrite(contourOutPath + "5.filtered.jpg", grayPlusTopHatMinusBlackHat);
-
-    return grayPlusTopHatMinusBlackHat;
+    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
+//    return grayPlusTopHatMinusBlackHat;
+    Imgproc.threshold(blur, threshold, plateThresh, 255, Imgproc.THRESH_BINARY_INV);
+    return threshold;
   }
 
   private Mat cutLargeContour(Mat rotatedImg) {
@@ -299,7 +353,7 @@ public class Recognizer {
   }
 
   // Filter main image, method translated from Python->C++
-  private Mat filterImage(Mat img, int thresh, int blurValue) {
+  public Mat filterImage(Mat img, int thresh, int blurValue) {
 //    int blurValue = 5;
     Mat temp = new Mat();
     img.copyTo(temp);

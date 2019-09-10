@@ -84,16 +84,11 @@ public class Page7 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
         if (selectedObject != null) {
-
           int thrash = thrashSlider.getValue();
           int blur = blurSlider.getValue();
           int plateThrash = thrashPlateSlider.getValue();
           double shearAngle = shearAngleSlider.getValue() * 0.1;
-
-
-
           ImgObject result = recognizer.recognize(selectedObject.getFile(), thrash, blur, plateThrash, shearAngle);
-
           if (result.getFiltered() != null) {
             selectedObject.setFiltered(copy(result.getFiltered()));
           }
@@ -132,6 +127,11 @@ public class Page7 extends JPanel implements Pages {
       @Override
       public void stateChanged(ChangeEvent e) {
         recognizeBtn.setEnabled(true);
+        if (selectedObject.getFiltered() != null) {
+          imgTabPane.setSelectedIndex(1);
+          Mat tempThreshImg = recognizer.filterImage(selectedObject.getOriginal(), thrashSlider.getValue(), blurSlider.getValue());
+          filteredPanel.loadMatImage(tempThreshImg);
+        }
       }
     });
 
@@ -145,6 +145,22 @@ public class Page7 extends JPanel implements Pages {
       @Override
       public void stateChanged(ChangeEvent e) {
         recognizeBtn.setEnabled(true);
+        if (selectedObject.getShearedPlate() != null) {
+          imgTabPane.setSelectedIndex(4);
+          Mat tempShearedPlateImg = recognizer.shearImageFromSlider(selectedObject.getShearedPlate(), shearAngleSlider.getValue());
+          shearedPlatePanel.loadMatImage(tempShearedPlateImg);
+        }
+      }
+    });
+    thrashPlateSlider.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        recognizeBtn.setEnabled(true);
+        if (selectedObject.getFilteredPlate() != null) {
+          imgTabPane.setSelectedIndex(5);
+          Mat tempThreshPlateImg = recognizer.filterPlate(selectedObject.getFilteredPlate(), thrashPlateSlider.getValue());
+          filteredPlatePanel.loadMatImage(tempThreshPlateImg);
+        }
       }
     });
 
