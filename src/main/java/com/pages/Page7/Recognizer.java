@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.imgproc.Imgproc.RETR_TREE;
-
+import java.awt.image.DataBufferByte;
 
 public class Recognizer {
 
@@ -47,6 +47,15 @@ public class Recognizer {
     ir.recognize(f, thresh, 0);
   }
 
+
+  // Convert BufferedImage to Mat
+  public static Mat bufferedImageToMat(BufferedImage bi) {
+    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
+//    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
+    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+    mat.put(0, 0, data);
+    return mat;
+  }
 
   // Find and recognize license plate on image
   public ImgObject recognize(File file, int thresh, double shearAngleFromSlider) {
@@ -104,12 +113,16 @@ public class Recognizer {
         //toDo.. maybe find shearing on matrix direct without buffered ???
 
         //sheared Angle from slider if 0 => rotatedRect.angle
-        BufferedImage bufferedShearedPlate = shearImage(filteredImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
+        //BufferedImage shearedPlateBuffered = shearImage(filteredImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
+        Mat shearedPlate = shearImage(filteredImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
 
         //text recognition
-        String text = TextRecognizer.recognizeText(bufferedShearedPlate);
+        String text = TextRecognizer.recognizeText(shearedPlate);
         if (object.getLicenseNumber().length() < text.length()) {
           object.setLicenseNumber(text);
+          object.setPlate(cuttedImg);
+          object.setFilteredPlate(filteredImg);
+          object.setShearedPlate(shearedPlate);
           bestRect = rect;
         }
         i++;
@@ -129,9 +142,9 @@ public class Recognizer {
     return object;
   }
 
-
+  //////////////// MAT ////////////////////////
   //shear cutted plate with rotated rectangle angle or slider
-  private BufferedImage shearImage(Mat cuttedPlate, RotatedRect rotatedRect, double rotatedRectAngle, double shearAngleFromSlider) {
+  private Mat shearImage(Mat cuttedPlate, RotatedRect rotatedRect, double rotatedRectAngle, double shearAngleFromSlider) {
     double x = 0;
 
     // shear text angle controls from slider if not 0
@@ -148,10 +161,7 @@ public class Recognizer {
         x = -0.2;
       }
     }
-
-
     System.out.println("x = " + x);
-
     System.out.println("angle = " + (int) shearAngleFromSlider);
     BufferedImage buffer = null;
     try {
@@ -162,10 +172,11 @@ public class Recognizer {
       //tx.shear(-0.4, 0);
       //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
       AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-      BufferedImage shearedPLate = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
-      op.filter(buffer, shearedPLate);
+      BufferedImage shearedPLateBuffered = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
+      op.filter(buffer, shearedPLateBuffered);
       File outputfile = new File(contourOutPath + "6.sheared.jpg");
-      ImageIO.write(shearedPLate, "jpg", outputfile);
+      ImageIO.write(shearedPLateBuffered, "jpg", outputfile);
+      Mat shearedPLate = bufferedImageToMat(shearedPLateBuffered);
       return shearedPLate;
     } catch (Exception e) {
       e.printStackTrace();
@@ -326,6 +337,49 @@ public class Recognizer {
     byte ba[] = mob.toArray();
     BufferedImage bi = ImageIO.read(new ByteArrayInputStream(ba));
     return bi;
+  }
+
+  //shear cutted plate with rotated rectangle angle or slider
+  private BufferedImage shearImageBuffered(Mat cuttedPlate, RotatedRect rotatedRect, double rotatedRectAngle, double shearAngleFromSlider) {
+    double x = 0;
+
+    // shear text angle controls from slider if not 0
+    if (shearAngleFromSlider != 0) {
+      x = shearAngleFromSlider;
+    }
+    // some shear logic algoritm will be here
+    else {
+      if (rotatedRect.size.width > rotatedRect.size.height) {
+        System.out.println("plus");
+        x = 0.2;
+      } else {
+        System.out.println("minus");
+        x = -0.2;
+      }
+    }
+
+
+    System.out.println("x = " + x);
+
+    System.out.println("angle = " + (int) shearAngleFromSlider);
+    BufferedImage buffer = null;
+    try {
+      buffer = Mat2BufferedImage(cuttedPlate);
+      AffineTransform tx = new AffineTransform();
+      //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+      tx.shear(x, 0);
+      //tx.shear(-0.4, 0);
+      //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+      BufferedImage shearedPLate = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
+      op.filter(buffer, shearedPLate);
+      File outputfile = new File(contourOutPath + "6.sheared.jpg");
+      ImageIO.write(shearedPLate, "jpg", outputfile);
+      return shearedPLate;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   //Copy Mat, return new one

@@ -29,6 +29,7 @@ public class Page7 extends JPanel implements Pages {
   private ImagePanel contoursPanel;
   private ImagePanel platePanel;
   private ImagePanel filteredPlatePanel;
+  private ImagePanel shearedPlatePanel;
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
   private JList jList;
@@ -82,26 +83,22 @@ public class Page7 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
         if (selectedObject != null) {
-          ImgObject result = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue(), shearAngleSlider.getValue()*0.1);
+          ImgObject result = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue(), shearAngleSlider.getValue() * 0.1);
+
           if (result.getFiltered() != null) {
-            Mat filtered = new Mat();
-            result.getFiltered().copyTo(filtered);
-            selectedObject.setFiltered(filtered);
+            selectedObject.setFiltered(copy(result.getFiltered()));
           }
           if (result.getContours() != null) {
-            Mat contours = new Mat();
-            result.getContours().copyTo(contours);
-            selectedObject.setContours(contours);
+            selectedObject.setContours(copy(result.getContours()));
           }
           if (result.getPlate() != null) {
-            Mat plate = new Mat();
-            result.getPlate().copyTo(plate);
-            selectedObject.setPlate(plate);
+            selectedObject.setPlate(copy(result.getPlate()));
           }
           if (result.getFilteredPlate() != null) {
-            Mat filteredPlate = new Mat();
-            result.getFilteredPlate().copyTo(filteredPlate);
-            selectedObject.setFilteredPlate(filteredPlate);
+            selectedObject.setFilteredPlate(copy(result.getFilteredPlate()));
+          }
+          if (result.getShearedPlate() != null) {
+            selectedObject.setShearedPlate(copy(result.getShearedPlate()));
           }
           selectedObject.setLicenseNumber(result.getLicenseNumber());
           updateImages();
@@ -171,6 +168,11 @@ public class Page7 extends JPanel implements Pages {
     } else {
       filteredPlatePanel.clear();
     }
+    if (selectedObject.getShearedPlate() != null) {
+      shearedPlatePanel.loadMatImage(selectedObject.getShearedPlate());
+    } else {
+      shearedPlatePanel.clear();
+    }
     licenseNumberTextField.setText(selectedObject.getLicenseNumber());
   }
 
@@ -198,11 +200,13 @@ public class Page7 extends JPanel implements Pages {
     contoursPanel = new ImagePanel(width, height);
     platePanel = new ImagePanel(width, height);
     filteredPlatePanel = new ImagePanel(width, height);
+    shearedPlatePanel = new ImagePanel(width, height);
     imgTabPane.add("Original", originalPanel);
     imgTabPane.add("Filtered", filteredPanel);
     imgTabPane.add("Contours", contoursPanel);
-    imgTabPane.add("LPlate", platePanel);
-    imgTabPane.add("FilteredPlate", filteredPlatePanel);
+    imgTabPane.add("Plate", platePanel);
+    imgTabPane.add("Plate Filtered", filteredPlatePanel);
+    imgTabPane.add("Plate Sheared", shearedPlatePanel);
     topLeft.add(imgTabPane);
     topRight.setLayout(new BoxLayout(topRight, BoxLayout.Y_AXIS));
     topRight.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -258,5 +262,15 @@ public class Page7 extends JPanel implements Pages {
       e.printStackTrace();
     }
     new File(path).mkdirs();
+  }
+
+  //Copy Mat, return new one
+  private Mat copy(Mat original) {
+    if (original == null) {
+      return null;
+    }
+    Mat copy = new Mat();
+    original.copyTo(copy);
+    return copy;
   }
 }

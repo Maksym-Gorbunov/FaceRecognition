@@ -7,9 +7,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.File;
 
-import org.apache.commons.io.FilenameUtils;
 import org.opencv.imgproc.Imgproc;
-
+import java.awt.image.BufferedImage;
 
 public class ImgObject {
 
@@ -20,6 +19,7 @@ public class ImgObject {
   private Mat contours;
   private Mat plate;
   private Mat filteredPlate;
+  private Mat shearedPlate;
   private String outPath;
 
 
@@ -115,5 +115,13 @@ public class ImgObject {
 
   public void setFilteredPlate(Mat filteredPlate) {
     this.filteredPlate = filteredPlate;
+  }
+
+  public Mat getShearedPlate() {
+    return shearedPlate;
+  }
+
+  public void setShearedPlate(Mat shearedPlate) {
+    this.shearedPlate = shearedPlate;
   }
 }
