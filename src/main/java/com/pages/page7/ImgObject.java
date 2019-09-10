@@ -1,4 +1,4 @@
-package com.pages.Page7;
+package com.pages.page7;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -8,7 +8,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import java.io.File;
 
 import org.opencv.imgproc.Imgproc;
-import java.awt.image.BufferedImage;
 
 public class ImgObject {
 

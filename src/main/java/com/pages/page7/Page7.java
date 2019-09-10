@@ -1,4 +1,4 @@
-package com.pages.Page7;
+package com.pages.page7;
 
 import com.constants.Constants;
 import com.gui.Gui;
