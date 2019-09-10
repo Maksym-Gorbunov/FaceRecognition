@@ -29,6 +29,7 @@ public class Recognizer {
   private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
+  private Scalar gray = new Scalar(20, 20, 20, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
   private String outPathMain = Constants.imgPath + "lpr\\";
   private String outPath = Constants.imgPath + "lpr\\";
@@ -80,13 +81,16 @@ public class Recognizer {
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         //create contour mini image
         Mat contourImg = new Mat(filtered, rect);
-        Imgcodecs.imwrite(contourOutPath + "contour.jpg", contourImg);
+        Imgcodecs.imwrite(contourOutPath + "1.contour.jpg", contourImg);
         //rotate contours by rect angle
         Mat rotatedImg = rotateImage2(contourImg, rotatedRect);
-        Imgcodecs.imwrite(contourOutPath + "rotated.jpg", rotatedImg);
+        Imgcodecs.imwrite(contourOutPath + "2.rotated.jpg", rotatedImg);
 
         //cut large contour from rotated image
         Mat cuttedImg = cutLargeContour(rotatedImg);
+
+        int plateThresh = 100;
+        Mat filteredPlate = filterPlate2(cuttedImg, plateThresh);
 
 
         i++;
@@ -101,6 +105,25 @@ public class Recognizer {
     object.saveImages(outPath);
   }
 
+  // Extra filter for license plate with inversion and ...
+  public Mat filterPlate2(Mat img, int plateThresh) {
+    Mat inverted = new Mat();
+    Core.bitwise_not(img, inverted);
+    Mat topHat = new Mat();
+    Mat blackHat = new Mat();
+    Mat grayPlusTopHat = new Mat();
+    Mat grayPlusTopHatMinusBlackHat = new Mat();
+    Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+    Imgproc.morphologyEx(inverted, topHat, Imgproc.MORPH_TOPHAT, kernel);
+    Imgproc.morphologyEx(inverted, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
+    Core.add(inverted, topHat, grayPlusTopHat);
+    Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
+
+    Imgcodecs.imwrite(contourOutPath + "5.filtered.jpg", grayPlusTopHatMinusBlackHat);
+
+    return grayPlusTopHatMinusBlackHat;
+  }
+
   private Mat cutLargeContour(Mat rotatedImg) {
     if (rotatedImg == null) {
       System.out.println("rotated NULL");
@@ -109,40 +132,32 @@ public class Recognizer {
     Mat copy = copy(rotatedImg);
     List<MatOfPoint> contours = new ArrayList<>();
     Imgproc.findContours(copy, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-    Mat cuttedImg = new Mat();
+//    Mat cuttedImg = new Mat();
+    int j = 0;
     for (MatOfPoint c : contours) {
       MatOfPoint2f points = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRect = Imgproc.minAreaRect(points);
       Point rotRectPoints[] = new Point[4];
       rotatedRect.points(rotRectPoints);
-      Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
 
-      int rectArea = (int) rect.area();
-
-      int imgArea = (int) (0.7 * copy.size().area());
+      double rectArea = rotatedRect.size.area();
+      double imgArea = rotatedImg.size().area();
 //      Rect rectCrop = new Rect(rect.x, rect.y, rect.width, rect.height);
+      Rect rect = new Rect();
+      rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
 
-      if (rotatedRect != null && copy.width() > rotatedRect.size.width
-              && copy.height() < rotatedRect.size.height) {
-        if (rectArea > imgArea) {
-//        if (bounding_rect != null && mMatInputFrame.width() > bounding_rect.width
-//                && mMatInputFrame.height() > bounding_rect.height)
-          System.out.println("Image: " + imgArea);
-          System.out.println("Rect: " + rectArea);
-          System.out.println("****");
-//        Imgcodecs.imwrite(contourOutPath + "rotatedContours.jpg", copy);
-//        Imgproc.rectangle(copy, rect.tl(), rect.br(), green, 1);
-          //toDo ... CANT CREATE CUTTED_IMG?????
-          cuttedImg = new Mat(rotatedImg, rect);
-//        break;
-//        Mat cuttedImg = new Mat(new Size(rect.width, rect.height), CvType.CV_8UC1);
-//        Mat cuttedImg = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
+      if ((copy.width() > rect.size().width) && (copy.height() > rect.size().height)
+              && (rectArea > imgArea * 0.5)) {
 
-//        cuttedImg = new Mat(copy, rect);
-//        Imgcodecs.imwrite(contourPath + "cutted.jpg", cuttedImg);
-//        return cuttedImg;
-        }
+        Mat maxContourImg = copy(copy);
+        Imgproc.rectangle(maxContourImg, rect.tl(), rect.br(), blue, 1);
+        Imgcodecs.imwrite(contourOutPath + "3.maxContour.jpg", maxContourImg);
+
+        Mat cuttedImg = new Mat(copy, rect);
+        Imgcodecs.imwrite(contourOutPath + "4.cutted.jpg", cuttedImg);
+        return cuttedImg;
       }
+      j++;
     }
     return rotatedImg;
   }
