@@ -76,7 +76,7 @@ public class Recognizer {
       //loop through valid contours
       int i = 0;
       for (MatOfPoint c : contours) {
-        System.out.println("____________________ "+i+" ___________________");
+        System.out.println("____________________ " + i + " ___________________");
         contourOutPath = outPath + i + "\\";
         new File(contourOutPath).mkdirs();
 
@@ -108,7 +108,7 @@ public class Recognizer {
 
         //text recognition
         String text = TextRecognizer.recognizeText(bufferedShearedPlate);
-        if(object.getLicenseNumber().length() < text.length()){
+        if (object.getLicenseNumber().length() < text.length()) {
           object.setLicenseNumber(text);
         }
 
@@ -187,33 +187,27 @@ public class Recognizer {
     Mat copy = copy(rotatedImg);
     List<MatOfPoint> contours = new ArrayList<>();
     Imgproc.findContours(copy, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-//    Mat cuttedImg = new Mat();
     int j = 0;
     for (MatOfPoint c : contours) {
       MatOfPoint2f points = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRect = Imgproc.minAreaRect(points);
       Point rotRectPoints[] = new Point[4];
       rotatedRect.points(rotRectPoints);
-
       double rectArea = rotatedRect.size.area();
       double imgArea = rotatedImg.size().area();
-//      Rect rectCrop = new Rect(rect.x, rect.y, rect.width, rect.height);
       Rect rect = new Rect();
       rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
-
+      //try to find largest contour > 50%, if few overwrite, if none return same image
       if ((copy.width() > rect.size().width) && (copy.height() > rect.size().height)
               && (rectArea > imgArea * 0.5) && (rectArea < imgArea)) {
-
-        Mat maxContourImg = copy(copy);
-        Imgproc.rectangle(maxContourImg, rect.tl(), rect.br(), blue, 1);
-        Imgcodecs.imwrite(contourOutPath + "3.maxContour.jpg", maxContourImg);
-
-        System.out.println("copy: "+copy.width()+"x"+copy.height());
-        System.out.println("rect: "+rect.width+"x"+rect.height);
-
-        Mat cuttedImg = new Mat(copy, rect);
-        Imgcodecs.imwrite(contourOutPath + "4.cutted.jpg", cuttedImg);
-        return cuttedImg;
+        if (rotatedRect.size.width > rotatedRect.size.height) {
+          Mat maxContourImg = copy(copy);
+          Imgproc.rectangle(maxContourImg, rect.tl(), rect.br(), blue, 1);
+          Imgcodecs.imwrite(contourOutPath + "3.maxContour.jpg", maxContourImg);
+          Mat cuttedImg = new Mat(copy, rect);
+          Imgcodecs.imwrite(contourOutPath + "4.cutted.jpg", cuttedImg);
+          return cuttedImg;
+        }
       }
       j++;
     }
