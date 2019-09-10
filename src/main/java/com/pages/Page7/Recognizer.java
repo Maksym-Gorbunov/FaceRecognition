@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencv.imgproc.Imgproc.RETR_TREE;
+
 import java.awt.image.DataBufferByte;
 
 public class Recognizer {
@@ -35,17 +36,17 @@ public class Recognizer {
   private String contourOutPath = "";
 
 
-  public static void main(String[] args) {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    Recognizer ir = new Recognizer();
-    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
-//    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285_mirror.jpg");
-    //toDo.. file not found if null, wrong filename
-//    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285.jpg");
-//    File f = new File(Constants.imgPath + "\\cars\\111\\-30.jpg");
-    int thresh = 100;
-    ir.recognize(f, thresh, 0);
-  }
+//  public static void main(String[] args) {
+//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//    Recognizer ir = new Recognizer();
+//    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
+////    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285_mirror.jpg");
+//    //toDo.. file not found if null, wrong filename
+////    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285.jpg");
+////    File f = new File(Constants.imgPath + "\\cars\\111\\-30.jpg");
+//    int thresh = 100;
+//    ir.recognize(f, thresh, 0);
+//  }
 
 
   // Convert BufferedImage to Mat
@@ -58,7 +59,7 @@ public class Recognizer {
   }
 
   // Find and recognize license plate on image
-  public ImgObject recognize(File file, int thresh, double shearAngleFromSlider) {
+  public ImgObject recognize(File file, int thresh, int blur ,int plateThresh, double shearAngleFromSlider) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     object = new ImgObject(file);
     String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
@@ -66,7 +67,7 @@ public class Recognizer {
     clearFolder(outPath);
 
     Mat original = copy(object.getOriginal());
-    Mat filtered = filterImage(object.getOriginal(), thresh);
+    Mat filtered = filterImage(object.getOriginal(), thresh, blur);
     object.setFiltered(copy(filtered));
 
     List<MatOfPoint> contours = new ArrayList<>();
@@ -104,17 +105,16 @@ public class Recognizer {
         //cut large contour from rotated image
         Mat cuttedImg = cutLargeContour(rotatedImg);
         //extra filter license plate before text recognition
-        int plateThresh = 100;
-        Mat filteredImg = filterPlate(cuttedImg, plateThresh);
 
-        System.out.println(i);
-        //shear plate
-        //toDo.. try to use angle or move it to slider and remove from args
-        //toDo.. maybe find shearing on matrix direct without buffered ???
 
-        //sheared Angle from slider if 0 => rotatedRect.angle
-        //BufferedImage shearedPlateBuffered = shearImage(filteredImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
-        Mat shearedPlate = shearImage(filteredImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
+        Mat shearedPlate = shearImage(cuttedImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
+//        int plateThresh = 100;
+        Mat filteredImg = filterPlate(shearedPlate, plateThresh);
+
+
+        //old
+//        Mat filteredImg = filterPlate(cuttedImg, plateThresh);
+//        Mat shearedPlate = shearImage(filteredImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
 
         //text recognition
         String text = TextRecognizer.recognizeText(shearedPlate);
@@ -128,10 +128,11 @@ public class Recognizer {
         i++;
       }
       //draw green rectangle on best contour
-      Mat bestContoursImg = copy(object.getContours());
-      Imgproc.rectangle(bestContoursImg, bestRect.tl(), bestRect.br(), green, 3);
-      object.setContours(bestContoursImg);
-
+      if (bestRect != null) {
+        Mat bestContoursImg = copy(object.getContours());
+        Imgproc.rectangle(bestContoursImg, bestRect.tl(), bestRect.br(), green, 3);
+        object.setContours(bestContoursImg);
+      }
       System.out.println("RESULT: " + object.getLicenseNumber());
     }
     //contours not found
@@ -298,8 +299,8 @@ public class Recognizer {
   }
 
   // Filter main image, method translated from Python->C++
-  private Mat filterImage(Mat img, int thresh) {
-    int blurValue = 5;
+  private Mat filterImage(Mat img, int thresh, int blurValue) {
+//    int blurValue = 5;
     Mat temp = new Mat();
     img.copyTo(temp);
     Mat gray = new Mat();

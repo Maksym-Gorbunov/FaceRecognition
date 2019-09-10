@@ -41,6 +41,7 @@ public class Page7 extends JPanel implements Pages {
   private JSlider thrashSlider;
   private JSlider blurSlider;
   private JSlider shearAngleSlider;
+  private JSlider thrashPlateSlider;
   private int width = 400;
   private int height = 300;
 
@@ -83,7 +84,15 @@ public class Page7 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         recognizeBtn.setEnabled(false);
         if (selectedObject != null) {
-          ImgObject result = recognizer.recognize(selectedObject.getFile(), thrashSlider.getValue(), shearAngleSlider.getValue() * 0.1);
+
+          int thrash = thrashSlider.getValue();
+          int blur = blurSlider.getValue();
+          int plateThrash = thrashPlateSlider.getValue();
+          double shearAngle = shearAngleSlider.getValue() * 0.1;
+
+
+
+          ImgObject result = recognizer.recognize(selectedObject.getFile(), thrash, blur, plateThrash, shearAngle);
 
           if (result.getFiltered() != null) {
             selectedObject.setFiltered(copy(result.getFiltered()));
@@ -205,8 +214,8 @@ public class Page7 extends JPanel implements Pages {
     imgTabPane.add("Filtered", filteredPanel);
     imgTabPane.add("Contours", contoursPanel);
     imgTabPane.add("Plate", platePanel);
-    imgTabPane.add("Plate Filtered", filteredPlatePanel);
     imgTabPane.add("Plate Sheared", shearedPlatePanel);
+    imgTabPane.add("Plate Filtered", filteredPlatePanel);
     topLeft.add(imgTabPane);
     topRight.setLayout(new BoxLayout(topRight, BoxLayout.Y_AXIS));
     topRight.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -234,6 +243,15 @@ public class Page7 extends JPanel implements Pages {
     thrashSlider.setPaintLabels(true);
     bottomLeft.add(thrashSlider);
 
+    bottomLeft.add(new JLabel("Main Thresh"));
+    blurSlider = new JSlider(JSlider.HORIZONTAL, 0, 10, 5);
+    blurSlider.setMinorTickSpacing(1);
+    blurSlider.setMajorTickSpacing(5);
+    blurSlider.setPaintTicks(true);
+    blurSlider.setPaintLabels(true);
+    bottomLeft.add(blurSlider);
+    bottomLeft.add(new JLabel("Main Blur"));
+
     bottomRight.add(new JLabel("Transformation - Shear angle"));
     shearAngleSlider = new JSlider(JSlider.HORIZONTAL, -10, 10, -6);
     shearAngleSlider.setMinorTickSpacing(1);
@@ -242,15 +260,15 @@ public class Page7 extends JPanel implements Pages {
     shearAngleSlider.setPaintLabels(true);
     bottomRight.add(shearAngleSlider);
 
-    bottomLeft.add(new JLabel("Thresh"));
-    blurSlider = new JSlider(JSlider.HORIZONTAL, 0, 10, 5);
-    blurSlider.setMinorTickSpacing(1);
-    blurSlider.setMajorTickSpacing(5);
-    blurSlider.setPaintTicks(true);
-    blurSlider.setPaintLabels(true);
-    bottomLeft.add(blurSlider);
+    bottomRight.add(new JLabel("Plate Thrash"));
+    thrashPlateSlider = new JSlider(JSlider.HORIZONTAL, 0, 250, 100);
+    thrashPlateSlider.setMinorTickSpacing(10);
+    thrashPlateSlider.setMajorTickSpacing(50);
+    thrashPlateSlider.setPaintTicks(true);
+    thrashPlateSlider.setPaintLabels(true);
+    bottomRight.add(thrashPlateSlider);
 
-    bottomLeft.add(new JLabel("Blur"));
+
     recognizeBtn.setEnabled(false);
   }
 

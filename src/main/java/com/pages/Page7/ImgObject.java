@@ -18,8 +18,8 @@ public class ImgObject {
   private Mat filtered;
   private Mat contours;
   private Mat plate;
-  private Mat filteredPlate;
   private Mat shearedPlate;
+  private Mat filteredPlate;
   private String outPath;
 
 
