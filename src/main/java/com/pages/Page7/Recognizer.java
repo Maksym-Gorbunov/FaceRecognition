@@ -44,10 +44,12 @@ public class Recognizer {
 //    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285.jpg");
 //    File f = new File(Constants.imgPath + "\\cars\\111\\-30.jpg");
     int thresh = 100;
-    ir.recognize(f, thresh, -0.2);
+    ir.recognize(f, thresh, 0);
   }
 
-  public ImgObject recognize(File file, int thresh, double shearAngle) {
+
+  // Find and recognize license plate on image
+  public ImgObject recognize(File file, int thresh, double shearAngleFromSlider) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     object = new ImgObject(file);
     String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
@@ -90,10 +92,8 @@ public class Recognizer {
         //rotate contours by rect angle
         Mat rotatedImg = rotateImage(contourImg, rotatedRect);
         Imgcodecs.imwrite(contourOutPath + "2.rotated.jpg", rotatedImg);
-
         //cut large contour from rotated image
         Mat cuttedImg = cutLargeContour(rotatedImg);
-
         //extra filter license plate before text recognition
         int plateThresh = 100;
         Mat filteredImg = filterPlate(cuttedImg, plateThresh);
@@ -102,16 +102,22 @@ public class Recognizer {
         //shear plate
         //toDo.. try to use angle or move it to slider and remove from args
         //toDo.. maybe find shearing on matrix direct without buffered ???
-        BufferedImage bufferedShearedPlate = shearImage(filteredImg, rotatedRect, rotatedRect.angle);
+
+        //sheared Angle from slider if 0 => rotatedRect.angle
+        BufferedImage bufferedShearedPlate = shearImage(filteredImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
 
         //text recognition
         String text = TextRecognizer.recognizeText(bufferedShearedPlate);
         if (object.getLicenseNumber().length() < text.length()) {
           object.setLicenseNumber(text);
+          bestRect = rect;
         }
-
         i++;
       }
+      //draw green rectangle on best contour
+      Mat bestContoursImg = copy(object.getContours());
+      Imgproc.rectangle(bestContoursImg, bestRect.tl(), bestRect.br(), green, 3);
+      object.setContours(bestContoursImg);
 
       System.out.println("RESULT: " + object.getLicenseNumber());
     }
@@ -125,19 +131,28 @@ public class Recognizer {
 
 
   //shear cutted plate with rotated rectangle angle or slider
-  private BufferedImage shearImage(Mat cuttedPlate, RotatedRect rotatedRect, double angle) {
+  private BufferedImage shearImage(Mat cuttedPlate, RotatedRect rotatedRect, double rotatedRectAngle, double shearAngleFromSlider) {
     double x = 0;
 
-    if (rotatedRect.size.width > rotatedRect.size.height) {
-      System.out.println("plus");
-      x = 0.2;
-    } else {
-      System.out.println("minus");
-      x = -0.2;
+    // shear text angle controls from slider if not 0
+    if (shearAngleFromSlider != 0) {
+      x = shearAngleFromSlider;
     }
+    // some shear logic algoritm will be here
+    else {
+      if (rotatedRect.size.width > rotatedRect.size.height) {
+        System.out.println("plus");
+        x = 0.2;
+      } else {
+        System.out.println("minus");
+        x = -0.2;
+      }
+    }
+
+
     System.out.println("x = " + x);
 
-    System.out.println("angle = " + (int) angle);
+    System.out.println("angle = " + (int) shearAngleFromSlider);
     BufferedImage buffer = null;
     try {
       buffer = Mat2BufferedImage(cuttedPlate);
