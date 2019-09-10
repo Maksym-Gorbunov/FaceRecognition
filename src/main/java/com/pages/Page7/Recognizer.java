@@ -12,14 +12,12 @@ import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.constants.Constants.imgPath;
 import static org.opencv.imgproc.Imgproc.RETR_TREE;
 
 
@@ -40,16 +38,16 @@ public class Recognizer {
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     Recognizer ir = new Recognizer();
-//    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
-    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285_mirror.jpg");
+    File f = new File(Constants.imgPath + "\\cars\\regnums\\YRR146.jpg");
+//    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285_mirror.jpg");
     //toDo.. file not found if null, wrong filename
 //    File f = new File(Constants.imgPath + "\\cars\\regnums\\NFW285.jpg");
 //    File f = new File(Constants.imgPath + "\\cars\\111\\-30.jpg");
     int thresh = 100;
-    ir.recognize2(f, thresh);
+    ir.recognize(f, thresh, -0.2);
   }
 
-  private void recognize2(File file, int thresh) {
+  public ImgObject recognize(File file, int thresh, double shearAngle) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     object = new ImgObject(file);
     String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
@@ -90,7 +88,7 @@ public class Recognizer {
         Mat contourImg = new Mat(filtered, rect);
         Imgcodecs.imwrite(contourOutPath + "1.contour.jpg", contourImg);
         //rotate contours by rect angle
-        Mat rotatedImg = rotateImage2(contourImg, rotatedRect);
+        Mat rotatedImg = rotateImage(contourImg, rotatedRect);
         Imgcodecs.imwrite(contourOutPath + "2.rotated.jpg", rotatedImg);
 
         //cut large contour from rotated image
@@ -98,13 +96,13 @@ public class Recognizer {
 
         //extra filter license plate before text recognition
         int plateThresh = 100;
-        Mat filteredImg = filterPlate2(cuttedImg, plateThresh);
+        Mat filteredImg = filterPlate(cuttedImg, plateThresh);
 
         System.out.println(i);
         //shear plate
         //toDo.. try to use angle or move it to slider and remove from args
         //toDo.. maybe find shearing on matrix direct without buffered ???
-        BufferedImage bufferedShearedPlate = shearImage2(filteredImg, rotatedRect, rotatedRect.angle);
+        BufferedImage bufferedShearedPlate = shearImage(filteredImg, rotatedRect, rotatedRect.angle);
 
         //text recognition
         String text = TextRecognizer.recognizeText(bufferedShearedPlate);
@@ -122,11 +120,12 @@ public class Recognizer {
       System.out.println("Contours not found, change thresh and try again");
     }
     object.saveImages(outPath);
+    return object;
   }
 
 
   //shear cutted plate with rotated rectangle angle or slider
-  private BufferedImage shearImage2(Mat cuttedPlate, RotatedRect rotatedRect, double angle) {
+  private BufferedImage shearImage(Mat cuttedPlate, RotatedRect rotatedRect, double angle) {
     double x = 0;
 
     if (rotatedRect.size.width > rotatedRect.size.height) {
@@ -161,7 +160,7 @@ public class Recognizer {
 
 
   // Extra filter for license plate with inversion and ...
-  public Mat filterPlate2(Mat img, int plateThresh) {
+  public Mat filterPlate(Mat img, int plateThresh) {
     Mat inverted = new Mat();
     Core.bitwise_not(img, inverted);
     Mat topHat = new Mat();
@@ -214,9 +213,8 @@ public class Recognizer {
     return rotatedImg;
   }
 
-
   // Rotate license plate image
-  private Mat rotateImage2(Mat img, RotatedRect rotatedRect) {
+  private Mat rotateImage(Mat img, RotatedRect rotatedRect) {
     int angle = (int) rotatedRect.angle;
     if (rotatedRect.size.width > rotatedRect.size.height) {
       System.out.println("left");
@@ -241,217 +239,6 @@ public class Recognizer {
     Imgproc.warpAffine(temp, destination, rotatedImg, destination.size());
     return destination;
   }
-
-
-  // Filter and search license number on image
-  public ImgObject recognize(File file, int thresh, double angle) {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    object = new ImgObject(file);
-    String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
-    outPath = outPathMain + fileNameWithOutExt + "\\";
-    clearFolder(outPath);
-    Mat filtered = new Mat();
-    filtered = filterImage(object.getOriginal(), thresh);
-    Mat filteredCopy = new Mat();
-    filtered.copyTo(filteredCopy);
-    object.setFiltered(filteredCopy);
-    List<MatOfPoint> contours = new ArrayList<>();
-    Mat contourMono = new Mat();
-    contours = findContours(filtered);
-    if ((contours != null) && (contours.size() > 0)) {
-      System.out.println("total: " + contours.size());
-      int i = 0;
-      Rect bestRect = null;
-
-
-      List<Mat> plates = new ArrayList<>();
-
-      // simple recognition of valid contours
-      for (MatOfPoint c : contours) {
-        MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
-        RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
-        Point rotatedRectPoints[] = new Point[4];
-        rotatedRectangle.points(rotatedRectPoints);
-        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-        //create contour images
-        //toDO ... filter after rotation mayby, filter contours or blackhat...
-        //toDo ... copy same as simple plus shear text by angle from contour???
-        //toDo ... remove -+rotation, from 2 rotation make 1 only
-        contourMono = new Mat(filtered, rect);
-        //save contour images
-        contourPath = outPath + "\\" + i + "\\";
-        new File(contourPath).mkdirs();
-        Imgcodecs.imwrite(contourPath + "contMono.jpg", contourMono);
-        //rotate contours by rect angle
-        Mat rotated1 = rotateImage(contourMono, (int) rotatedRectangle.angle);
-        Mat rotated2 = rotateImage(contourMono, -(int) rotatedRectangle.angle);
-        Imgcodecs.imwrite(contourPath + "rotated1.jpg", rotated1);
-        Imgcodecs.imwrite(contourPath + "rotated2.jpg", rotated2);
-        //extra plate filter after rotation
-        Mat rotatedFiltered1 = filterPlate(rotated1);
-        Mat rotatedFiltered2 = filterPlate(rotated2);
-        Imgcodecs.imwrite(contourPath + "rotatedFiltered1.jpg", rotatedFiltered1);
-        Imgcodecs.imwrite(contourPath + "rotatedFiltered2.jpg", rotatedFiltered2);
-
-        //add rotated and filtered plate images to list
-        plates.add(rotatedFiltered1);
-        plates.add(rotatedFiltered2);
-
-        //text recognition
-        String tempText1 = TextRecognizer.recognizeText(rotatedFiltered1);
-        String tempText2 = TextRecognizer.recognizeText(rotatedFiltered2);
-        String tempText;
-        Mat rotatedPlate = new Mat();
-        Mat rotatedFilteredPlate = new Mat();
-        if (tempText1.length() < tempText2.length()) {
-          tempText = tempText2;
-          rotatedFiltered2.copyTo(rotatedFilteredPlate);
-          rotated2.copyTo(rotatedPlate);
-        } else {
-          tempText = tempText1;
-          rotatedFiltered1.copyTo(rotatedFilteredPlate);
-          rotated1.copyTo(rotatedPlate);
-        }
-        System.out.println("Text " + i + ": " + tempText);
-        if (object.getLicenseNumber().length() < tempText.length()) {
-          object.setLicenseNumber(tempText);
-          object.setPlate(rotatedPlate);
-          object.setFilteredPlate(rotatedFilteredPlate);
-          bestRect = rect;
-        }
-        i++;
-      }
-
-      // deep recognition
-//      if (object.getLicenseNumber().length() < 5) {
-      if (true) {
-        bestRect = null;
-        System.out.println("deep recognition");
-        deepRecognition(plates, angle);
-      }
-
-      //draw green rect on contours if good result exist
-      if (bestRect != null) {
-        Mat tempContours = new Mat();
-        object.getContours().copyTo(tempContours);
-        Imgproc.rectangle(tempContours, bestRect.tl(), bestRect.br(), green, 3);
-        object.setContours(tempContours);
-      }
-    }
-
-    object.saveImages(outPath);
-    System.out.println("...done...");
-    return object;
-  }
-
-
-  //Deep recognition with shearing and extra cutting
-  private void deepRecognition(List<Mat> plates, double angle) {
-    System.out.println("Total plates: " + plates.size());
-    for (Mat plate : plates) {
-      BufferedImage shearedPlate = cutAndShearRotatedPlate(plate, angle);
-      if (shearedPlate != null) {
-        Mat result = bufferedImage2Mat(shearedPlate);
-
-//        Mat blur = new Mat();
-//        Mat threshold = new Mat();
-//        Imgproc.GaussianBlur(result, blur, new Size(3, 3), 1);
-//        Imgproc.threshold(blur, threshold, 120, 255, Imgproc.THRESH_BINARY_INV);
-//        result = threshold;
-
-        String text = TextRecognizer.recognizeText(result);
-//      String text = TextRecognizer.recognizeText(shearedPlate);
-
-        if (object.getLicenseNumber().length() <= text.length()) {
-          object.setLicenseNumber(text);
-          object.setFilteredPlate(result);
-
-        }
-      }
-    }
-
-  }
-
-
-  public BufferedImage cutAndShearRotatedPlate(Mat img, double angle) {
-//    double angle = 0;
-    // Cut off plate from horizontal rotated plate image
-    BufferedImage shearedPLate;
-    Mat copy = new Mat();
-    img.copyTo(copy);
-    Mat cuttedPlate = new Mat();
-    List<MatOfPoint> contours = new ArrayList<>();
-    Imgproc.findContours(copy, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-    int i = 0;
-    new File(outPath + "plates\\").mkdirs();
-    for (MatOfPoint contour : contours) {
-      MatOfPoint2f points = new MatOfPoint2f(contour.toArray());
-      RotatedRect rotatedRect2 = Imgproc.minAreaRect(points);
-      double imgArea = copy.size().area();
-      double rotArea = rotatedRect2.size.area();
-//      if ((rotArea > imgArea * 0.3) && (rotArea < imgArea * 0.9)) {
-//        angle = rotatedRect2.angle/3;
-//        angle = -0.6;
-      Point rotRectPoints[] = new Point[4];
-      rotatedRect2.points(rotRectPoints);
-
-      Rect rect = Imgproc.boundingRect(new MatOfPoint(rotRectPoints));
-      if (rect.area() > imgArea * 0.5) {
-        Imgproc.rectangle(img, rect.tl(), rect.br(), red, 2);
-
-        if (img != null && !img.empty() && rect != null) {
-          System.out.println("********");
-          System.out.println(i);
-          Imgcodecs.imwrite(outPath + "plates\\" + i + "___img.jpg", img);
-          Imgproc.rectangle(copy, rect.tl(), rect.br(), green, 1);
-          Imgcodecs.imwrite(outPath + "plates\\" + i + "___copy.jpg", copy);
-          cuttedPlate = new Mat(img, rect);
-//        cuttedPlate = new Mat(img, rect);
-
-//        toDO experiment
-
-//        cuttedPlate = extraFilter(cuttedPlate, i, c);
-
-          Imgcodecs.imwrite(outPath + "plates\\" + i + "cuttedPlate.jpg", cuttedPlate);
-
-          shearedPLate = shearImage(cuttedPlate, angle);
-          if (shearedPLate != null) {
-            File output = new File(outPath + "plates\\" + i + "result.jpg");
-            try {
-              ImageIO.write(shearedPLate, "jpg", output);
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-          }
-          return shearedPLate;
-        }
-      }
-      i++;
-    }
-    return null;
-  }
-
-  //shear cutted plate with rotated rectangle angle
-  private BufferedImage shearImage(Mat cuttedPlate, double angle) {
-    BufferedImage buffer = null;
-    try {
-      buffer = Mat2BufferedImage(cuttedPlate);
-      AffineTransform tx = new AffineTransform();
-      //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
-      tx.shear(angle, 0);
-      //tx.shear(-0.4, 0);
-      //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
-      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-      BufferedImage shearedPLate = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
-      op.filter(buffer, shearedPLate);
-      //todo extra filter() on plate ???
-      return shearedPLate;
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
 
   // Find contours on image
   private List<MatOfPoint> findContours(Mat img) {
@@ -482,45 +269,6 @@ public class Recognizer {
       return validContours;
     }
     return null;
-  }
-
-  // Extra filter for license plate with inversion and ...
-  public Mat filterPlate(Mat img) {
-    Mat inverted = new Mat();
-    Core.bitwise_not(img, inverted);
-    Mat topHat = new Mat();
-    Mat blackHat = new Mat();
-    Mat grayPlusTopHat = new Mat();
-    Mat grayPlusTopHatMinusBlackHat = new Mat();
-    Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
-    Imgproc.morphologyEx(inverted, topHat, Imgproc.MORPH_TOPHAT, kernel);
-    Imgproc.morphologyEx(inverted, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
-    Core.add(inverted, topHat, grayPlusTopHat);
-    Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
-    return grayPlusTopHatMinusBlackHat;
-  }
-
-
-  // Rotate license plate image
-  private Mat rotateImage(Mat img, int angle) {
-    int rotatedAngle = 0;
-    if (angle == 0) {
-      return img;
-    }
-    if (angle < 0) {
-      rotatedAngle = 90 - Math.abs(angle);
-    }
-    if (angle > 0) {
-      rotatedAngle = -angle;
-    }
-    Mat temp = new Mat();
-    img.copyTo(temp);
-    Mat rotatedImg = new Mat(2, 3, CvType.CV_32FC1);
-    Mat destination = new Mat(img.rows(), img.cols(), img.type());
-    Point center = new Point(destination.cols() / 2, destination.rows() / 2);
-    rotatedImg = Imgproc.getRotationMatrix2D(center, rotatedAngle, 1);
-    Imgproc.warpAffine(temp, destination, rotatedImg, destination.size());
-    return destination;
   }
 
   // Filter main image, method translated from Python->C++
@@ -565,16 +313,7 @@ public class Recognizer {
     return bi;
   }
 
-  // Convert BufferedImage to Mat
-  private Mat bufferedImage2Mat(BufferedImage bi) {
-    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
-    //Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
-    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-    mat.put(0, 0, data);
-    return mat;
-  }
-
-
+  //Copy Mat, return new one
   private Mat copy(Mat original) {
     if (original == null) {
       return null;
