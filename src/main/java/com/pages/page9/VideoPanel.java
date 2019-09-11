@@ -1,15 +1,12 @@
 package com.pages.page9;
 
 import com.constants.Constants;
-import com.pages.page1.Page1;
 import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_highgui;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -18,13 +15,6 @@ import java.awt.image.DataBufferByte;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-
-import static org.bytedeco.javacpp.opencv_highgui.cvCreateFileCapture;
-
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
-
 
 
 public class VideoPanel extends JPanel{
@@ -41,6 +31,8 @@ public class VideoPanel extends JPanel{
   private MatOfByte mem = new MatOfByte();
   private Graphics graphics;
 
+
+  // Constructor
   public VideoPanel(int width, int height) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     this.imageLabel = new JLabel();
@@ -53,17 +45,7 @@ public class VideoPanel extends JPanel{
     this.height = height;
   }
 
-  static BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
-    if (matrix == null) {
-      return null;
-    }
-    MatOfByte mob = new MatOfByte();
-    Imgcodecs.imencode(".jpg", matrix, mob);
-    byte ba[] = mob.toArray();
 
-    BufferedImage bi = ImageIO.read(new ByteArrayInputStream(ba));
-    return bi;
-  }
 
   public void play(File file){
     // show image
@@ -86,36 +68,52 @@ public class VideoPanel extends JPanel{
     capture.release();
  }
 
+  // Converter Mat to BufferedImage
+  static BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
+    if (matrix == null) {
+      return null;
+    }
+    MatOfByte mob = new MatOfByte();
+    Imgcodecs.imencode(".jpg", matrix, mob);
+    byte ba[] = mob.toArray();
 
+    BufferedImage bi = ImageIO.read(new ByteArrayInputStream(ba));
+    return bi;
+  }
+  /////////////////////////////////// DaemonThread end //////////////////////////////////////////
 
-
+  // Update image
   public void updadeImage(final Image image) {
     imageLabel.setIcon(new ImageIcon(scaleImage(image)));
   }
 
+  // Scale image
   private Image scaleImage(Image image) {
     return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
   }
 
+  // Load image from file
   public void loadImage(File file) {
     this.transformedImageIcon = new ImageIcon(file.getAbsolutePath());
     Image image = transformedImageIcon.getImage();
     updadeImage(image);
   }
 
+  // Clear panel
   public void clear() {
     imageLabel.setIcon(null);
   }
 
-  // load image to ImagePanel without extra savers
-  public void loadIplImage(opencv_core.IplImage filteredImage) {
+  // Load image to ImagePanel without extra savers
+  public void loadImage(opencv_core.IplImage filteredImage) {
     BufferedImage img1 = filteredImage.getBufferedImage();
     ImageIcon icon = new ImageIcon(img1);
     Image image = icon.getImage();
     updadeImage(image);
   }
 
-  public void loadMatImage(Mat filteredImage) {
+  // Load image from Mat
+  public void loadImage(Mat filteredImage) {
     if (filteredImage == null) {
       return;
     }
@@ -135,7 +133,6 @@ public class VideoPanel extends JPanel{
     int width = matBGR.width();
     int height = matBGR.height();
     int channels = matBGR.channels();
-
     byte[] sourcePixels = new byte[width * height * channels];
     matBGR.get(0, 0, sourcePixels);
     bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -144,6 +141,7 @@ public class VideoPanel extends JPanel{
     return true;
   }
 
+  // Paint components
   public void paintComponent(Graphics g) {
     super.paintComponent(g);
     if (this.bufferedImage == null) {
@@ -152,7 +150,7 @@ public class VideoPanel extends JPanel{
     g.drawImage(this.bufferedImage, 10, 10, this.bufferedImage.getWidth(), this.bufferedImage.getHeight(), null);
   }
 
-  // class DeamonThread
+  /////////////////////////////////// DaemonThread start //////////////////////////////////////////
   class DaemonThread implements Runnable {
 
     protected volatile boolean runnable = false;
@@ -180,6 +178,4 @@ public class VideoPanel extends JPanel{
       }
     }
   }
-
-
 }
