@@ -36,7 +36,7 @@ public class VideoPanel extends JPanel{
   private BufferedImage bufferedImage;
   private DaemonThread myThread = null;
   private int count = 0;
-  private VideoCapture webSource = null;
+  private VideoCapture capture = null;
   private Mat frame = new Mat();
   private MatOfByte mem = new MatOfByte();
   private Graphics graphics;
@@ -71,7 +71,8 @@ public class VideoPanel extends JPanel{
     //loadMatImage(img);
 
     System.out.println("Start...");
-    webSource = new VideoCapture(0);
+//    webSource = new VideoCapture(0);
+    capture = new VideoCapture(file.getAbsolutePath());
     myThread = new DaemonThread();
     Thread t = new Thread(myThread);
     t.setDaemon(true);
@@ -82,7 +83,7 @@ public class VideoPanel extends JPanel{
   public void pause(){
     System.out.println("Pause...");
     myThread.runnable = false;
-    webSource.release();
+    capture.release();
  }
 
 
@@ -153,15 +154,16 @@ public class VideoPanel extends JPanel{
 
   // class DeamonThread
   class DaemonThread implements Runnable {
+
     protected volatile boolean runnable = false;
 
     @Override
     public void run() {
       synchronized (this) {
         while (runnable) {
-          if (webSource.grab()) {
+          if (capture.grab()) {
             try {
-              webSource.retrieve(frame);
+              capture.retrieve(frame);
               Imgcodecs.imencode(".bmp", frame, mem);
               BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
               graphics = VideoPanel.this.getGraphics();
