@@ -16,8 +16,8 @@ import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 
-
 public class VideoPanel extends JPanel{
+
   private static final long serialVersionUID = 1L;
   private JLabel imageLabel;
   private ImageIcon transformedImageIcon;
@@ -45,15 +45,8 @@ public class VideoPanel extends JPanel{
     this.height = height;
   }
 
-
-
+  // Play video
   public void play(File file){
-    // show image
-    //Mat img = Imgcodecs.imread(file.getAbsolutePath());
-    //loadMatImage(img);
-
-    System.out.println("Start...");
-//    webSource = new VideoCapture(0);
     capture = new VideoCapture(file.getAbsolutePath());
     myThread = new DaemonThread();
     Thread t = new Thread(myThread);
@@ -62,11 +55,53 @@ public class VideoPanel extends JPanel{
     t.start();
   }
 
-  public void pause(){
-    System.out.println("Pause...");
+  // Stop video
+  public void stop(){
+    System.out.println("Stop...");
     myThread.runnable = false;
     capture.release();
  }
+
+
+
+
+ // Get screenshot
+  public void getScreenshot(){
+    Mat screenshot = new Mat();
+    screenshot = frame.clone();
+    Imgcodecs.imwrite(Constants.videoPath+"screenshots\\"+count+".jpg", screenshot);
+  }
+
+  /////////////////////////////////// DaemonThread start //////////////////////////////////////////
+  class DaemonThread implements Runnable {
+
+    protected volatile boolean runnable = false;
+
+    @Override
+    public void run() {
+      synchronized (this) {
+        while (runnable) {
+          if (capture.grab()) {
+            try {
+              capture.retrieve(frame);
+              Imgcodecs.imencode(".bmp", frame, mem);
+              BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
+              graphics = VideoPanel.this.getGraphics();
+              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
+                if (runnable == false) {
+                  System.out.println("Going to wait()");
+                  this.wait();
+                }
+              count++;
+            } catch (Exception e) {
+              System.out.println("Error");
+            }
+          }
+        }
+      }
+    }
+  }
+  /////////////////////////////////// DaemonThread end //////////////////////////////////////////
 
   // Converter Mat to BufferedImage
   static BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
@@ -80,7 +115,6 @@ public class VideoPanel extends JPanel{
     BufferedImage bi = ImageIO.read(new ByteArrayInputStream(ba));
     return bi;
   }
-  /////////////////////////////////// DaemonThread end //////////////////////////////////////////
 
   // Update image
   public void updadeImage(final Image image) {
@@ -148,34 +182,5 @@ public class VideoPanel extends JPanel{
       return;
     }
     g.drawImage(this.bufferedImage, 10, 10, this.bufferedImage.getWidth(), this.bufferedImage.getHeight(), null);
-  }
-
-  /////////////////////////////////// DaemonThread start //////////////////////////////////////////
-  class DaemonThread implements Runnable {
-
-    protected volatile boolean runnable = false;
-
-    @Override
-    public void run() {
-      synchronized (this) {
-        while (runnable) {
-          if (capture.grab()) {
-            try {
-              capture.retrieve(frame);
-              Imgcodecs.imencode(".bmp", frame, mem);
-              BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
-              graphics = VideoPanel.this.getGraphics();
-              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
-                if (runnable == false) {
-                  System.out.println("Going to wait()");
-                  this.wait();
-                }
-            } catch (Exception e) {
-              System.out.println("Error");
-            }
-          }
-        }
-      }
-    }
   }
 }

@@ -3,6 +3,8 @@ package com.pages.page9;
 import com.constants.Constants;
 import com.gui.Gui;
 import com.pages.Pages;
+import com.pages.page7.ImgObject;
+import com.pages.page7.Recognizer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +22,7 @@ public class Page9 extends JPanel implements Pages {
   private JPanel buttonsPanel = new JPanel();
   private JButton openBtn = new JButton("Open File");
   private JButton playBtn = new JButton("Play");
-  private JButton pauseBtn = new JButton("Pause");
+  private JButton stopBtn = new JButton("Stop");
   private JButton screenshotBtn = new JButton("Screenshot");
   private JButton recognizeBtn = new JButton("Recognize");
   private VideoPanel videoPanel = new VideoPanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT);
@@ -28,6 +30,7 @@ public class Page9 extends JPanel implements Pages {
   private boolean status = false;
   private Color defaultPanelColor;
   private File file;
+  private Recognizer recognizer = new Recognizer();
 
   public Page9(final Gui gui) {
     this.gui = gui;
@@ -60,23 +63,32 @@ public class Page9 extends JPanel implements Pages {
       public void actionPerformed(ActionEvent e) {
         videoPanel.play(file);
 
-        pauseBtn.setEnabled(true);
+        stopBtn.setEnabled(true);
         screenshotBtn.setEnabled(true);
         recognizeBtn.setEnabled(true);
       }
     });
 
-    pauseBtn.addActionListener(new ActionListener() {
+    stopBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        videoPanel.pause();
+        videoPanel.stop();
+      }
+    });
+
+    screenshotBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        videoPanel.getScreenshot();
       }
     });
 
     recognizeBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-
+//        ImgObject object = new ImgObject(new File(Constants.videoPath+"screenshots\\90.jpg"));
+        File f = new File(Constants.videoPath+"screenshots\\90.jpg");
+        recognizer.recognize(f, 120, 5, 100, 0);
       }
     });
   }
@@ -88,7 +100,7 @@ public class Page9 extends JPanel implements Pages {
 
     buttonsPanel.add(openBtn);
     buttonsPanel.add(playBtn);
-    buttonsPanel.add(pauseBtn);
+    buttonsPanel.add(stopBtn);
     buttonsPanel.add(screenshotBtn);
     buttonsPanel.add(recognizeBtn);
 
@@ -99,7 +111,7 @@ public class Page9 extends JPanel implements Pages {
     defaultPanelColor = videoPanel.getBackground();
 
     playBtn.setEnabled(false);
-    pauseBtn.setEnabled(false);
+    stopBtn.setEnabled(false);
     screenshotBtn.setEnabled(false);
     recognizeBtn.setEnabled(false);
   }

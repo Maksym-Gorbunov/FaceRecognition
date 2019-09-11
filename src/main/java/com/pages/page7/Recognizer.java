@@ -35,7 +35,7 @@ public class Recognizer {
   private String outPath = Constants.imgPath + "lpr\\";
   private String contourPath = "";
   private String contourOutPath = "";
-  private boolean logger = false;
+  private boolean logger = true;
 
   // Time with logger:    2.72
   // Time without logger: 2.518
