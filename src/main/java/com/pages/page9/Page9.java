@@ -62,7 +62,7 @@ public class Page9 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         videoPanel.play(file);
-
+        playBtn.setEnabled(false);
         stopBtn.setEnabled(true);
         screenshotBtn.setEnabled(true);
         recognizeBtn.setEnabled(true);
@@ -73,6 +73,10 @@ public class Page9 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         videoPanel.stop();
+        playBtn.setEnabled(true);
+        stopBtn.setEnabled(false);
+        screenshotBtn.setEnabled(false);
+        recognizeBtn.setEnabled(false);
       }
     });
 

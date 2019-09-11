@@ -6,6 +6,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.video.Video;
 import org.opencv.videoio.VideoCapture;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -65,41 +66,18 @@ public class VideoPanel extends JPanel{
 
 
 
- // Get screenshot
+ // Get screenshot\\\\\\\\\\\\\
   public void getScreenshot(){
     Mat screenshot = new Mat();
     screenshot = frame.clone();
     Imgcodecs.imwrite(Constants.videoPath+"screenshots\\"+count+".jpg", screenshot);
   }
 
-  /////////////////////////////////// DaemonThread start //////////////////////////////////////////
-  class DaemonThread implements Runnable {
-
-    protected volatile boolean runnable = false;
-
-    @Override
-    public void run() {
-      synchronized (this) {
-        while (runnable) {
-          if (capture.grab()) {
-            try {
-              capture.retrieve(frame);
-              Imgcodecs.imencode(".bmp", frame, mem);
-              BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
-              graphics = VideoPanel.this.getGraphics();
-              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
-                if (runnable == false) {
-                  System.out.println("Going to wait()");
-                  this.wait();
-                }
-              count++;
-            } catch (Exception e) {
-              System.out.println("Error");
-            }
-          }
-        }
-      }
-    }
+  // Clear panel
+  public void clear() {
+    imageLabel.setIcon(null);
+    removeAll();
+    updateUI();
   }
   /////////////////////////////////// DaemonThread end //////////////////////////////////////////
 
@@ -133,9 +111,35 @@ public class VideoPanel extends JPanel{
     updadeImage(image);
   }
 
-  // Clear panel
-  public void clear() {
-    imageLabel.setIcon(null);
+  /////////////////////////////////// DaemonThread start //////////////////////////////////////////
+  class DaemonThread implements Runnable {
+
+    protected volatile boolean runnable = false;
+
+    @Override
+    public void run() {
+      synchronized (this) {
+        while (runnable) {
+          if (capture.grab()) {
+            try {
+              capture.retrieve(frame);
+              Imgcodecs.imencode(".bmp", frame, mem);
+              BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
+              graphics = VideoPanel.this.getGraphics();
+              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
+                if (runnable == false) {
+                  System.out.println("Going to wait()");
+                  VideoPanel.this.clear();
+                  this.wait();
+                }
+              count++;
+            } catch (Exception e) {
+              System.out.println("Error");
+            }
+          }
+        }
+      }
+    }
   }
 
   // Load image to ImagePanel without extra savers
