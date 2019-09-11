@@ -9,14 +9,14 @@ package com.pages.page4;//package com.pages.page4;
 //public class MainFrame2 extends JFrame {
 //  private static final long serialVersionUID = 1L;
 //  private Detector detector;
-//  private CameraPanel cameraPanel;
+//  private VideoPanel cameraPanel;
 //
 //  public MainFrame2() {
 //    super("Face Detection");
 //
 //    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 //    this.detector = new Detector();
-//    this.cameraPanel = new CameraPanel();
+//    this.cameraPanel = new VideoPanel();
 //
 //    setContentPane(this.cameraPanel);
 //

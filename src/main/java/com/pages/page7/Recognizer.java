@@ -90,6 +90,7 @@ public class Recognizer {
         rotatedRect.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         //create contour mini image
+        rect = cutRectIfOutOfImageArea(filtered, rect);
         Mat contourImg = new Mat(filtered, rect);
         //rotate contours by rect angle
         Mat rotatedImg = rotateImage(contourImg, rotatedRect);
@@ -114,32 +115,52 @@ public class Recognizer {
         i++;
       }
       //draw green rectangle on best contour
-      if (logger) {
-        if (bestRect != null) {
-          Mat bestContoursImg = copy(object.getContours());
-          Imgproc.rectangle(bestContoursImg, bestRect.tl(), bestRect.br(), green, 3);
-          object.setContours(bestContoursImg);
-        }
+      if (bestRect != null) {
+        Mat bestContoursImg = copy(object.getContours());
+        Imgproc.rectangle(bestContoursImg, bestRect.tl(), bestRect.br(), green, 3);
+        object.setContours(bestContoursImg);
       }
+
       System.out.println("RESULT: " + object.getLicenseNumber());
     }
     //contours not found
     else {
       System.out.println("Contours not found, change thresh and try again");
     }
-    if(logger){
+    if (logger) {
       object.saveImages(outPath);
     }
 
 
-    long elapsedTimeMillis = System.currentTimeMillis()-start;
-    float elapsedTimeSec = elapsedTimeMillis/1000F;
-    if(logger){
+    long elapsedTimeMillis = System.currentTimeMillis() - start;
+    float elapsedTimeSec = elapsedTimeMillis / 1000F;
+    if (logger) {
       System.out.println("Time with logger: " + elapsedTimeSec);
     } else {
       System.out.println("Time without logger: " + elapsedTimeSec);
     }
     return object;
+  }
+
+  private Rect cutRectIfOutOfImageArea(Mat image, Rect rect) {
+    double startX = rect.tl().x;
+    double startY = rect.tl().y;
+    double endX = rect.br().x;
+    double endY = rect.br().y;
+    if (startX < 0) {
+      startX = 0;
+    }
+    if (startY < 0) {
+      startY = 0;
+    }
+    if (endX > image.width()) {
+      endX = image.width();
+    }
+    if (endY > image.height()) {
+      endY = image.height();
+    }
+    Rect cuttedRect = new Rect(new Point(startX, startY), new Point(endX, endY));
+    return cuttedRect;
   }
 
   //////////////// MAT ////////////////////////
@@ -173,7 +194,7 @@ public class Recognizer {
       AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
       BufferedImage shearedPLateBuffered = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
       op.filter(buffer, shearedPLateBuffered);
-      if(logger) {
+      if (logger) {
         File outputfile = new File(contourOutPath + "6.sheared.jpg");
         ImageIO.write(shearedPLateBuffered, "jpg", outputfile);
       }
@@ -205,7 +226,7 @@ public class Recognizer {
       AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
       BufferedImage shearedPLateBuffered = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
       op.filter(buffer, shearedPLateBuffered);
-      if(logger) {
+      if (logger) {
         File outputfile = new File(contourOutPath + "6.sheared.jpg");
         ImageIO.write(shearedPLateBuffered, "jpg", outputfile);
       }
@@ -232,7 +253,7 @@ public class Recognizer {
     Imgproc.morphologyEx(inverted, blackHat, Imgproc.MORPH_BLACKHAT, kernel);
     Core.add(inverted, topHat, grayPlusTopHat);
     Core.subtract(grayPlusTopHat, blackHat, grayPlusTopHatMinusBlackHat);
-    if(logger){
+    if (logger) {
       Imgcodecs.imwrite(contourOutPath + "5.filtered.jpg", grayPlusTopHatMinusBlackHat);
     }
     Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHat, blur, new Size(5, 5), 1);
@@ -289,8 +310,8 @@ public class Recognizer {
         if (rotatedRect.size.width > rotatedRect.size.height) {
           Mat maxContourImg = copy(copy);
           Mat cuttedImg = new Mat(copy, rect);
-          if(logger){
-            Imgproc.rectangle(maxContourImg, rect.tl(), rect.br(), blue, 1);
+          Imgproc.rectangle(maxContourImg, rect.tl(), rect.br(), blue, 1);
+          if (logger) {
             Imgcodecs.imwrite(contourOutPath + "3.maxContour.jpg", maxContourImg);
             Imgcodecs.imwrite(contourOutPath + "4.cutted.jpg", cuttedImg);
           }
@@ -408,13 +429,12 @@ public class Recognizer {
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
+        rect = cutRectIfOutOfImageArea(img, rect);
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
           //toDo, check average color in contour, if white >50%
           validContours.add(c);
-          if(logger){
-            Imgproc.rectangle(filteredImg, rect.tl(), rect.br(), red, 3);
-            Imgproc.rectangle(contoursImg, rect.tl(), rect.br(), red, 3);
-          }
+          Imgproc.rectangle(filteredImg, rect.tl(), rect.br(), red, 3);
+          Imgproc.rectangle(contoursImg, rect.tl(), rect.br(), red, 3);
         }
       }
     }

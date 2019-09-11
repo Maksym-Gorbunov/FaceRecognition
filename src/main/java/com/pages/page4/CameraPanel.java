@@ -8,11 +8,11 @@ package com.pages.page4;//package com.pages.page4;
 //import java.awt.image.DataBufferByte;
 //import java.awt.Color;
 //
-//public class CameraPanel extends JPanel {
+//public class VideoPanel extends JPanel {
 //  private static final long serialVersionUID = 1L;
 //  private BufferedImage bufferedImage;
 //
-//  public CameraPanel() {
+//  public VideoPanel() {
 //    setBackground(Color.BLUE);
 //  }
 //

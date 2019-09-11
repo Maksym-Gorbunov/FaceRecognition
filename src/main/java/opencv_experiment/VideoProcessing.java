@@ -15,7 +15,7 @@ public class VideoProcessing {
    */
   public static void main(String[] args) {
     //play video file
-    CvCapture capture = cvCreateFileCapture(Constants.videoPath+"Halo.mp4");
+    CvCapture capture = cvCreateFileCapture(Constants.videoPath+"Vid.mp4");
 
     //play webbcam
     //CvCapture capture = cvCreateCameraCapture(CV_CAP_ANY);
