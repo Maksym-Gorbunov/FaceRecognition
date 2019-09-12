@@ -52,7 +52,7 @@ public class VideoPanel extends JPanel {
   // Play video
   public void play(File file) {
     capture = new VideoCapture(file.getAbsolutePath());
-    myThread = new DaemonThread(lpr);
+    myThread = new DaemonThread(lpr, file);
     Thread t = new Thread(myThread);
     t.setDaemon(true);
     myThread.runnable = true;
@@ -117,9 +117,11 @@ public class VideoPanel extends JPanel {
 
     protected volatile boolean runnable = false;
     private LPR lpr;
+    private File file;
 
-    public DaemonThread(LPR lpr) {
+    public DaemonThread(LPR lpr, File file) {
       this.lpr = lpr;
+      this.file = file;
     }
 
     @Override
@@ -131,7 +133,7 @@ public class VideoPanel extends JPanel {
 
               //send screenshot live and recognize
               if (count == 90) {
-                lpr.recognize(frame);
+                lpr.recognize(file, frame, count);
               }
 
               capture.retrieve(frame);

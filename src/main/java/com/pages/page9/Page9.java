@@ -36,7 +36,7 @@ public class Page9 extends JPanel implements Pages {
   public Page9(final Gui gui) {
     this.gui = gui;
     tab9 = gui.getTab9();
-    lpr = new LPR();
+//    lpr = new LPR();
     videoPanel = new VideoPanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, lpr);
     initComponents();
     addListeners();
@@ -64,6 +64,8 @@ public class Page9 extends JPanel implements Pages {
     playBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        lpr = new LPR();
+        // auto recognize on play
         videoPanel.play(file);
         playBtn.setEnabled(false);
         stopBtn.setEnabled(true);
@@ -96,6 +98,11 @@ public class Page9 extends JPanel implements Pages {
 //        ImgObject object = new ImgObject(new File(Constants.videoPath+"screenshots\\90.jpg"));
         File f = new File(Constants.videoPath+"screenshots\\90.jpg");
         recognizer.recognize(f, 120, 5, 100, 0);
+
+
+
+
+
       }
     });
   }
