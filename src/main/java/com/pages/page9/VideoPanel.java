@@ -6,7 +6,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.video.Video;
 import org.opencv.videoio.VideoCapture;
 
 import javax.imageio.ImageIO;
@@ -32,13 +31,11 @@ public class VideoPanel extends JPanel {
   private Mat frame = new Mat();
   private MatOfByte mem = new MatOfByte();
   private Graphics graphics;
-  private LPR lpr;
 
 
   // Constructor
-  public VideoPanel(int width, int height, LPR lpr) {
+  public VideoPanel(int width, int height) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    this.lpr = lpr;
     this.imageLabel = new JLabel();
     setLayout(new BorderLayout());
     setBorder(BorderFactory.createLineBorder(Color.black));
@@ -50,9 +47,9 @@ public class VideoPanel extends JPanel {
   }
 
   // Play video
-  public void play(File file) {
+  public void play(File file, String screenshotPath) {
     capture = new VideoCapture(file.getAbsolutePath());
-    myThread = new DaemonThread(lpr, file);
+    myThread = new DaemonThread(file, screenshotPath);
     Thread t = new Thread(myThread);
     t.setDaemon(true);
     myThread.runnable = true;
@@ -118,10 +115,11 @@ public class VideoPanel extends JPanel {
     protected volatile boolean runnable = false;
     private LPR lpr;
     private File file;
+    private String fileOutPath;
 
-    public DaemonThread(LPR lpr, File file) {
-      this.lpr = lpr;
+    public DaemonThread(File file, String screenshotPath) {
       this.file = file;
+      this.fileOutPath = screenshotPath;
     }
 
     @Override
@@ -130,17 +128,22 @@ public class VideoPanel extends JPanel {
         while (runnable) {
           if (capture.grab()) {
             try {
-
-              //send screenshot live and recognize
-              if (count == 90) {
-                lpr.recognize(file, frame, count);
-              }
-
+/////////////////////////////////////////////////////////////////////
               capture.retrieve(frame);
+
+
               Imgcodecs.imencode(".bmp", frame, mem);
               BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
               graphics = VideoPanel.this.getGraphics();
               if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
+
+                if (count%5 == 0) {
+                  String screenshotPath = fileOutPath +"screenshot_"+count+"\\";
+                  new File(screenshotPath).mkdirs();
+                  lpr = new LPR(screenshotPath);
+                  lpr.recognize(file, frame, count);
+                  System.out.println(count);
+                }
                 if (runnable == false) {
                   System.out.println("Going to wait()");
                   VideoPanel.this.clear();
@@ -149,6 +152,7 @@ public class VideoPanel extends JPanel {
               count++;
             } catch (Exception e) {
               System.out.println("Error");
+              e.printStackTrace();
             }
           }
         }

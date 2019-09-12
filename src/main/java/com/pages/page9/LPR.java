@@ -1,10 +1,7 @@
 package com.pages.page9;
 
 
-import com.constants.Constants;
-import com.pages.page7.ImgObject;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -24,7 +21,7 @@ public class LPR {
   private Scalar red = new Scalar(0, 0, 255, 255);
   private Scalar gray = new Scalar(20, 20, 20, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
-  private String outPath = Constants.videoPath + "lpr\\";
+  //  private String outPath = Constants.videoPath + "screenshots\\";
   private String screenshotPath = "";
   private String contourPath = "";
   private String contourOutPath = "";
@@ -33,65 +30,97 @@ public class LPR {
 
 
   // Constructor
-  public LPR() {
+  public LPR(String screenshotPath) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     System.out.println("LPR");
+    this.screenshotPath = screenshotPath;
   }
 
   // Recognize one image
   public void recognize(File file, Mat originalImg, int frameCounter) {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
     Screenshot screenshot = checkScreenshot(originalImg);
     if (screenshot != null) {
 
-      // create and clear out path for screenshots with video file name
-      if (logger) {
-        String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
-        outPath = outPath + fileNameWithOutExt + "\\";
-        screenshotPath = outPath + frameCounter + "\\";
-        clearFolder(outPath);
-      }
-
-      // filter image
-      int thresh = 100;
-      int blur = 5;
-      Mat filteredImg = filterImage(screenshot.getOriginalImg(), thresh, blur);
-      screenshot.setFilteredImg(filteredImg);
-
-
-      // loop throught image contours
-      processContours(screenshot);
-
+      processValidContours(screenshot);
 
     }
+
+    // contours not found
+    else {
+      Imgproc.putText(originalImg, "NOT FOUND", new Point(originalImg.width() / 2, originalImg.height() / 2), 2, 3, red, 2);
+      Imgcodecs.imwrite(screenshotPath + ".jpg", originalImg);
+      System.out.println("Not found");
+    }
+
   }
 
-  private void processContours(Screenshot screenshot) {
+  private void processValidContours(Screenshot screenshot) {
     int i = 0;
+    Mat originalImg = screenshot.getOriginalImg().clone();
+    Mat filteredImg = screenshot.getFilteredImg().clone();
+    Mat originalContoursImg = screenshot.getOriginalImg().clone();
+    Mat filteredContoursImg = screenshot.getFilteredImg().clone();
 
     for (Contour c : screenshot.getContours()) {
-      Mat originalImg = screenshot.getOriginalImg().clone();
-      Mat filteredImg = screenshot.getFilteredImg().clone();
-      Mat originalContoursImg = screenshot.getOriginalImg().clone();
-      Mat filteredContoursImg = screenshot.getFilteredImg().clone();
+      Imgproc.rectangle(originalContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
+      Imgproc.rectangle(filteredContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
 
-      Imgproc.rectangle(originalContoursImg, c.getRect().tl(), c.getRect().br(), red, 2);
-      Imgproc.rectangle(filteredContoursImg, c.getRect().tl(), c.getRect().br(), red, 2);
+      Mat originalPlateImg = new Mat(originalImg, c.getRect());
+      Mat rotatedPlateImg = rotateImage(originalPlateImg, c.getRotatedRect());
 
       if (logger) {
         contourPath = screenshotPath + i + "\\";
-        Imgcodecs.imwrite(contourPath + "original.jpg", originalImg);
-        Imgcodecs.imwrite(contourPath + "filtered.jpg", filteredImg);
-        Imgcodecs.imwrite(contourPath + "originalContours.jpg", originalContoursImg);
-        Imgcodecs.imwrite(contourPath + "filteredContours.jpg", filteredContoursImg);
+        new File(contourPath).mkdirs();
+//        Imgcodecs.imwrite(screenshotPath + "originalContours.jpg", originalContoursImg);
+//        Imgcodecs.imwrite(screenshotPath + "filteredContours.jpg", filteredContoursImg);
+        Imgcodecs.imwrite(contourPath + "originalPlate.jpg", originalPlateImg);
+        Imgcodecs.imwrite(contourPath + "rotatedPlate.jpg", rotatedPlateImg);
       }
 
-      screenshot.setFilteredContoursImg(filteredContoursImg);
-      screenshot.setOriginalContoursImg(originalContoursImg);
 
       i++;
     }
+    if (logger) {
+      Imgcodecs.imwrite(screenshotPath + "original.jpg", originalImg);
+      Imgcodecs.imwrite(screenshotPath + "filtered.jpg", filteredImg);
+      Imgcodecs.imwrite(screenshotPath + "originalContours.jpg", originalContoursImg);
+      Imgcodecs.imwrite(screenshotPath + "filteredContours.jpg", filteredContoursImg);
+    }
+
+    screenshot.setFilteredContoursImg(filteredContoursImg);
+    screenshot.setOriginalContoursImg(originalContoursImg);
+
   }
 
+
+  // Rotate license plate image
+  private Mat rotateImage(Mat img, RotatedRect rotatedRect) {
+    double angle = rotatedRect.angle;
+    if (rotatedRect.size.width > rotatedRect.size.height) {
+      angle = -angle;
+    }
+    double rotatedAngle = 0;
+    if (angle == 0) {
+      return img;
+    }
+    if (angle < 0) {
+      rotatedAngle = 90 - Math.abs(angle);
+    }
+    if (angle > 0) {
+      rotatedAngle = -angle;
+    }
+    Mat temp = new Mat();
+    img.copyTo(temp);
+    Mat rotatedImg = new Mat(2, 3, CvType.CV_32FC1);
+    Mat destination = new Mat(img.rows(), img.cols(), img.type());
+    Point center = new Point(destination.cols() / 2, destination.rows() / 2);
+    rotatedImg = Imgproc.getRotationMatrix2D(center, rotatedAngle, 1);
+    Imgproc.warpAffine(temp, destination, rotatedImg, destination.size());
+    return destination;
+  }
+
+  // Filter image
   private Mat filterImage(Mat img, int thresh, int blur) {
     Mat tempImg = img.clone();
     Mat grayImg = new Mat();
@@ -115,10 +144,14 @@ public class LPR {
   // Check if image contains valid contours (potential license plates),
   // if yes create Screenshot object with all contours data and add it to screenshots list
   private Screenshot checkScreenshot(Mat img) {
-    List<Contour> contours = getContouts(img);
+    // filter image
+    int thresh = 100;
+    int blur = 5;
+    Mat filteredImg = filterImage(img, thresh, blur);
+    List<Contour> contours = findContouts(filteredImg);
     if (contours != null) {
       Screenshot screenshot = new Screenshot(img, contours);
-      //screenshots.add(screenshot);
+      screenshot.setFilteredImg(filteredImg);
       return screenshot;
     }
     return null;
@@ -126,10 +159,13 @@ public class LPR {
 
 
   // Try to get contours from image
-  private List<Contour> getContouts(Mat img) {
+  private List<Contour> findContouts(Mat filteredImg) {
     List<MatOfPoint> contours = new ArrayList<>();
     List<Contour> validContours = new ArrayList<>();
-    Imgproc.findContours(img, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    // temp gray
+//    Mat grayImg = new Mat();
+//    Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_RGB2GRAY);
+    Imgproc.findContours(filteredImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     for (MatOfPoint c : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
@@ -138,7 +174,7 @@ public class LPR {
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-        rect = cutRectIfOutOfImageArea(img, rect);
+        rect = cutRectIfOutOfImageArea(filteredImg, rect);
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
           //toDo, check average color in contour, if white >50%
           Contour contour = new Contour(c, rotatedRectangle, rect);
@@ -185,5 +221,9 @@ public class LPR {
       e.printStackTrace();
     }
     new File(path).mkdirs();
+  }
+
+  public void test(File file, Mat frame, int count) {
+    System.out.println("test");
   }
 }
