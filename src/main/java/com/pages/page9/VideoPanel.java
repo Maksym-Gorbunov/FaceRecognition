@@ -118,7 +118,7 @@ public class VideoPanel extends JPanel {
     protected volatile boolean runnable = false;
     private LPR lpr;
 
-    public DaemonThread(LPR lpr){
+    public DaemonThread(LPR lpr) {
       this.lpr = lpr;
     }
 
@@ -128,7 +128,12 @@ public class VideoPanel extends JPanel {
         while (runnable) {
           if (capture.grab()) {
             try {
-              lpr.test(count);
+
+              //send screenshot live and recognize
+              if (count == 90) {
+                lpr.recognize(frame);
+              }
+
               capture.retrieve(frame);
               Imgcodecs.imencode(".bmp", frame, mem);
               BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
