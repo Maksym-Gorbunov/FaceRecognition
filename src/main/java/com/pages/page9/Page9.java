@@ -25,16 +25,19 @@ public class Page9 extends JPanel implements Pages {
   private JButton stopBtn = new JButton("Stop");
   private JButton screenshotBtn = new JButton("Screenshot");
   private JButton recognizeBtn = new JButton("Recognize");
-  private VideoPanel videoPanel = new VideoPanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT);
+  private VideoPanel videoPanel;
   private Graphics graphics;
   private boolean status = false;
   private Color defaultPanelColor;
   private File file;
   private Recognizer recognizer = new Recognizer();
+  private LPR lpr;
 
   public Page9(final Gui gui) {
     this.gui = gui;
     tab9 = gui.getTab9();
+    lpr = new LPR();
+    videoPanel = new VideoPanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, lpr);
     initComponents();
     addListeners();
   }

@@ -8,6 +8,7 @@ import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.video.Video;
 import org.opencv.videoio.VideoCapture;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +18,7 @@ import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 
-public class VideoPanel extends JPanel{
+public class VideoPanel extends JPanel {
 
   private static final long serialVersionUID = 1L;
   private JLabel imageLabel;
@@ -31,11 +32,13 @@ public class VideoPanel extends JPanel{
   private Mat frame = new Mat();
   private MatOfByte mem = new MatOfByte();
   private Graphics graphics;
+  private LPR lpr;
 
 
   // Constructor
-  public VideoPanel(int width, int height) {
+  public VideoPanel(int width, int height, LPR lpr) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    this.lpr = lpr;
     this.imageLabel = new JLabel();
     setLayout(new BorderLayout());
     setBorder(BorderFactory.createLineBorder(Color.black));
@@ -47,9 +50,9 @@ public class VideoPanel extends JPanel{
   }
 
   // Play video
-  public void play(File file){
+  public void play(File file) {
     capture = new VideoCapture(file.getAbsolutePath());
-    myThread = new DaemonThread();
+    myThread = new DaemonThread(lpr);
     Thread t = new Thread(myThread);
     t.setDaemon(true);
     myThread.runnable = true;
@@ -57,20 +60,18 @@ public class VideoPanel extends JPanel{
   }
 
   // Stop video
-  public void stop(){
+  public void stop() {
     System.out.println("Stop...");
     myThread.runnable = false;
     capture.release();
- }
+  }
 
 
-
-
- // Get screenshot\\\\\\\\\\\\\
-  public void getScreenshot(){
+  // Get screenshot\\\\\\\\\\\\\
+  public void getScreenshot() {
     Mat screenshot = new Mat();
     screenshot = frame.clone();
-    Imgcodecs.imwrite(Constants.videoPath+"screenshots\\"+count+".jpg", screenshot);
+    Imgcodecs.imwrite(Constants.videoPath + "screenshots\\" + count + ".jpg", screenshot);
   }
 
   // Clear panel
@@ -115,6 +116,11 @@ public class VideoPanel extends JPanel{
   class DaemonThread implements Runnable {
 
     protected volatile boolean runnable = false;
+    private LPR lpr;
+
+    public DaemonThread(LPR lpr){
+      this.lpr = lpr;
+    }
 
     @Override
     public void run() {
@@ -122,6 +128,7 @@ public class VideoPanel extends JPanel{
         while (runnable) {
           if (capture.grab()) {
             try {
+              lpr.test(count);
               capture.retrieve(frame);
               Imgcodecs.imencode(".bmp", frame, mem);
               BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
