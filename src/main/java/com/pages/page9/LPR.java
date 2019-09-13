@@ -16,19 +16,15 @@ import static org.opencv.imgproc.Imgproc.RETR_TREE;
 
 
 public class LPR {
-  //  private List<Screenshot> screenshots = new ArrayList<>();
   private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
   private Scalar gray = new Scalar(20, 20, 20, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
-  //  private String outPath = Constants.videoPath + "screenshots\\";
   private String fileOutPath = "";
   private String screenshotPath = "";
   private String contourPath = "";
-  private String contourOutPath = "";
   private boolean logger = true;
-  private File file;
 
 
   // Constructor
@@ -66,6 +62,8 @@ public class LPR {
     }
   }
 
+
+  // Processing valid contours
   private void processValidContours(Screenshot screenshot) {
     int i = 0;
     Mat originalImg = screenshot.getOriginalImg().clone();
@@ -77,10 +75,9 @@ public class LPR {
       if (logger) {
         contourPath = screenshotPath + i + "\\";
         new File(contourPath).mkdirs();
+        Imgproc.rectangle(originalContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
+        Imgproc.rectangle(filteredContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
       }
-
-      Imgproc.rectangle(originalContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
-      Imgproc.rectangle(filteredContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
 
       Mat originalPlateImg = new Mat(originalImg, c.getRect());
       Mat rotatedPlateImg = rotateImage(originalPlateImg, c.getRotatedRect());
@@ -94,6 +91,7 @@ public class LPR {
         Imgcodecs.imwrite(contourPath + "rotatedPlate.jpg", rotatedPlateImg);
         Imgcodecs.imwrite(contourPath + "cuttedPlate.jpg", cuttedPlate);
       }
+
 
 
       i++;
@@ -274,6 +272,7 @@ public class LPR {
     return cuttedRect;
   }
 
+
   // Clear folder from old files
   public void clearFolder(String path) {
     try {
@@ -282,9 +281,5 @@ public class LPR {
       e.printStackTrace();
     }
     new File(path).mkdirs();
-  }
-
-  public void test(File file, Mat frame, int count) {
-    System.out.println("test");
   }
 }
