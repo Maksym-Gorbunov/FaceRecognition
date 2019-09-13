@@ -55,20 +55,15 @@ public class LPR {
   }
 
 
-  // Recognize one image
+  // Find and recognize license number on frame
   public void recognize(File file, Mat originalImg, int frameCounter) {
-
     Screenshot screenshot = checkScreenshot(originalImg, frameCounter);
     if (screenshot != null) {
-
       processValidContours(screenshot);
-
     }
-
     // contours not found
     else {
     }
-
   }
 
   private void processValidContours(Screenshot screenshot) {
@@ -90,13 +85,14 @@ public class LPR {
       Mat originalPlateImg = new Mat(originalImg, c.getRect());
       Mat rotatedPlateImg = rotateImage(originalPlateImg, c.getRotatedRect());
 
-      cutPlateFromRotatedPlate(rotatedPlateImg, c.getRotatedRect());
+      Mat cuttedPlate = cutPlateFromRotatedPlate(rotatedPlateImg, c.getRotatedRect());
 
       if (logger) {
         //contourPath = screenshotPath + i + "\\";
         //new File(contourPath).mkdirs();
         Imgcodecs.imwrite(contourPath + "originalPlate.jpg", originalPlateImg);
         Imgcodecs.imwrite(contourPath + "rotatedPlate.jpg", rotatedPlateImg);
+        Imgcodecs.imwrite(contourPath + "cuttedPlate.jpg", cuttedPlate);
       }
 
 
@@ -114,46 +110,27 @@ public class LPR {
 
   }
 
-
-  private void cutPlateFromRotatedPlate(Mat img, RotatedRect rotatedRect) {
+  // Cut plate from rotated plate image
+  private Mat cutPlateFromRotatedPlate(Mat img, RotatedRect rotatedRect) {
     double width = 0;
     if (rotatedRect.size.width > img.size().height) {
       width = rotatedRect.size.height;
     } else {
       width = rotatedRect.size.width;
     }
-
     Point startPoint = new Point(0, (img.height() / 2) - (width / 2));
     Point endPoint = new Point(img.width(), (img.height() / 2) + (width / 2));
-
     if (width != 0) {
       Mat plateContour = img.clone();
-      Imgproc.rectangle(plateContour, rect.tl(), rect.br(), red, 2);
-      System.out.println(contourPath);
-      Imgcodecs.imwrite(contourPath + "contourPlat.jpg", plateContour);
-
+      Mat plate = new Mat(img, new Rect(startPoint, endPoint));
+      if(logger){
+        Imgproc.rectangle(plateContour, startPoint, endPoint, red, 2);
+        Imgcodecs.imwrite(contourPath + "contourPlat.jpg", plateContour);
+        Imgcodecs.imwrite(contourPath + "plate.jpg", plate);
+      }
+      return plate;
     }
-
-
-    //    Rect rect = null;
-//    if(rotatedRect.size.width > img.size().height){
-//      Point tlPoint = new Point(0, (img.height()/2)-(rotatedRect.size.height/2));
-//      Point brPoint = new Point(img.width(), (img.height()/2)+(rotatedRect.size.height/2));
-//      rect = new Rect(tlPoint, brPoint);
-//    }
-//    //???
-//
-//    if(rect != null){
-//
-//
-//      Mat plateContour = img.clone();
-//      Imgproc.rectangle(plateContour, rect.tl(), rect.br(), red, 2);
-//      System.out.println(contourPath);
-//      Imgcodecs.imwrite(contourPath + "contourPlat.jpg", plateContour);
-//
-//    }
-
-
+    return img;
   }
 
 
