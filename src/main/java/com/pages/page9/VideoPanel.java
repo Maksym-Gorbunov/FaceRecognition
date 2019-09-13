@@ -138,9 +138,9 @@ public class VideoPanel extends JPanel {
               if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
 
                 if (count%5 == 0) {
-                  String screenshotPath = fileOutPath +"screenshot_"+count+"\\";
-                  new File(screenshotPath).mkdirs();
-                  lpr = new LPR(screenshotPath);
+//                  String screenshotPath = fileOutPath +"screenshot_"+count+"\\";
+//                  new File(screenshotPath).mkdirs();
+                  lpr = new LPR(fileOutPath);
                   lpr.recognize(file, frame, count);
                   System.out.println(count);
                 }
