@@ -24,8 +24,10 @@ public class LPR {
   private String fileOutPath = "";
   private String screenshotPath = "";
   private String contourPath = "";
-  private boolean logger = true;
+  private String platesPath = "";
+  private boolean logger = false;
 
+  private int thresh = 80;
 
   // Constructor
   public LPR(String fileOutPath) {
@@ -35,30 +37,22 @@ public class LPR {
   }
 
 
-  public static void main(String[] args) {
-    LPR lpr = new LPR(Constants.videoPath + "screenshots\\");
-    lpr.clearFolder(Constants.videoPath + "screenshots");
-
-    File f = new File(Constants.imgPath + "cars\\111\\30.jpg");
-    Mat img = Imgcodecs.imread(f.getAbsolutePath());
-    lpr.recognize(f, img, 0);
-
-    File f2 = new File(Constants.imgPath + "cars\\111\\-30.jpg");
-    Mat img2 = Imgcodecs.imread(f2.getAbsolutePath());
-    lpr.recognize(f2, img2, 1);
 
 
-  }
 
 
   // Find and recognize license number on frame
   public void recognize(File file, Mat originalImg, int frameCounter) {
-    Screenshot screenshot = checkScreenshot(originalImg, frameCounter);
-    if (screenshot != null) {
-      processValidContours(screenshot);
-    }
-    // contours not found
-    else {
+    System.out.println(frameCounter);
+    for (int i = 0; i < 20; i++) {
+      thresh = thresh + 5;
+      Screenshot screenshot = checkScreenshot(originalImg, frameCounter);
+      if (screenshot != null) {
+        processValidContours(screenshot);
+      }
+      // contours not found
+      else {
+      }
     }
   }
 
@@ -80,18 +74,22 @@ public class LPR {
       }
 
       Mat originalPlateImg = new Mat(originalImg, c.getRect());
-      Mat rotatedPlateImg = rotateImage(originalPlateImg, c.getRotatedRect());
 
+      String platesPath = fileOutPath + "plates\\";
+      new File(platesPath).mkdirs();
+      Imgcodecs.imwrite(platesPath + "plate" + i + ".jpg", originalPlateImg);
+//      System.out.println(thresh);
+/*
+      Mat rotatedPlateImg = rotateImage(originalPlateImg, c.getRotatedRect());
       Mat cuttedPlate = cutPlateFromRotatedPlate(rotatedPlateImg, c.getRotatedRect());
 
       if (logger) {
-        //contourPath = screenshotPath + i + "\\";
-        //new File(contourPath).mkdirs();
         Imgcodecs.imwrite(contourPath + "originalPlate.jpg", originalPlateImg);
         Imgcodecs.imwrite(contourPath + "rotatedPlate.jpg", rotatedPlateImg);
         Imgcodecs.imwrite(contourPath + "cuttedPlate.jpg", cuttedPlate);
+        Imgcodecs.imwrite(platesPath+"plate"+i+".jpg", cuttedPlate);
       }
-
+*/
 
 
       i++;
@@ -121,7 +119,7 @@ public class LPR {
     if (width != 0) {
       Mat plateContour = img.clone();
       Mat plate = new Mat(img, new Rect(startPoint, endPoint));
-      if(logger){
+      if (logger) {
         Imgproc.rectangle(plateContour, startPoint, endPoint, red, 2);
         Imgcodecs.imwrite(contourPath + "contourPlat.jpg", plateContour);
         Imgcodecs.imwrite(contourPath + "plate.jpg", plate);
@@ -179,12 +177,19 @@ public class LPR {
     return thresholdImg;
   }
 
+
   // Check if image contains valid contours (potential license plates)
   private Screenshot checkScreenshot(Mat img, int frameCount) {
     // filter image
-    int thresh = 200;
+//    int thresh = 80;
     int blur = 5;
     Mat filteredImg = filterImage(img, thresh, blur);
+
+
+    String platesPath = fileOutPath + "filtered\\";
+    new File(platesPath).mkdirs();
+    Imgcodecs.imwrite(platesPath + "filtered" + frameCount + "__" + thresh + ".jpg", filteredImg);
+
     List<Contour> contours = findContouts(filteredImg);
     if (contours != null) {
       Screenshot screenshot = new Screenshot(img, contours);
@@ -192,19 +197,22 @@ public class LPR {
       if (logger) {
         screenshotPath = fileOutPath + "screenshot_" + frameCount + "\\";
         new File(screenshotPath).mkdirs();
+        platesPath = fileOutPath + "plates\\";
+        new File(platesPath).mkdirs();
       }
       return screenshot;
     }
     //CONTOURS NOT FOUND
     else {
-      String undefindPath = fileOutPath + "undefined\\";
-      new File(undefindPath).mkdirs();
-      Imgproc.putText(img, "NOT FOUND", new Point(img.width() / 2, img.height() / 2), 2, 2, red, 2);
-      Imgcodecs.imwrite(undefindPath + frameCount + ".jpg", img);
-      Imgcodecs.imwrite(undefindPath + frameCount + "filtered.jpg", filteredImg);
-      System.out.println("Not found");
+      if (logger) {
+        String undefindPath = fileOutPath + "undefined\\";
+        new File(undefindPath).mkdirs();
+        Imgproc.putText(img, "NOT FOUND", new Point(img.width() / 2, img.height() / 2), 2, 2, red, 2);
+        Imgcodecs.imwrite(undefindPath + frameCount + ".jpg", img);
+        Imgcodecs.imwrite(undefindPath + frameCount + "filtered.jpg", filteredImg);
+        System.out.println("Not found");
+      }
     }
-
     return null;
   }
 
@@ -217,25 +225,31 @@ public class LPR {
 //    Mat grayImg = new Mat();
 //    Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_RGB2GRAY);
     Imgproc.findContours(filteredImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    double imgArea = filteredImg.size().area();
+
+
+    int totalContours = contours.size();
+    int areaValidContours = 0;
+    int rectWidthValidContours = 0;
+
     for (MatOfPoint c : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
       //toDo...change to % procent size
-      double imgArea = filteredImg.size().area();
       double rotRectArea = rotatedRectangle.size.area();
 //      if ((rotatedRectangle.size.area() > 2000) && (rotatedRectangle.size.area() < 15000)) {
       if (
-              (rotRectArea > 0.01 * imgArea) && (rotRectArea < 0.5 * imgArea)) {
+              (rotRectArea > 0.01 * imgArea) && (rotRectArea < 0.4 * imgArea)) {
+        areaValidContours++;
+
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         rect = cutRectIfOutOfImageArea(filteredImg, rect);
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
           //toDo, check average color in contour, if white >50%
+          rectWidthValidContours++;
           Contour contour = new Contour(c, rotatedRectangle, rect);
-          System.out.println("rotated:" + (int) rotatedRectangle.size.width + " x " + (int) rotatedRectangle.size.height);
-          System.out.println("rect:   " + (int) rect.size().width + " x " + (int) rect.size().height);
-          System.out.println();
 
           if (contour != null) {
             validContours.add(contour);
@@ -244,6 +258,12 @@ public class LPR {
       }
     }
     if ((validContours != null) && (!validContours.isEmpty())) {
+
+      System.out.println("Total: " + totalContours);
+      System.out.println("Area valid : " + areaValidContours);
+      System.out.println("Rect width valid: " + rectWidthValidContours);
+
+
       return validContours;
     }
     return null;
