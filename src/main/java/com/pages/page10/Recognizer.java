@@ -34,61 +34,9 @@ public class Recognizer {
     this.bg = bg;
   }
 
-  public static void main(String[] args) {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-    String path = Constants.imgPath + "Horse\\";
-    String bgPath = path + "bg.jpg";
-    String framePath = path + "frame.jpg";
-
-    Mat bg = Imgcodecs.imread(bgPath);
-    Mat frame = Imgcodecs.imread(framePath);
-    Mat difference = new Mat();
-
-    Core.subtract(bg, frame, difference);
-    Mat differenceGray = new Mat();
-    Imgcodecs.imwrite(Constants.imgPath + "Horse\\result1.png", difference);
-    Imgproc.cvtColor(difference, differenceGray, Imgproc.COLOR_BGR2GRAY);
-    Imgcodecs.imwrite(path + "resultGray.jpg", differenceGray);
-
-    Mat differenceGrayThresh = new Mat();
-    //Imgproc.threshold(differenceGray, differenceGrayThresh, 10, 255, Imgproc.THRESH_BINARY_INV);
-
-    differenceGrayThresh = filterImage(difference, 10, 5);
-
-
-    Imgcodecs.imwrite(path + "resultGrayThresh.jpg", differenceGrayThresh);
-
-
-    List<MatOfPoint> contours = new ArrayList<>();
-    Imgproc.findContours(differenceGrayThresh, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-
-    RotatedRect maxRotatedRect = new RotatedRect();
-    maxRotatedRect = new RotatedRect();
-    double max = 0;
-
-    System.out.println("total: " + contours.size());
-    for (MatOfPoint c : contours) {
-      MatOfPoint2f points = new MatOfPoint2f(c.toArray());
-      RotatedRect rotatedRect = Imgproc.minAreaRect(points);
-      if ((rotatedRect.size.area() < differenceGrayThresh.size().area() * 0.8) && (max < rotatedRect.size.area())) {
-        max = rotatedRect.size.area();
-        maxRotatedRect = rotatedRect;
-      }
-    }
-//    System.out.println(maxRotatedRect.size.area());
-
-    System.out.println(maxRotatedRect.size.area());
-    Point maxRotatedRectPoints[] = new Point[4];
-    maxRotatedRect.points(maxRotatedRectPoints);
-    Rect rect = Imgproc.boundingRect(new MatOfPoint(maxRotatedRectPoints));
-    Imgproc.rectangle(frame, rect.tl(), rect.br(), new Scalar(0, 255, 0, 255), 2);
-    Imgproc.rectangle(differenceGrayThresh, rect.tl(), rect.br(), new Scalar(0, 255, 0, 255), 2);
-
-
-    Imgcodecs.imwrite(path + "contours1.jpg", differenceGrayThresh);
-    Imgcodecs.imwrite(path + "contours.jpg", frame);
-  }
+//  public static void main(String[] args) {
+//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//  }
 
   // Filter image
   public static Mat filterImage(Mat img, int thresh, int blur) {
@@ -135,7 +83,52 @@ public class Recognizer {
   public void test() {
     if ((bg != null) && (!bg.empty())) {
       System.out.println("bg");
-      Imgcodecs.imwrite(path+"bg.jpg", bg);
+      Imgcodecs.imwrite(path + "bg.jpg", bg);
+      Core.subtract(bg, frame, difference);
+      Mat differenceGray = new Mat();
+      Imgproc.cvtColor(difference, differenceGray, Imgproc.COLOR_BGR2GRAY);
+      Imgcodecs.imwrite(path + "difference.png", difference);
+      Imgcodecs.imwrite(path + "resultGray.jpg", differenceGray);
+
+      Mat differenceGrayThresh = new Mat();
+      //Imgproc.threshold(differenceGray, differenceGrayThresh, 10, 255, Imgproc.THRESH_BINARY_INV);
+      differenceGrayThresh = filterImage(difference, 10, 5);
+      Imgcodecs.imwrite(path + "resultGrayThresh.jpg", differenceGrayThresh);
+
+      List<MatOfPoint> contours = new ArrayList<>();
+      Imgproc.findContours(differenceGrayThresh, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+      RotatedRect maxRotatedRect = new RotatedRect();
+      maxRotatedRect = new RotatedRect();
+      double max = 0;
+
+      System.out.println("total: " + contours.size());
+      for (MatOfPoint c : contours) {
+        MatOfPoint2f points = new MatOfPoint2f(c.toArray());
+        RotatedRect rotatedRect = Imgproc.minAreaRect(points);
+        if ((rotatedRect.size.area() < differenceGrayThresh.size().area() * 0.8) && (max < rotatedRect.size.area())) {
+          max = rotatedRect.size.area();
+          maxRotatedRect = rotatedRect;
+        }
+      }
+      System.out.println(maxRotatedRect.size.area());
+      Point maxRotatedRectPoints[] = new Point[4];
+      maxRotatedRect.points(maxRotatedRectPoints);
+      Rect rect = Imgproc.boundingRect(new MatOfPoint(maxRotatedRectPoints));
+
+      Mat frameContours = new Mat();
+      frame.copyTo(frameContours);
+      Mat differenceGrayThreshContours = new Mat();
+      differenceGray.copyTo(differenceGrayThreshContours);
+
+      Imgproc.rectangle(frameContours, rect.tl(), rect.br(), new Scalar(0, 255, 0, 255), 2);
+      Imgproc.rectangle(differenceGrayThreshContours, rect.tl(), rect.br(), new Scalar(0, 255, 0, 255), 2);
+
+
+      Imgcodecs.imwrite(path + "frameContours.jpg", differenceGrayThresh);
+      Imgcodecs.imwrite(path + "differenceGrayThreshContours.jpg", frame);
+
+
     }
     Imgcodecs.imwrite(path + "original.jpg", frame);
   }
