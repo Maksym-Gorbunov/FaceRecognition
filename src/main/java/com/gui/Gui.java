@@ -2,6 +2,7 @@ package com.gui;
 
 import com.constants.Constants;
 import com.pages.page1.Page1;
+import com.pages.page10.Page10;
 import com.pages.page2.Page2;
 import com.pages.page3.Page3;
 import com.pages.page4.Page4;
@@ -28,6 +29,7 @@ public class Gui extends JFrame {
   private JPanel tab7;
   private JPanel tab8;
   private JPanel tab9;
+  private JPanel tab10;
 
   public Gui() {
     super("Application");
@@ -53,6 +55,7 @@ public class Gui extends JFrame {
     tab7 = new JPanel();
     tab8 = new JPanel();
     tab9 = new JPanel();
+    tab10 = new JPanel();
     //////////////////////////////////////////////////////////////////////
     tab1.setBackground(Color.CYAN);
     tab2.setBackground(Color.CYAN);
@@ -73,6 +76,7 @@ public class Gui extends JFrame {
     tabs.addTab("Video", tab8);
     tabs.addTab("LNR Image", tab7);
     tabs.addTab("LNR Video", tab9);
+    tabs.addTab("Horse", tab10);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
@@ -84,8 +88,9 @@ public class Gui extends JFrame {
     tab7 = new Page7(Gui.this);
     tab8 = new Page8(Gui.this);
     tab9 = new Page9(Gui.this);
+    tab10 = new Page10(Gui.this);
 
-    tabs.setSelectedIndex(8);
+    tabs.setSelectedIndex(9);
   }
 
   private void createMenuBar() {
@@ -147,5 +152,9 @@ public class Gui extends JFrame {
 
   public JPanel getTab9() {
     return tab9;
+  }
+
+  public JPanel getTab10() {
+    return tab10;
   }
 }
