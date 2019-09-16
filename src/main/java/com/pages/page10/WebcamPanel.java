@@ -4,7 +4,9 @@ import com.constants.Constants;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
 import javax.imageio.ImageIO;
@@ -172,10 +174,18 @@ public class WebcamPanel extends JPanel {
             try {
               webSource.retrieve(frame);
 
-              if(count == 200){
+//              if(count == 200){
+              if (count % 5 == 0) {
                 Recognizer recognizer = new Recognizer(frame, count, bg);
                 System.out.println(count);
                 recognizer.test();
+              }
+              if ((Page10.rect != null) && (Page10.rect.area() != 0)) {
+                if (Page10.rect.height < 0.25 * frame.height()) {
+                  Imgproc.rectangle(frame, Page10.rect.tl(), Page10.rect.br(), new Scalar(0, 0, 255, 255), 2);
+                } else {
+                  Imgproc.rectangle(frame, Page10.rect.tl(), Page10.rect.br(), new Scalar(0, 255, 0, 255), 2);
+                }
               }
 
               Imgcodecs.imencode(".bmp", frame, mem);

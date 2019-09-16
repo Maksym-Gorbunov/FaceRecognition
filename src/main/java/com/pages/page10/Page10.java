@@ -3,6 +3,8 @@ package com.pages.page10;
 import com.constants.Constants;
 import com.gui.Gui;
 import com.pages.Pages;
+import org.opencv.core.Rect;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,6 +18,7 @@ public class Page10 extends JPanel implements Pages {
   private JButton stopBtn = new JButton("Stop");
   private JButton bgBtn = new JButton("Set background");
 
+  public static Rect rect = null;
 
   // Constructor
   public Page10(Gui gui) {
