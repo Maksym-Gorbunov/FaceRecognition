@@ -5,10 +5,12 @@ import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.opencv.imgproc.Imgproc.RETR_TREE;
 
 public class Recognizer {
@@ -31,7 +33,20 @@ public class Recognizer {
     this.bg = bg;
   }
 
-  public void test() {
+  public static void main(String[] args) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+
+    Mat bg = Imgcodecs.imread(Constants.imgPath + "Horse\\bg.jpg");
+    Mat frame = Imgcodecs.imread(Constants.imgPath + "Horse\\frame.jpg");
+
+    Recognizer r = new Recognizer(frame, 0, bg);
+    r.recognize();
+
+  }
+
+  //Find object
+  public void recognize() {
     if ((bg != null) && (!bg.empty())) {
       System.out.println("bg");
       Imgcodecs.imwrite(path + "bg.jpg", bg);
@@ -96,18 +111,6 @@ public class Recognizer {
     Imgcodecs.imwrite(path + "frame.jpg", frame);
   }
 
-  public static void main(String[] args) {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-
-    Mat bg = Imgcodecs.imread(Constants.imgPath + "Horse\\bg.jpg");
-    Mat frame = Imgcodecs.imread(Constants.imgPath + "Horse\\frame.jpg");
-
-    Recognizer r = new Recognizer(frame, 0, bg);
-    r.test();
-
-  }
-
   // Filter image
   public static Mat filterGrayImage(Mat gray, int thresh, int blur) {
 //    Mat tempImg = img.clone();
@@ -128,6 +131,7 @@ public class Recognizer {
     Imgproc.threshold(blurImg, thresholdImg, thresh, 255, Imgproc.THRESH_BINARY_INV);
     return thresholdImg;
   }
+
 
   // Filter image
   public static Mat filterImage(Mat img, int thresh, int blur) {
@@ -182,6 +186,7 @@ public class Recognizer {
     }
     new File(path).mkdirs();
   }
+
 
   // Save image
   private void saveImage(String filename, Mat img) {

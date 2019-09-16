@@ -178,10 +178,10 @@ public class WebcamPanel extends JPanel {
               if (count % 5 == 0) {
                 Recognizer recognizer = new Recognizer(frame, count, bg);
                 System.out.println(count);
-                recognizer.test();
+                recognizer.recognize();
               }
               if ((Page10.rect != null) && (Page10.rect.area() != 0)) {
-                if (Page10.rect.height < 0.25 * frame.height()) {
+                if (Page10.rect.height < 0.3 * frame.height()) {
                   Imgproc.rectangle(frame, Page10.rect.tl(), Page10.rect.br(), new Scalar(0, 0, 255, 255), 2);
                 } else {
                   Imgproc.rectangle(frame, Page10.rect.tl(), Page10.rect.br(), new Scalar(0, 255, 0, 255), 2);

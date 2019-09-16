@@ -33,7 +33,7 @@ public class MongoDB {
     System.out.println("Connecting to MongoDB on cloud..");
     databaseName = "hilodb";
     collectionName = "Contacts";
-    atlasConnectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/test?retryWrites=true&w=majority";
+    atlasConnectionString = "mongodb+srv://maks:777@hilodb-ejqv2.mongodb.net/recognize?retryWrites=true&w=majority";
     MongoClientURI uri = new MongoClientURI(atlasConnectionString);
     client = new MongoClient(uri);
     Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
