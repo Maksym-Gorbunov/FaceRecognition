@@ -95,7 +95,7 @@ public class LPR {
       i++;
     }
     if (logger) {
-      Imgcodecs.imwrite(screenshotPath + "original.jpg", originalImg);
+      Imgcodecs.imwrite(screenshotPath + "frame.jpg", originalImg);
       Imgcodecs.imwrite(screenshotPath + "filtered.jpg", filteredImg);
       Imgcodecs.imwrite(screenshotPath + "originalContours.jpg", originalContoursImg);
       Imgcodecs.imwrite(screenshotPath + "filteredContours.jpg", filteredContoursImg);

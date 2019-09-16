@@ -48,7 +48,7 @@ public class ImgObject {
 
   public void saveImages(String outPath) {
     if ((original != null) && (!original.empty())) {
-      Imgcodecs.imwrite(outPath + "\\original.jpg", original);
+      Imgcodecs.imwrite(outPath + "\\frame.jpg", original);
     }
     if ((filtered != null) && (!filtered.empty())) {
       Imgcodecs.imwrite(outPath + "\\filtered.jpg", filtered);
