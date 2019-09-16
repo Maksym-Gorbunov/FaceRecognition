@@ -58,6 +58,7 @@ public class Webcam extends JPanel implements Runnable {
     // blue filter
     minc = cvScalar(95, 150, 75, 0);
     maxc = cvScalar(145, 255, 255, 0);
+    setBackground(Color.orange);
   }
 
 

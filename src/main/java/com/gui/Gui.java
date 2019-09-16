@@ -30,6 +30,7 @@ public class Gui extends JFrame {
   private JPanel tab8;
   private JPanel tab9;
   private JPanel tab10;
+  private JPanel tab11;
 
   public Gui() {
     super("Application");
@@ -56,17 +57,18 @@ public class Gui extends JFrame {
     tab8 = new JPanel();
     tab9 = new JPanel();
     tab10 = new JPanel();
+    tab11 = new JPanel();
     //////////////////////////////////////////////////////////////////////
-    tab1.setBackground(Color.CYAN);
-    tab2.setBackground(Color.CYAN);
-    tab3.setBackground(Color.CYAN);
-    tab4.setBackground(Color.CYAN);
-    tab5.setBackground(Color.CYAN);
-    tab6.setBackground(Color.CYAN);
-    tab7.setBackground(Color.CYAN);
-    tab8.setBackground(Color.CYAN);
-    tab9.setBackground(Color.CYAN);
-    //////////////////////////////////////////////////////////////////////
+//    tab1.setBackground(Color.CYAN);
+//    tab2.setBackground(Color.CYAN);
+//    tab3.setBackground(Color.CYAN);
+//    tab4.setBackground(Color.CYAN);
+//    tab5.setBackground(Color.CYAN);
+//    tab6.setBackground(Color.CYAN);
+//    tab7.setBackground(Color.CYAN);
+//    tab8.setBackground(Color.CYAN);
+//    tab9.setBackground(Color.CYAN);
+//    //////////////////////////////////////////////////////////////////////
     tabs.addTab("Webbcam", tab1);
     tabs.addTab("MongoDB", tab2);
     tabs.addTab("Face Image", tab3);
@@ -77,6 +79,7 @@ public class Gui extends JFrame {
     tabs.addTab("LNR Image", tab7);
     tabs.addTab("LNR Video", tab9);
     tabs.addTab("Horse", tab10);
+    tabs.addTab("Humans", tab11);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
@@ -89,8 +92,9 @@ public class Gui extends JFrame {
     tab8 = new Page8(Gui.this);
     tab9 = new Page9(Gui.this);
     tab10 = new Page10(Gui.this);
+    tab11 = new com.pages.page11.Page11(Gui.this);
 
-    tabs.setSelectedIndex(9);
+    tabs.setSelectedIndex(10);
   }
 
   private void createMenuBar() {
@@ -151,10 +155,15 @@ public class Gui extends JFrame {
   }
 
   public JPanel getTab9() {
+
     return tab9;
   }
 
   public JPanel getTab10() {
     return tab10;
+  }
+
+  public JPanel getTab11() {
+    return tab11;
   }
 }

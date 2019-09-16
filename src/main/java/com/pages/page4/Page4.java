@@ -42,7 +42,9 @@ public class Page4 extends JPanel implements Pages {
   private Mat frame = new Mat();
   private MatOfByte mem = new MatOfByte();
   private CascadeClassifier faceDetector = new CascadeClassifier(Constants.CASCADE_CLASSIFIER);
+  private CascadeClassifier smileDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_smile.xml");
   private MatOfRect faceDetections = new MatOfRect();
+//  private MatOfRect smileDetections = new MatOfRect();
 
 
   // Webb camera face recognition, OpenCV
@@ -111,11 +113,35 @@ public class Page4 extends JPanel implements Pages {
             try {
               webSource.retrieve(frame);
               Graphics g = webcamPanel.getGraphics();
-              faceDetector.detectMultiScale(frame, faceDetections);
-              for (Rect rect : faceDetections.toArray()) {
-                Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                        new Scalar(0, 255, 0));
+
+              Mat frameGray = new Mat();
+              Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_RGB2GRAY);
+
+              faceDetector.detectMultiScale(frameGray, faceDetections);
+
+              for (Rect rectFace : faceDetections.toArray()) {
+                Imgproc.rectangle(frame, rectFace.tl(), rectFace.br(), new Scalar(255, 0, 0), 2);
+
+                Mat face = new Mat(frameGray, rectFace);
+
+
+                MatOfRect smileDetections = new MatOfRect();
+                smileDetector.detectMultiScale(frameGray, smileDetections);
+                Rect[] smiles = smileDetections.toArray();
+                Rect smile = smiles[0];
+                for (Rect tempSmile : smiles) {
+                  if (smileInFaceArea(rectFace, tempSmile)) {
+                    double smileCenterToFaceCenter = Math.abs((smile.tl().x+smile.width/2)-(rectFace.tl().x+rectFace.width/2));
+                    double tempSmileCenterToFaceCenter = Math.abs((tempSmile.tl().x+tempSmile.width/2)-(rectFace.tl().x+rectFace.width/2));
+                    if(smileCenterToFaceCenter > tempSmileCenterToFaceCenter){
+                      smile = tempSmile;
+                    }
+                  }
+                }
+                Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(0, 255, 0), 2);
               }
+
+
               Imgcodecs.imencode(".bmp", frame, mem);
               Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
               BufferedImage buff = (BufferedImage) im;
@@ -132,6 +158,22 @@ public class Page4 extends JPanel implements Pages {
           }
         }
       }
+    }
+
+
+    private boolean smileInFaceArea(Rect face, Rect smile) {
+      Point smileCenter = new Point(smile.tl().x + smile.width / 2, smile.tl().y + smile.height / 2);
+
+      if(face.contains(smile.tl()) && (face.contains(smile.br()))){
+        if ((smileCenter.x > face.tl().x) && (smileCenter.x < face.br().x)
+                && (smileCenter.y > face.tl().y+face.height*0.7) && (smileCenter.y < face.br().y)) {
+          return true;
+        }
+      }
+
+      //if smile center pointer on 30% from bottom face
+
+      return false;
     }
   }
 }

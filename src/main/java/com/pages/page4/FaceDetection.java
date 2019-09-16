@@ -39,7 +39,7 @@ public class FaceDetection extends javax.swing.JFrame {
     CascadeClassifier faceDetector = new CascadeClassifier(Constants.CASCADE_CLASSIFIER);
 //    CascadeClassifier faceDetector = new CascadeClassifier(FaceDetection.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
     MatOfRect faceDetections = new MatOfRect();
-///    
+///
 
     class DaemonThread implements Runnable {
 
@@ -55,10 +55,10 @@ public class FaceDetection extends javax.swing.JFrame {
                             Graphics g = jPanel1.getGraphics();
                             faceDetector.detectMultiScale(frame, faceDetections);
                             for (Rect rect : faceDetections.toArray()) {
-                               // System.out.println("ttt");
+                                System.out.println("ttt");
 
                                 Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                                        new Scalar(0, 255,0));
+                                        new Scalar(0, 0,255));
 
 
 //                                Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
