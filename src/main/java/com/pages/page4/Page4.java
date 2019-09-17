@@ -29,8 +29,13 @@ public class Page4 extends JPanel implements Pages {
   private JPanel mainPanel = new JPanel();
   private JPanel buttonsPanel = new JPanel();
   private JButton startButton = new JButton("Start");
-  private JButton pauseButton = new JButton("Pause");
+  public static boolean eyes = false;
+  public static boolean smile = false;
+  private JButton stopButton = new JButton("Pause");
+  private JButton hideButton = new JButton("Hide");
   public static boolean hide = false;
+  private JButton eyesButton = new JButton("Eyes");
+  private JButton smileButton = new JButton("Smile");
   private JPanel webcamPanel = new JPanel();
 
   private DaemonThread myThread = null;
@@ -40,9 +45,6 @@ public class Page4 extends JPanel implements Pages {
   private MatOfByte mem = new MatOfByte();
   private CascadeClassifier faceDetector = new CascadeClassifier(Constants.CASCADE_CLASSIFIER);
   private CascadeClassifier smileDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_smile.xml");
-  private JButton hideButton = new JButton("Hide");
-  private MatOfRect faceDetections = new MatOfRect();
-//  private MatOfRect smileDetections = new MatOfRect();
   private CascadeClassifier eyesDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_eye.xml");
 
   // Webb camera face recognition, OpenCV
@@ -63,14 +65,19 @@ public class Page4 extends JPanel implements Pages {
     mainPanel.add(webcamPanel);
 
     buttonsPanel.add(startButton);
-    buttonsPanel.add(pauseButton);
+    buttonsPanel.add(stopButton);
     buttonsPanel.add(hideButton);
+    buttonsPanel.add(eyesButton);
+    buttonsPanel.add(smileButton);
 
     mainPanel.setPreferredSize(new Dimension(800, 500));
     buttonsPanel.setPreferredSize(new Dimension(800, 100));
     tab4.add(mainPanel);
     tab4.add(buttonsPanel);
-    pauseButton.setEnabled(false);
+    stopButton.setEnabled(false);
+    hideButton.setEnabled(false);
+    eyesButton.setEnabled(false);
+    smileButton.setEnabled(false);
   }
 
   private void addListeners() {
@@ -84,17 +91,20 @@ public class Page4 extends JPanel implements Pages {
         myThread.runnable = true;
         thread.start();
         startButton.setEnabled(false);
-        pauseButton.setEnabled(true);
+        stopButton.setEnabled(true);
         gui.getTabs().setEnabled(false);
+        hideButton.setEnabled(true);
+        eyesButton.setEnabled(true);
+        smileButton.setEnabled(true);
       }
     });
 
-    pauseButton.addActionListener(new ActionListener() {
+    stopButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         myThread.runnable = false;            // stop thread
         webSource.release();  // stop caturing fron cam
-        pauseButton.setEnabled(false);
+        stopButton.setEnabled(false);
         startButton.setEnabled(true);
         gui.getTabs().setEnabled(true);
       }
@@ -104,12 +114,38 @@ public class Page4 extends JPanel implements Pages {
       @Override
       public void actionPerformed(ActionEvent e) {
         hide = !hide;
+        eyes = false;
+        smile = false;
+        if(hide){
+          eyesButton.setEnabled(false);
+          smileButton.setEnabled(false);
+        } else {
+          eyesButton.setEnabled(true);
+          smileButton.setEnabled(true);
+        }
+      }
+    });
+
+    eyesButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        eyes = !eyes;
+      }
+    });
+
+    smileButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        smile = !smile;
       }
     });
   }
 
   class DaemonThread implements Runnable {
     protected volatile boolean runnable = false;
+    private MatOfRect faceDetections = new MatOfRect();
+    private MatOfRect eyeDetections = new MatOfRect();
+    private MatOfRect smileDetections = new MatOfRect();
 
     @Override
     public void run() {
@@ -122,11 +158,8 @@ public class Page4 extends JPanel implements Pages {
 
               Mat frameGray = new Mat();
               Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_RGB2GRAY);
-
               faceDetector.detectMultiScale(frameGray, faceDetections);
-              MatOfRect eyeDetections = new MatOfRect();
               for (Rect faceRect : faceDetections.toArray()) {
-
                 //hide face
                 if (hide) {
                   Mat f = Imgcodecs.imread(Constants.imgPath + "synteda.jpg");
@@ -136,76 +169,67 @@ public class Page4 extends JPanel implements Pages {
                           .rowRange((int) faceRect.tl().y, (int) (faceRect.tl().y + faceRect.height))
                           .colRange((int) faceRect.tl().x, (int) faceRect.tl().x + faceRect.width));
                 } else {
-
-                }
-
-                Imgproc.rectangle(frame, faceRect.tl(), faceRect.br(), new Scalar(255, 0, 0), 2);
-                Mat face = new Mat(frameGray, faceRect);
-
-                //Eye detection
-                eyesDetector.detectMultiScale(face, eyeDetections);
-                Rect leftEye = null;
-                Rect rightEye = null;
-                for (Rect eyeRect : eyeDetections.toArray()) {
-                  Point startPoint = new Point(faceRect.tl().x + eyeRect.tl().x, faceRect.tl().y + eyeRect.tl().y);
-                  Point endPoint = new Point(startPoint.x + eyeRect.width, startPoint.y + eyeRect.height);
-
-                  if (endPoint.y < faceRect.tl().y + (0.55 * faceRect.height)) {
-                    if (leftEye == null) {
-                      leftEye = eyeRect;
+                  //show face
+                  Imgproc.rectangle(frame, faceRect.tl(), faceRect.br(), new Scalar(255, 0, 0), 2);
+                  //show eyes
+                  if (eyes) {
+                    Mat face = new Mat(frameGray, faceRect);
+                    eyesDetector.detectMultiScale(face, eyeDetections);
+                    Rect leftEye = null;
+                    Rect rightEye = null;
+                    for (Rect eyeRect : eyeDetections.toArray()) {
+                      Point startPoint = new Point(faceRect.tl().x + eyeRect.tl().x, faceRect.tl().y + eyeRect.tl().y);
+                      Point endPoint = new Point(startPoint.x + eyeRect.width, startPoint.y + eyeRect.height);
+                      if (endPoint.y < faceRect.tl().y + (0.55 * faceRect.height)) {
+                        if (leftEye == null) {
+                          leftEye = eyeRect;
+                        }
+                        if ((!eyeRect.contains(leftEye.tl())) && (!eyeRect.contains(leftEye.br()))) {
+                          rightEye = eyeRect;
+                        }
+                      }
                     }
-                    if ((!eyeRect.contains(leftEye.tl())) && (!eyeRect.contains(leftEye.br()))) {
-                      rightEye = eyeRect;
-                    }
-                  }
-                }
-                if ((leftEye != null) && rightEye != null) {
+                    if ((leftEye != null) && rightEye != null) {
 
-                  if (leftEye.br().x > rightEye.tl().x) {
-                    Rect temp = leftEye;
-                    leftEye = rightEye;
-                    rightEye = temp;
-                  }
-                  Imgproc.rectangle(frame,
-                          new Point(leftEye.tl().x+faceRect.tl().x,leftEye.tl().y+faceRect.tl().y),
-                          new Point(leftEye.tl().x+faceRect.tl().x+leftEye.width,leftEye.tl().y+faceRect.tl().y+leftEye.y),
-                          new Scalar(255, 0, 0), 1);
-                  Imgproc.rectangle(frame,
-                          new Point(rightEye.tl().x+faceRect.tl().x,rightEye.tl().y+faceRect.tl().y),
-                          new Point(rightEye.tl().x+faceRect.tl().x+rightEye.width,rightEye.tl().y+faceRect.tl().y+rightEye.y),
-                          new Scalar(0, 0, 255), 1);
-                }
-
-
-                // SMILE DETECTION
-                MatOfRect smileDetections = new MatOfRect();
-                smileDetector.detectMultiScale(frame, smileDetections);
-//                smileDetector.detectMultiScale(frameGray, smileDetections);
-                Rect[] smiles = smileDetections.toArray();
-                Rect smile = null;
-                Rect faceBest = null;
-                for (Rect tempSmile : smiles) {
-                  if (faceRect.contains(tempSmile.tl()) && faceRect.contains(tempSmile.br())) {
-                    if ((tempSmile.tl().y + tempSmile.height / 2 > 0.7 * frame.height())
-                            && (tempSmile.tl().y + tempSmile.height / 2 < frame.height())) {
-
-                      faceBest = faceRect;
-                      smile = tempSmile;
+                      if (leftEye.br().x > rightEye.tl().x) {
+                        Rect temp = leftEye;
+                        leftEye = rightEye;
+                        rightEye = temp;
+                      }
+                      Imgproc.rectangle(frame,
+                              new Point(leftEye.tl().x + faceRect.tl().x, leftEye.tl().y + faceRect.tl().y),
+                              new Point(leftEye.tl().x + faceRect.tl().x + leftEye.width, leftEye.tl().y + faceRect.tl().y + leftEye.y),
+                              new Scalar(255, 0, 0), 1);
+                      Imgproc.rectangle(frame,
+                              new Point(rightEye.tl().x + faceRect.tl().x, rightEye.tl().y + faceRect.tl().y),
+                              new Point(rightEye.tl().x + faceRect.tl().x + rightEye.width, rightEye.tl().y + faceRect.tl().y + rightEye.y),
+                              new Scalar(0, 0, 255), 1);
                     }
                   }
-                }
-                if (smile != null) {
-                  if (smile.width >= 0.3 * faceBest.width) {
-                    Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(0, 255, 0), 2);
+                  //smile
+                  if (smile) {
+                    smileDetector.detectMultiScale(frame, smileDetections);
+                    Rect[] smiles = smileDetections.toArray();
+                    Rect smile = null;
+                    Rect faceBest = null;
+                    for (Rect tempSmile : smiles) {
+                      if (faceRect.contains(tempSmile.tl()) && faceRect.contains(tempSmile.br())) {
+                        if ((tempSmile.tl().y + tempSmile.height / 2 > 0.7 * frame.height())
+                                && (tempSmile.tl().y + tempSmile.height / 2 < frame.height())) {
+
+                          faceBest = faceRect;
+                          smile = tempSmile;
+                        }
+                      }
+                    }
+                    if (smile != null) {
+                      if (smile.width >= 0.3 * faceBest.width) {
+                        Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(0, 255, 0), 2);
+                      }
+                    }
                   }
-//                  if(smile.width < 0.5*faceBest.width ){
-//                    Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(255, 0, 0), 2);
-//                  }
-
                 }
-
               }
-
 
               Imgcodecs.imencode(".bmp", frame, mem);
               Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
