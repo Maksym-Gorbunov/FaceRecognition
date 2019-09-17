@@ -28,15 +28,15 @@ public class Page4 extends JPanel implements Pages {
   private JPanel tab4;
   private JPanel mainPanel = new JPanel();
   private JPanel buttonsPanel = new JPanel();
-  private JButton startButton = new JButton("Start");
-  public static boolean eyes = false;
   public static boolean smile = false;
-  private JButton stopButton = new JButton("Pause");
-  private JButton hideButton = new JButton("Hide");
   public static boolean hide = false;
+  private JButton hideButton = new JButton("Hide");
   private JButton eyesButton = new JButton("Eyes");
   private JButton smileButton = new JButton("Smile");
   private JPanel webcamPanel = new JPanel();
+  public static boolean eyes = false;
+  private JButton startButton = new JButton("Play");
+  private JButton stopButton = new JButton("Stop");
 
   private DaemonThread myThread = null;
   private int count = 0;
@@ -46,6 +46,7 @@ public class Page4 extends JPanel implements Pages {
   private CascadeClassifier faceDetector = new CascadeClassifier(Constants.CASCADE_CLASSIFIER);
   private CascadeClassifier smileDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_smile.xml");
   private CascadeClassifier eyesDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_eye.xml");
+  private Mat hideImage = Imgcodecs.imread(Constants.imgPath + "synteda.jpg");
 
   // Webb camera face recognition, OpenCV
   public Page4(final Gui gui) {
@@ -162,9 +163,8 @@ public class Page4 extends JPanel implements Pages {
               for (Rect faceRect : faceDetections.toArray()) {
                 //hide face
                 if (hide) {
-                  Mat f = Imgcodecs.imread(Constants.imgPath + "synteda.jpg");
                   Mat resizedF = new Mat();
-                  Imgproc.resize(f, resizedF, new Size(faceRect.width, faceRect.height));
+                  Imgproc.resize(hideImage, resizedF, new Size(faceRect.width, faceRect.height));
                   resizedF.copyTo(frame
                           .rowRange((int) faceRect.tl().y, (int) (faceRect.tl().y + faceRect.height))
                           .colRange((int) faceRect.tl().x, (int) faceRect.tl().x + faceRect.width));

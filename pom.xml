@@ -88,28 +88,30 @@
             <version>4.5.9</version>
         </dependency>
 
+        <!-- Tensor Flow -->
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>tensorflow</artifactId>
+            <version>1.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>libtensorflow</artifactId>
+            <version>1.14.0</version>
+        </dependency>
 
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>libtensorflow</artifactId>
+            <version>1.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>libtensorflow_jni_gpu</artifactId>
+            <version>1.14.0</version>
+        </dependency>
 
-
-
-
-        <!--<dependency>-->
-            <!--<groupId>org.apache.httpcomponents</groupId>-->
-            <!--<artifactId>httpcore</artifactId>-->
-            <!--<version>4.4.6</version>-->
-        <!--</dependency>-->
-
-
-        <!---->
-        <!--<dependency>-->
-            <!--<groupId>com.googlecode.javacpp</groupId>-->
-            <!--<artifactId>javacpp</artifactId>-->
-            <!--<version>0.1</version>-->
-        <!--</dependency>-->
-
-
-
-</dependencies>
+    </dependencies>
 
 
 </project>
