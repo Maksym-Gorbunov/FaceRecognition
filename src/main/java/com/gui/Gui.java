@@ -94,7 +94,7 @@ public class Gui extends JFrame {
     tab10 = new Page10(Gui.this);
     tab11 = new com.pages.page11.Page11(Gui.this);
 
-    tabs.setSelectedIndex(10);
+    tabs.setSelectedIndex(3);
   }
 
   private void createMenuBar() {

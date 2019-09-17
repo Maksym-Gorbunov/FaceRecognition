@@ -346,6 +346,7 @@ public class Recognizer {
     return threshold;
   }
 
+
   // Clear folder from old files
   public void clearFolder(String path) {
     try {
@@ -355,6 +356,7 @@ public class Recognizer {
     }
     new File(path).mkdirs();
   }
+
 
   // Convert Mat to BufferedImage
   private BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
@@ -413,6 +415,7 @@ public class Recognizer {
     original.copyTo(copy);
     return copy;
   }
+
 
   // Find contours on image
   private List<MatOfPoint> findContours(Mat img) {

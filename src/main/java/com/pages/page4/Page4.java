@@ -15,12 +15,8 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.core.MatOfRect;
+import org.opencv.core.*;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.imgproc.Imgproc;
@@ -34,6 +30,7 @@ public class Page4 extends JPanel implements Pages {
   private JPanel buttonsPanel = new JPanel();
   private JButton startButton = new JButton("Start");
   private JButton pauseButton = new JButton("Pause");
+  public static boolean hide = false;
   private JPanel webcamPanel = new JPanel();
 
   private DaemonThread myThread = null;
@@ -43,9 +40,10 @@ public class Page4 extends JPanel implements Pages {
   private MatOfByte mem = new MatOfByte();
   private CascadeClassifier faceDetector = new CascadeClassifier(Constants.CASCADE_CLASSIFIER);
   private CascadeClassifier smileDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_smile.xml");
+  private JButton hideButton = new JButton("Hide");
   private MatOfRect faceDetections = new MatOfRect();
 //  private MatOfRect smileDetections = new MatOfRect();
-
+  private CascadeClassifier eyesDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_eye.xml");
 
   // Webb camera face recognition, OpenCV
   public Page4(final Gui gui) {
@@ -66,6 +64,7 @@ public class Page4 extends JPanel implements Pages {
 
     buttonsPanel.add(startButton);
     buttonsPanel.add(pauseButton);
+    buttonsPanel.add(hideButton);
 
     mainPanel.setPreferredSize(new Dimension(800, 500));
     buttonsPanel.setPreferredSize(new Dimension(800, 100));
@@ -100,6 +99,13 @@ public class Page4 extends JPanel implements Pages {
         gui.getTabs().setEnabled(true);
       }
     });
+
+    hideButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        hide = !hide;
+      }
+    });
   }
 
   class DaemonThread implements Runnable {
@@ -118,27 +124,86 @@ public class Page4 extends JPanel implements Pages {
               Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_RGB2GRAY);
 
               faceDetector.detectMultiScale(frameGray, faceDetections);
+              MatOfRect eyeDetections = new MatOfRect();
+              for (Rect faceRect : faceDetections.toArray()) {
 
-              for (Rect rectFace : faceDetections.toArray()) {
-                Imgproc.rectangle(frame, rectFace.tl(), rectFace.br(), new Scalar(255, 0, 0), 2);
+                //hide face
+                if (hide) {
+                  Mat f = Imgcodecs.imread(Constants.imgPath + "synteda.jpg");
+                  Mat resizedF = new Mat();
+                  Imgproc.resize(f, resizedF, new Size(faceRect.width, faceRect.height));
+                  resizedF.copyTo(frame
+                          .rowRange((int) faceRect.tl().y, (int) (faceRect.tl().y + faceRect.height))
+                          .colRange((int) faceRect.tl().x, (int) faceRect.tl().x + faceRect.width));
+                } else {
 
-                Mat face = new Mat(frameGray, rectFace);
+                }
+
+                Imgproc.rectangle(frame, faceRect.tl(), faceRect.br(), new Scalar(255, 0, 0), 2);
+                Mat face = new Mat(frameGray, faceRect);
+
+                //Eye detection
+                eyesDetector.detectMultiScale(face, eyeDetections);
+                Rect leftEye = null;
+                Rect rightEye = null;
+                for (Rect eyeRect : eyeDetections.toArray()) {
+                  Point startPoint = new Point(faceRect.tl().x + eyeRect.tl().x, faceRect.tl().y + eyeRect.tl().y);
+                  Point endPoint = new Point(startPoint.x + eyeRect.width, startPoint.y + eyeRect.height);
+
+                  if (endPoint.y < faceRect.tl().y + (0.55 * faceRect.height)) {
+                    if (leftEye == null) {
+                      leftEye = eyeRect;
+                    }
+                    if ((!eyeRect.contains(leftEye.tl())) && (!eyeRect.contains(leftEye.br()))) {
+                      rightEye = eyeRect;
+                    }
+                  }
+                }
+                if ((leftEye != null) && rightEye != null) {
+
+                  if (leftEye.br().x > rightEye.tl().x) {
+                    Rect temp = leftEye;
+                    leftEye = rightEye;
+                    rightEye = temp;
+                  }
+                  Imgproc.rectangle(frame,
+                          new Point(leftEye.tl().x+faceRect.tl().x,leftEye.tl().y+faceRect.tl().y),
+                          new Point(leftEye.tl().x+faceRect.tl().x+leftEye.width,leftEye.tl().y+faceRect.tl().y+leftEye.y),
+                          new Scalar(255, 0, 0), 1);
+                  Imgproc.rectangle(frame,
+                          new Point(rightEye.tl().x+faceRect.tl().x,rightEye.tl().y+faceRect.tl().y),
+                          new Point(rightEye.tl().x+faceRect.tl().x+rightEye.width,rightEye.tl().y+faceRect.tl().y+rightEye.y),
+                          new Scalar(0, 0, 255), 1);
+                }
 
 
+                // SMILE DETECTION
                 MatOfRect smileDetections = new MatOfRect();
-                smileDetector.detectMultiScale(frameGray, smileDetections);
+                smileDetector.detectMultiScale(frame, smileDetections);
+//                smileDetector.detectMultiScale(frameGray, smileDetections);
                 Rect[] smiles = smileDetections.toArray();
-                Rect smile = smiles[0];
+                Rect smile = null;
+                Rect faceBest = null;
                 for (Rect tempSmile : smiles) {
-                  if (smileInFaceArea(rectFace, tempSmile)) {
-                    double smileCenterToFaceCenter = Math.abs((smile.tl().x+smile.width/2)-(rectFace.tl().x+rectFace.width/2));
-                    double tempSmileCenterToFaceCenter = Math.abs((tempSmile.tl().x+tempSmile.width/2)-(rectFace.tl().x+rectFace.width/2));
-                    if(smileCenterToFaceCenter > tempSmileCenterToFaceCenter){
+                  if (faceRect.contains(tempSmile.tl()) && faceRect.contains(tempSmile.br())) {
+                    if ((tempSmile.tl().y + tempSmile.height / 2 > 0.7 * frame.height())
+                            && (tempSmile.tl().y + tempSmile.height / 2 < frame.height())) {
+
+                      faceBest = faceRect;
                       smile = tempSmile;
                     }
                   }
                 }
-                Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(0, 255, 0), 2);
+                if (smile != null) {
+                  if (smile.width >= 0.3 * faceBest.width) {
+                    Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(0, 255, 0), 2);
+                  }
+//                  if(smile.width < 0.5*faceBest.width ){
+//                    Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(255, 0, 0), 2);
+//                  }
+
+                }
+
               }
 
 
@@ -164,9 +229,9 @@ public class Page4 extends JPanel implements Pages {
     private boolean smileInFaceArea(Rect face, Rect smile) {
       Point smileCenter = new Point(smile.tl().x + smile.width / 2, smile.tl().y + smile.height / 2);
 
-      if(face.contains(smile.tl()) && (face.contains(smile.br()))){
+      if (face.contains(smile.tl()) && (face.contains(smile.br()))) {
         if ((smileCenter.x > face.tl().x) && (smileCenter.x < face.br().x)
-                && (smileCenter.y > face.tl().y+face.height*0.7) && (smileCenter.y < face.br().y)) {
+                && (smileCenter.y > face.tl().y + face.height * 0.7) && (smileCenter.y < face.br().y)) {
           return true;
         }
       }
