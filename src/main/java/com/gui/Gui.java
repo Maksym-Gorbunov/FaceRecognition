@@ -1,6 +1,7 @@
 package com.gui;
 
 import com.constants.Constants;
+import com.pages.Page11.Page11;
 import com.pages.page1.Page1;
 import com.pages.page10.Page10;
 import com.pages.page2.Page2;
@@ -79,7 +80,7 @@ public class Gui extends JFrame {
     tabs.addTab("LNR Image", tab7);
     tabs.addTab("LNR Video", tab9);
     tabs.addTab("Horse", tab10);
-    tabs.addTab("Humans", tab11);
+    tabs.addTab("Face MultiThreads", tab11);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
@@ -92,7 +93,7 @@ public class Gui extends JFrame {
     tab8 = new Page8(Gui.this);
     tab9 = new Page9(Gui.this);
     tab10 = new Page10(Gui.this);
-    tab11 = new com.pages.page11.Page11(Gui.this);
+    tab11 = new Page11(Gui.this);
 
     tabs.setSelectedIndex(3);
   }

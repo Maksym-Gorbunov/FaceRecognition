@@ -1,38 +1,65 @@
 package Temp;
 
+
+// Synchronization need when few threads work with the same singe object
+
+
+
+//// myThread /////////////////////////////////////////////////////////
+//class MineThread extends Thread{
+//  Printer printerReference;
+//  public MineThread(Printer p){
+//    printerReference = p;
+//  }
+//  @Override
+//  public void run(){
+//    printerReference.print(1000, "Mine.pdf");
+//  }
+//}
+
+
 // myThread /////////////////////////////////////////////////////////
-class MineThread extends Thread{
+class MineThread extends Thread {
   Printer printerReference;
-  public MineThread(Printer p){
+
+  public MineThread(Printer p) {
     printerReference = p;
   }
+
   @Override
-  public void run(){
-    printerReference.print(1000, "Mine.pdf");
+  public void run() {
+    synchronized (printerReference) {   // lock field, athar threads should wait while this method is done
+      printerReference.print(1000, "Mine.pdf");
+    }
   }
 }
 
 // yourThread ///////////////////////////////////////////////////////
-class YourThread extends Thread{
+class YourThread extends Thread {
   Printer printerReference;
-  public YourThread(Printer p){
+
+  public YourThread(Printer p) {
     printerReference = p;
   }
+
   @Override
-  public void run(){
+  public void run() {
 //    try {
 //      Thread.sleep(500);
 //    } catch (InterruptedException e) {
 //      e.printStackTrace();
 //    }
-    printerReference.print(1000, "__Your.pdf");
+    synchronized (printerReference) {
+      printerReference.print(1000, "__Your.pdf");
+    }
   }
 }
 
 class Printer {
-  synchronized void print(int totalCopies, String docName){
-    for(int i=1;i<=totalCopies;i++){
-      System.out.println("Printing #"+i+docName);
+  //  synchronized void print(int totalCopies, String docName){
+  void print(int totalCopies, String docName) {
+    for (int i = 1; i <= totalCopies; i++) {
+      System.out.println("Printing #" + i + docName);
     }
   }
 }

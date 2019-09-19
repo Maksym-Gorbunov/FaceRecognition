@@ -1,8 +1,6 @@
 package com.pages.Page11;
 
 import com.constants.Constants;
-import com.pages.page11.Page11;
-//import com.pages.page11.Recognizer;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -29,8 +27,8 @@ public class WebcamPanel extends JPanel {
   private int width;
   private int height;
   private BufferedImage bufferedImage;
-  private DaemonThread myThread = null;
-  private int count = 0;
+  private DaemonThread cameraThread = null;
+  private int frameCounter = 0;
   private VideoCapture webSource = null;
   private Mat frame = new Mat();
   private MatOfByte mem = new MatOfByte();
@@ -67,29 +65,29 @@ public class WebcamPanel extends JPanel {
     return bi;
   }
 
-  public void setBg() {
-    System.out.println("***");
-    frame.copyTo(bg);
-  }
+//  public void setBg() {
+//    System.out.println("***");
+//    frame.copyTo(bg);
+//  }
   ///////////////////////////// class DaemonThread end //////////////////////////////////////
 
   // Start showing video from webbcam
   public void start() {
     System.out.println("Start...");
     webSource = new VideoCapture(0);
-    myThread = new DaemonThread();
-    Thread t = new Thread(myThread);
+    cameraThread = new DaemonThread();
+    Thread t = new Thread(cameraThread);
     t.setDaemon(true);
-    myThread.runnable = true;
+    cameraThread.runnable = true;
     t.start();
   }
 
   // Pause video from webcam
   public void stop() {
-    System.out.println("Pause...");
+    System.out.println("Stop...");
     clear();
     setBackground(Color.ORANGE);
-    myThread.runnable = false;
+    cameraThread.runnable = false;
     webSource.release();
 
   }
@@ -176,11 +174,10 @@ public class WebcamPanel extends JPanel {
             try {
               webSource.retrieve(frame);
 
-//              if(count == 200){
-              if (count % 5 == 0) {
-                Recognizer recognizer = new Recognizer(frame, count, bg);
-                System.out.println(count);
-                recognizer.recognize();
+//              if(frameCounter == 200){
+              if (frameCounter % 5 == 0) {
+                Recognizer recognizer = new Recognizer(frame, frameCounter);
+                recognizer.start();
               }
               if ((Page11.rect != null) && (Page11.rect.area() != 0)) {
                 if (Page11.rect.height < 0.5 * frame.height()) {
@@ -198,7 +195,7 @@ public class WebcamPanel extends JPanel {
                   System.out.println("Going to wait()");
                   this.wait();
                 }
-              count++;
+              frameCounter++;
             } catch (Exception e) {
               System.out.println("Error");
             }

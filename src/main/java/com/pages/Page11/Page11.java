@@ -1,4 +1,4 @@
-package com.pages.page11;
+package com.pages.Page11;
 
 import com.constants.Constants;
 import com.gui.Gui;
@@ -18,7 +18,7 @@ public class Page11 extends JPanel implements Pages {
   private WebcamPanel webcamPanel = new WebcamPanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT);
   private JButton startBtn = new JButton("Start");
   private JButton stopBtn = new JButton("Stop");
-  private JButton bgBtn = new JButton("Set background");
+  private JButton bgBtn = new JButton("------------");
 
   // Constructor
   public Page11(Gui gui) {
@@ -58,8 +58,7 @@ public class Page11 extends JPanel implements Pages {
     bgBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        webcamPanel.setBg();
-        bgBtn.setEnabled(false);
+
       }
     });
 
