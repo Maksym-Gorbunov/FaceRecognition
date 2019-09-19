@@ -1,24 +1,15 @@
 package com.pages.Page11;
 
 import com.constants.Constants;
-//import com.pages.page11.Page11;
-import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.opencv.imgproc.Imgproc.RETR_TREE;
-
 public class Recognizer extends Thread {
-  private Mat frame = new Mat();
-  private Mat frameGray = new Mat();
-  private String path = Constants.imgPath + "face\\";
+  protected volatile boolean runnable = false;
+  private Mat frame;
   private int frameCounter;
+  private String path = Constants.imgPath + "faces\\";
 
 
   // Constructor
@@ -30,10 +21,27 @@ public class Recognizer extends Thread {
 
   @Override
   public void run() {
-    for (int i = 0; i < 1000; i++) {
-      System.out.println(frameCounter+"__"+i);
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    Mat frameGray = new Mat();
+    Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_RGB2GRAY);
+
+    MatOfRect faceDetections = new MatOfRect();
+
+    Data.faceDetector.detectMultiScale(frameGray, faceDetections);
+    if ((faceDetections != null) && (!faceDetections.empty())) {
+      Data.faceRectangles = faceDetections.toArray();
+      for (Rect faceRect : Data.faceRectangles) {
+        Imgproc.rectangle(frame, faceRect.tl(), faceRect.br(), new Scalar(0, 0, 255), 2);
+        Imgcodecs.imwrite(path + "frame" + frameCounter + ".jpg", frame);
+      }
     }
+    // faces not found
+    else{
+      Data.faceRectangles = null;
+    }
+    runnable = false;
   }
+
 
 
 }

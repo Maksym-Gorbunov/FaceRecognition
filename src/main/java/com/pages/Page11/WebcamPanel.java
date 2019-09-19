@@ -1,10 +1,7 @@
 package com.pages.Page11;
 
 import com.constants.Constants;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.core.Scalar;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
@@ -172,29 +169,36 @@ public class WebcamPanel extends JPanel {
         while (runnable) {
           if (webSource.grab()) {
             try {
+              Mat frameCopy = new Mat();
+              frame.copyTo(frameCopy);
+
+              synchronized (frame) {
+
               webSource.retrieve(frame);
 
-//              if(frameCounter == 200){
-              if (frameCounter % 5 == 0) {
-                Recognizer recognizer = new Recognizer(frame, frameCounter);
-                recognizer.start();
-              }
-              if ((Page11.rect != null) && (Page11.rect.area() != 0)) {
-                if (Page11.rect.height < 0.5 * frame.height()) {
-                  Imgproc.rectangle(frame, Page11.rect.tl(), Page11.rect.br(), new Scalar(0, 0, 255, 255), 2);
-                } else {
-                  Imgproc.rectangle(frame, Page11.rect.tl(), Page11.rect.br(), new Scalar(0, 255, 0, 255), 2);
+                if ((frameCounter % 3 == 0) && (Data.faceRectangles != null) && (Data.faceRectangles.length > 0)) {
+                  for (Rect faceRect : Data.faceRectangles) {
+                    Imgproc.rectangle(frame, faceRect.tl(), faceRect.br(), new Scalar(0, 255, 0), 2);
+                  }
+                }
+
+                Imgcodecs.imencode(".bmp", frame, mem);
+                BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
+                graphics = WebcamPanel.this.getGraphics();
+                if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
+                  if (runnable == false) {
+                    System.out.println("Going to wait()");
+                    this.wait();
+                  }
                 }
               }
 
-              Imgcodecs.imencode(".bmp", frame, mem);
-              BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
-              graphics = WebcamPanel.this.getGraphics();
-              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
-                if (runnable == false) {
-                  System.out.println("Going to wait()");
-                  this.wait();
-                }
+              if (frameCounter % 3 == 0) {
+                Recognizer recognizer = new Recognizer(frameCopy, frameCounter);
+                recognizer.setDaemon(true);
+                recognizer.start();
+              }
+
               frameCounter++;
             } catch (Exception e) {
               System.out.println("Error");
