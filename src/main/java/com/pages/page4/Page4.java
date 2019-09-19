@@ -47,6 +47,7 @@ public class Page4 extends JPanel implements Pages {
   private CascadeClassifier smileDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_smile.xml");
   private CascadeClassifier eyesDetector = new CascadeClassifier(Constants.projectPath + "\\lib\\haarcascade_eye.xml");
   private Mat hideImage = Imgcodecs.imread(Constants.imgPath + "synteda.jpg");
+  private int i=1;
 
   // Webb camera face recognition, OpenCV
   public Page4(final Gui gui) {
@@ -160,6 +161,7 @@ public class Page4 extends JPanel implements Pages {
               Mat frameGray = new Mat();
               Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_RGB2GRAY);
               faceDetector.detectMultiScale(frameGray, faceDetections);
+
               for (Rect faceRect : faceDetections.toArray()) {
                 //hide face
                 if (hide) {
@@ -225,10 +227,13 @@ public class Page4 extends JPanel implements Pages {
                     if (smile != null) {
                       if (smile.width >= 0.3 * faceBest.width) {
                         Imgproc.rectangle(frame, smile.tl(), smile.br(), new Scalar(0, 255, 0), 2);
+                        Mat smileImg = new Mat(frameGray, smile);
+                        Imgcodecs.imwrite(Constants.imgPath+"face\\face"+i+".jpg", smileImg);
                       }
                     }
                   }
                 }
+                i++;
               }
 
               Imgcodecs.imencode(".bmp", frame, mem);
