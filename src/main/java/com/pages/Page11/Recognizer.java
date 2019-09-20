@@ -35,7 +35,7 @@ public class Recognizer extends Thread {
         Imgcodecs.imwrite(path + "frame" + frameCounter + ".jpg", frame);
       }
     }
-    // faces not found
+    // no face found
     else{
       Data.faceRectangles = null;
     }
