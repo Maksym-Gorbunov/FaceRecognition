@@ -129,9 +129,9 @@ public class Page5 extends JPanel implements Pages {
 
 
   ////////////////////////// RECOGNITION //////////////////////////
-  // Source path content images
+  // Source screenshotPath content images
   static String IMG_PATH = Constants.projectPath+"\\data\\img\\";
-  static String TESS_DATA = Constants.projectPath+"\\lib\\tesseract-OCR\\";    // path to Tesseract-OCR eng.trainedata
+  static String TESS_DATA = Constants.projectPath+"\\lib\\tesseract-OCR\\";    // screenshotPath to Tesseract-OCR eng.trainedata
 
   // Create tess obj
   static Tesseract tesseract = new Tesseract();

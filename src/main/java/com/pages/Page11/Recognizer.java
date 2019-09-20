@@ -137,24 +137,24 @@ public class Recognizer extends Thread {
 //  public void recognize() {
 //    if ((bg != null) && (!bg.empty())) {
 //      System.out.println("bg");
-//      Imgcodecs.imwrite(path + "bg.jpg", bg);
+//      Imgcodecs.imwrite(screenshotPath + "bg.jpg", bg);
 //      Core.subtract(bg, frame, difference);
 //      Mat differenceGray = new Mat();
 //      Imgproc.cvtColor(difference, differenceGray, Imgproc.COLOR_BGR2GRAY);
-//      Imgcodecs.imwrite(path + "difference.png", difference);
-//      Imgcodecs.imwrite(path + "differenceGray.jpg", differenceGray);
+//      Imgcodecs.imwrite(screenshotPath + "difference.png", difference);
+//      Imgcodecs.imwrite(screenshotPath + "differenceGray.jpg", differenceGray);
 //
 //      Mat filtered = filterGrayImage(differenceGray, 5, 5);
-//      Imgcodecs.imwrite(path + "filtered.jpg", filtered);
+//      Imgcodecs.imwrite(screenshotPath + "filtered.jpg", filtered);
 //
 //      Mat inverted = new Mat();
 //      Core.bitwise_not(filtered, inverted);
-//      Imgcodecs.imwrite(path + "invertedDifferenceGray.jpg", inverted);
+//      Imgcodecs.imwrite(screenshotPath + "invertedDifferenceGray.jpg", inverted);
 //
 //      Mat differenceGrayThresh = new Mat();
 ////      Imgproc.threshold(differenceGray, differenceGrayThresh, 20, 255, Imgproc.THRESH_BINARY_INV);
 //      differenceGrayThresh = filterImage(difference, 9, 5);
-//      Imgcodecs.imwrite(path + "differenceGrayThresh.jpg", differenceGrayThresh);
+//      Imgcodecs.imwrite(screenshotPath + "differenceGrayThresh.jpg", differenceGrayThresh);
 //
 //      //draw white border before
 //      Imgproc.rectangle(differenceGrayThresh, new Point(2, 2), new Point(frame.width() - 2, frame.height() - 2), new Scalar(255, 255, 255, 0), 5);
@@ -184,8 +184,8 @@ public class Recognizer extends Thread {
 ////          frame.copyTo(contoursFrame);
 ////          Imgproc.rectangle(contoursFrame, maxRect.tl(), maxRect.br(), new Scalar(0, 255, 0, 255), 2);
 ////          Imgproc.rectangle(differenceGrayThresh, maxRect.tl(), maxRect.br(), new Scalar(0, 255, 0, 255), 2);
-////          Imgcodecs.imwrite(path + "contoursFrame.jpg", contoursFrame);
-////          Imgcodecs.imwrite(path + "contoursDifferenceGrayThreshContours.jpg", differenceGrayThresh);
+////          Imgcodecs.imwrite(screenshotPath + "contoursFrame.jpg", contoursFrame);
+////          Imgcodecs.imwrite(screenshotPath + "contoursDifferenceGrayThreshContours.jpg", differenceGrayThresh);
 ////
 ////          Page11.rect = maxRect;
 ////        }
@@ -194,22 +194,22 @@ public class Recognizer extends Thread {
 //        Page11.rect = null;
 //      }
 //    }
-//    Imgcodecs.imwrite(path + "frame.jpg", frame);
+//    Imgcodecs.imwrite(screenshotPath + "frame.jpg", frame);
 //  }
 //
 //  // Clear folder from old files
-//  public void clearFolder(String path) {
+//  public void clearFolder(String screenshotPath) {
 //    try {
-//      FileUtils.deleteDirectory(new File(path));
+//      FileUtils.deleteDirectory(new File(screenshotPath));
 //    } catch (IOException e) {
 //      e.printStackTrace();
 //    }
-//    new File(path).mkdirs();
+//    new File(screenshotPath).mkdirs();
 //  }
 //
 //
 //  // Save image
 //  private void saveImage(String filename, Mat img) {
-//    Imgcodecs.imwrite(path + filename + ".jpg", img);
+//    Imgcodecs.imwrite(screenshotPath + filename + ".jpg", img);
 //  }
 //}

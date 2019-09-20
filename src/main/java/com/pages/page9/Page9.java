@@ -66,7 +66,7 @@ public class Page9 extends JPanel implements Pages {
     playBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        // path manipulations
+        // screenshotPath manipulations
         clearFolder(outPath);
         String fileNameWithOutExt = FilenameUtils.removeExtension(file.getName());
         String fileOutPath = outPath + fileNameWithOutExt + "\\";
