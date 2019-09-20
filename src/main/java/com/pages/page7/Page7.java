@@ -62,7 +62,7 @@ public class Page7 extends JPanel implements Pages {
     openBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JFileChooser fc = new JFileChooser(Constants.imgPath + "cars\\");
+        JFileChooser fc = new JFileChooser(Constants.imgPath + "cars\\regnums\\");
         fc.setMultiSelectionEnabled(true);
         if (fc.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           File[] files = fc.getSelectedFiles();

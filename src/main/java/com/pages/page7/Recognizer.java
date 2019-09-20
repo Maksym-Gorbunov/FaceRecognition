@@ -91,27 +91,38 @@ public class Recognizer {
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         //create contour mini image
         rect = cutRectIfOutOfImageArea(filtered, rect);
-        Mat contourImg = new Mat(filtered, rect);
+
+        Mat plateColored = new Mat(object.getOriginal(), rect);
+        Mat plateGray = new Mat();
+        Imgproc.cvtColor(plateColored, plateGray, Imgproc.COLOR_RGB2GRAY);
+
+
         //rotate contours by rect angle
-        Mat rotatedImg = rotateImage(contourImg, rotatedRect);
+        Mat rotatedImg = rotateImage(plateColored, rotatedRect);
+
+
+
         //cut large contour from rotated image
-        Mat cuttedImg = cutLargeContour(rotatedImg);
+//        Mat cuttedImg = cutLargeContour(rotatedImg);
         if (logger) {
-          Imgcodecs.imwrite(contourOutPath + "1.contour.jpg", contourImg);
+          Imgcodecs.imwrite(contourOutPath + "1.contour.jpg", plateGray);
           Imgcodecs.imwrite(contourOutPath + "2.rotated.jpg", rotatedImg);
         }
-        Mat shearedPlate = shearImage(cuttedImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
-        //extra filter license plate before text recognition
-        Mat filteredImg = filterPlate(shearedPlate, plateThresh);
-        //text recognition
-        String text = TextRecognizer.recognizeText(shearedPlate);
-        if (object.getLicenseNumber().length() < text.length()) {
-          object.setLicenseNumber(text);
-          object.setPlate(cuttedImg);
-          object.setFilteredPlate(filteredImg);
-          object.setShearedPlate(shearedPlate);
-          bestRect = rect;
-        }
+
+
+
+//        Mat shearedPlate = shearImage(cuttedImg, rotatedRect, rotatedRect.angle, shearAngleFromSlider);
+//        //extra filter license plate before text recognition
+//        Mat filteredImg = filterPlate(shearedPlate, plateThresh);
+//        //text recognition
+//        String text = TextRecognizer.recognizeText(shearedPlate);
+//        if (object.getLicenseNumber().length() < text.length()) {
+//          object.setLicenseNumber(text);
+//          object.setPlate(cuttedImg);
+//          object.setFilteredPlate(filteredImg);
+//          object.setShearedPlate(shearedPlate);
+//          bestRect = rect;
+//        }
         i++;
       }
       //draw green rectangle on best contour

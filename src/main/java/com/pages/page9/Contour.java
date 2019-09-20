@@ -9,6 +9,7 @@ public class Contour {
   private RotatedRect rotatedRect;
   private Rect rect;
   private double angle;
+//  private int index;
 
   // Constructor
   public Contour(MatOfPoint contour, RotatedRect rotatedRect, Rect rect) {

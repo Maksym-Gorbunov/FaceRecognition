@@ -32,16 +32,17 @@ public class Recognizer extends Thread {
       Data.faceRectangles = faceDetections.toArray();
       for (Rect faceRect : Data.faceRectangles) {
         Imgproc.rectangle(frame, faceRect.tl(), faceRect.br(), new Scalar(0, 0, 255), 2);
-        Imgcodecs.imwrite(path + "frame" + frameCounter + ".jpg", frame);
+        if (frameCounter % 10 == 0) {
+          Imgcodecs.imwrite(path + "frame" + frameCounter + ".jpg", frame);
+        }
       }
     }
     // no face found
-    else{
+    else {
       Data.faceRectangles = null;
     }
     runnable = false;
   }
-
 
 
 }
