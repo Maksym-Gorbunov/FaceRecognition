@@ -66,8 +66,7 @@ public class Page7 extends JPanel implements Pages {
         fc.setMultiSelectionEnabled(true);
         if (fc.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
           File[] files = fc.getSelectedFiles();
-          for (File file : files) {
-            ImgObject imgFile = new ImgObject(file);
+          for (File file : files) { ImgObject imgFile = new ImgObject(file);
             data.addElement(imgFile);
           }
         }
@@ -122,7 +121,7 @@ public class Page7 extends JPanel implements Pages {
         }
       }
     });
-
+    //trash
     thrashSlider.addChangeListener(new ChangeListener() {
       @Override
       public void stateChanged(ChangeEvent e) {

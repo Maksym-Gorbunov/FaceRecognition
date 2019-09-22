@@ -26,16 +26,16 @@ public class R {
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
   private boolean logger = true;
 
-  public static void main(String[] args) {
-    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    R r = new R();
-//    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\111\\-30.jpg");
-//    Mat image2 = Imgcodecs.imread(Constants.imgPath + "cars\\111\\-60.jpg");
-    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\regnums\\KKZ061.jpg");
-//    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\regnums\\COS799.jpg");
-    r.lpr(image, 100);
-//    r.lpr(image2, 200);
-  }
+//  public static void main(String[] args) {
+//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//    R r = new R();
+////    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\111\\-30.jpg");
+////    Mat image2 = Imgcodecs.imread(Constants.imgPath + "cars\\111\\-60.jpg");
+//    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\regnums\\KKZ061.jpg");
+////    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\regnums\\COS799.jpg");
+//    r.lpr(image, 100);
+////    r.lpr(image2, 200);
+//  }
 
   // Convert BufferedImage to Mat
   public static Mat bufferedImageToMat(BufferedImage bi) {
@@ -46,9 +46,9 @@ public class R {
   }
 
   /////////////////////////////////////////////////////////////////////////////////////
-  public Screenshot lpr(Mat image, int thresh) {
+  public Screenshot recognize(File file, int thresh) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    Screenshot screenshot = new Screenshot(image);
+    Screenshot screenshot = new Screenshot(file);
     findContouts(screenshot, thresh);
     if (screenshot.getContours().size() > 0) {
       for(Contour c : screenshot.getContours()){
@@ -116,7 +116,7 @@ public class R {
   }
 
   // Filter image
-  private Mat filterImage(Mat gray, int thresh, int blur) {
+  public Mat filterImage(Mat gray, int thresh, int blur) {
     Mat grayImg = new Mat();
     gray.copyTo(grayImg);
     Mat topHatImg = new Mat();

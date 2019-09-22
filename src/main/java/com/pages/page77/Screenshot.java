@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Screenshot {
 
+  private File file;
   private Mat originalImg = new Mat();
   private Mat grayImg = new Mat();
   private Mat filteredImg = new Mat();
@@ -24,9 +25,10 @@ public class Screenshot {
   private List<Contour> contours = new ArrayList<>();
 
   // Constructor
-  public Screenshot(Mat img) {
-    this.originalImg = img;
-    Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_RGB2GRAY);
+  public Screenshot(File file) {
+    this.file = file;
+    originalImg = Imgcodecs.imread(file.getAbsolutePath());
+    Imgproc.cvtColor(originalImg, grayImg, Imgproc.COLOR_RGB2GRAY);
   }
   public Screenshot(Mat img, List<Contour> contours) {
     this.originalImg = img;
@@ -35,6 +37,15 @@ public class Screenshot {
   }
 
   //Getters and Setters
+
+  public File getFile() {
+    return file;
+  }
+
+  public void setFile(File file) {
+    this.file = file;
+  }
+
   public Mat getOriginalImg() {
     return originalImg;
   }
