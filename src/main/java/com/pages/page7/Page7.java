@@ -129,7 +129,7 @@ public class Page7 extends JPanel implements Pages {
         if (selectedObject.getFiltered() != null) {
           imgTabPane.setSelectedIndex(1);
           Mat tempThreshImg = recognizer.filterImage(selectedObject.getOriginal(), thrashSlider.getValue(), blurSlider.getValue());
-          filteredPanel.loadMatImage(tempThreshImg);
+          filteredPanel.loadImage(tempThreshImg);
         }
       }
     });
@@ -147,7 +147,7 @@ public class Page7 extends JPanel implements Pages {
         if (selectedObject.getShearedPlate() != null) {
           imgTabPane.setSelectedIndex(4);
           Mat tempShearedPlateImg = recognizer.shearImageFromSlider(selectedObject.getShearedPlate(), shearAngleSlider.getValue());
-          shearedPlatePanel.loadMatImage(tempShearedPlateImg);
+          shearedPlatePanel.loadImage(tempShearedPlateImg);
         }
       }
     });
@@ -158,7 +158,7 @@ public class Page7 extends JPanel implements Pages {
         if (selectedObject.getFilteredPlate() != null) {
           imgTabPane.setSelectedIndex(5);
           Mat tempThreshPlateImg = recognizer.filterPlate(selectedObject.getFilteredPlate(), thrashPlateSlider.getValue());
-          filteredPlatePanel.loadMatImage(tempThreshPlateImg);
+          filteredPlatePanel.loadImage(tempThreshPlateImg);
         }
       }
     });
@@ -168,32 +168,32 @@ public class Page7 extends JPanel implements Pages {
   // Update UI
   private void updateImages() {
     if (selectedObject.getOriginal() != null) {
-      originalPanel.loadMatImage(selectedObject.getOriginal());
+      originalPanel.loadImage(selectedObject.getOriginal());
     } else {
       originalPanel.clear();
     }
     if (selectedObject.getFiltered() != null) {
-      filteredPanel.loadMatImage(selectedObject.getFiltered());
+      filteredPanel.loadImage(selectedObject.getFiltered());
     } else {
       filteredPanel.clear();
     }
     if (selectedObject.getContours() != null) {
-      contoursPanel.loadMatImage(selectedObject.getContours());
+      contoursPanel.loadImage(selectedObject.getContours());
     } else {
       contoursPanel.clear();
     }
     if (selectedObject.getPlate() != null) {
-      platePanel.loadMatImage(selectedObject.getPlate());
+      platePanel.loadImage(selectedObject.getPlate());
     } else {
       platePanel.clear();
     }
     if (selectedObject.getFilteredPlate() != null) {
-      filteredPlatePanel.loadMatImage(selectedObject.getFilteredPlate());
+      filteredPlatePanel.loadImage(selectedObject.getFilteredPlate());
     } else {
       filteredPlatePanel.clear();
     }
     if (selectedObject.getShearedPlate() != null) {
-      shearedPlatePanel.loadMatImage(selectedObject.getShearedPlate());
+      shearedPlatePanel.loadImage(selectedObject.getShearedPlate());
     } else {
       shearedPlatePanel.clear();
     }

@@ -25,6 +25,10 @@ public class Screenshot {
   private List<Contour> contours = new ArrayList<>();
 
   // Constructor
+  public Screenshot(){
+
+  }
+
   public Screenshot(File file) {
     this.file = file;
     originalImg = Imgcodecs.imread(file.getAbsolutePath());
@@ -35,6 +39,20 @@ public class Screenshot {
     Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_RGB2GRAY);
     this.contours = contours;
   }
+
+  @Override
+  public String toString() {
+    return file.getName();
+  }
+
+
+//  public Screenshot clone(Screenshot screenshot){
+//    if(screenshot != null){
+//
+//    }
+//  }
+
+
 
   //Getters and Setters
 

@@ -53,13 +53,11 @@
 
    // load image to ImagePanel without extra savers
    public void loadIplImage(opencv_core.IplImage filteredImage) {
-//     BufferedImage img1 = IplImageToBufferedImage(filteredImage);
     BufferedImage img1 = filteredImage.getBufferedImage();
      ImageIcon icon = new ImageIcon(img1);
      Image image = icon.getImage();
      updadeImage(image);
    }
-
 
    static BufferedImage Mat2BufferedImage(Mat matrix)throws Exception {
      if(matrix == null){
@@ -68,26 +66,22 @@
      MatOfByte mob=new MatOfByte();
      Imgcodecs.imencode(".jpg", matrix, mob);
      byte ba[]=mob.toArray();
-
      BufferedImage bi= ImageIO.read(new ByteArrayInputStream(ba));
      return bi;
    }
 
-   public void loadMatImage(Mat filteredImage) {
-     if(filteredImage == null){
+   public void loadImage(Mat img) {
+     if((img == null)){
        return;
      }
-//     BufferedImage img1 = IplImageToBufferedImage(filteredImage);
-     BufferedImage img1 = null;
+     BufferedImage buffImg = null;
      try {
-       img1 = Mat2BufferedImage(filteredImage);
+       buffImg = Mat2BufferedImage(img);
      } catch (Exception e) {
        e.printStackTrace();
      }
-//     BufferedImage img1 = filteredImage.getBufferedImage();
-     ImageIcon icon = new ImageIcon(img1);
+     ImageIcon icon = new ImageIcon(buffImg);
      Image image = icon.getImage();
      updadeImage(image);
    }
-
  }

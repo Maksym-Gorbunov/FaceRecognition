@@ -10,6 +10,7 @@ import com.pages.page4.Page4;
 import com.pages.page5.Page5;
 import com.pages.page6.Page6;
 import com.pages.page7.Page7;
+import com.pages.page77.Page77;
 import com.pages.page8.Page8;
 import com.pages.page9.Page9;
 
@@ -32,6 +33,7 @@ public class Gui extends JFrame {
   private JPanel tab9;
   private JPanel tab10;
   private JPanel tab11;
+  private JPanel tab77;
 
   public Gui() {
     super("Application");
@@ -59,6 +61,7 @@ public class Gui extends JFrame {
     tab9 = new JPanel();
     tab10 = new JPanel();
     tab11 = new JPanel();
+    tab77 = new JPanel();
     //////////////////////////////////////////////////////////////////////
 //    tab1.setBackground(Color.CYAN);
 //    tab2.setBackground(Color.CYAN);
@@ -81,6 +84,7 @@ public class Gui extends JFrame {
     tabs.addTab("LNR Video", tab9);
     tabs.addTab("Horse", tab10);
     tabs.addTab("Face MultiThreads", tab11);
+    tabs.addTab("LPR**", tab77);
     add(tabs);
 
     tab1 = new Page1(Gui.this);
@@ -94,8 +98,9 @@ public class Gui extends JFrame {
     tab9 = new Page9(Gui.this);
     tab10 = new Page10(Gui.this);
     tab11 = new Page11(Gui.this);
+    tab77 = new Page77(Gui.this);
 
-    tabs.setSelectedIndex(7);
+    tabs.setSelectedIndex(11);
   }
 
   private void createMenuBar() {
@@ -166,5 +171,8 @@ public class Gui extends JFrame {
 
   public JPanel getTab11() {
     return tab11;
+  }
+  public JPanel getTab77() {
+    return tab77;
   }
 }

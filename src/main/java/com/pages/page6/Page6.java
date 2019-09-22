@@ -123,7 +123,7 @@ public class Page6 extends JPanel implements Pages {
     edgeBtn.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        imagePanel2.loadMatImage(edgeImg);
+        imagePanel2.loadImage(edgeImg);
         activeBtn = edgeBtn;
         turnOnActiveButton();
       }
