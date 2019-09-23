@@ -209,17 +209,34 @@ public class Page77 extends JPanel implements Pages {
 
   private void updatePlateImages() {
     if (selectedObject.getContours().size() > 0) {
-      if(contoursComboBox.getSelectedItem() != null){
-        int index = (int) contoursComboBox.getSelectedItem();
+      if (contoursComboBox.getSelectedItem() != null) {
+        int index = (int) contoursComboBox.getSelectedItem() - 1;
+
         if ((selectedObject.getContours().get(index).getPlateOriginal() != null)
                 && (!selectedObject.getContours().get(index).getPlateOriginal().empty())) {
           platePanel.loadImage(selectedObject.getContours().get(index).getPlateOriginal());
-        } else {
-          platePanel.clear();
         }
+
+        if ((selectedObject.getContours().get(index).getPlateRotated() != null)
+                && (!selectedObject.getContours().get(index).getPlateRotated().empty())) {
+          plateRotatedPanel.loadImage(selectedObject.getContours().get(index).getPlateRotated());
+        }
+
+        if ((selectedObject.getContours().get(index).getPlateRotatedCutted() != null)
+                && (!selectedObject.getContours().get(index).getPlateRotatedCutted().empty())) {
+          plateRotatedCuttedPanel.loadImage(selectedObject.getContours().get(index).getPlateRotatedCutted());
+        }
+
       }
+    } else {
+      platePanel.clear();
+      plateRotatedPanel.clear();
+      plateRotatedCuttedPanel.clear();
+      filteredPlatePanel.clear();
+      shearedPlatePanel.clear();
     }
   }
+
 
   // Initialize UI components
   private void initComponents() {
