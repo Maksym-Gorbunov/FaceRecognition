@@ -16,6 +16,7 @@ public class Contour {
   private Mat plateGray = new Mat();
   private Mat plateRotated = new Mat();
   private Mat plateRotatedCutted = new Mat();
+  private Mat plateFiltered = new Mat();
   private Mat plateSheared = new Mat();
 
   //Constructor
@@ -83,5 +84,21 @@ public class Contour {
 
   public void setPlateSheared(Mat plateSheared) {
     this.plateSheared = plateSheared;
+  }
+
+  public void setIndex(int index) {
+    this.index = index;
+  }
+
+  public void setRotatedRect(RotatedRect rotatedRect) {
+    this.rotatedRect = rotatedRect;
+  }
+
+  public Mat getPlateFiltered() {
+    return plateFiltered;
+  }
+
+  public void setPlateFiltered(Mat plateFiltered) {
+    this.plateFiltered = plateFiltered;
   }
 }

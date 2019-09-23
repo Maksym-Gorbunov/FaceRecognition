@@ -9,7 +9,6 @@ import org.opencv.core.Mat;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.List;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,6 +18,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -30,11 +31,11 @@ public class Page77 extends JPanel implements Pages {
   private ImagePanel originalPanel;
   private ImagePanel filteredPanel;
   private ImagePanel contoursPanel;
-  private ImagePanel platePanel;
-  private ImagePanel plateRotatedPanel;
-  private ImagePanel plateRotatedCuttedPanel;
-  private ImagePanel filteredPlatePanel;
-  private ImagePanel shearedPlatePanel;
+  private ImagePanel platePanelOriginal;
+  private ImagePanel platePanelRotated;
+  private ImagePanel platePanelRotatedCutted;
+  private ImagePanel platePanelFiltered;
+  private ImagePanel platePanelSheared;
   private JButton openBtn = new JButton("Open");
   private JButton recognizeBtn = new JButton("Recognize");
   private JList jList;
@@ -64,7 +65,6 @@ public class Page77 extends JPanel implements Pages {
 
   // Add listeners to UI components
   private void addListeners() {
-
     //open btn
     openBtn.addActionListener(new ActionListener() {
       @Override
@@ -84,7 +84,6 @@ public class Page77 extends JPanel implements Pages {
         }
       }
     });
-
     //recognize btn
     recognizeBtn.addActionListener(new ActionListener() {
       @Override
@@ -104,16 +103,17 @@ public class Page77 extends JPanel implements Pages {
                 selectedObject.getContours().get(i).setPlateGray(result.getContours().get(i).getPlateGray());
                 selectedObject.getContours().get(i).setPlateRotated(result.getContours().get(i).getPlateRotated());
                 selectedObject.getContours().get(i).setPlateRotatedCutted(result.getContours().get(i).getPlateRotatedCutted());
+                selectedObject.getContours().get(i).setPlateFiltered(result.getContours().get(i).getPlateFiltered());
                 selectedObject.getContours().get(i).setPlateSheared(result.getContours().get(i).getPlateSheared());
               }
               updateContoursComboBox(selectedObject.getContours().size());
+              imgTabPane.setSelectedIndex(2);
             }
             updateImages();
           }
         }
       }
     });
-
     //select list item
     jList.addListSelectionListener(new ListSelectionListener() {
       @Override
@@ -127,24 +127,25 @@ public class Page77 extends JPanel implements Pages {
         }
       }
     });
-
+    //contours chooser
     contoursComboBox.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(ItemEvent e) {
         updatePlateImages();
       }
     });
-//    thrashSlider.addChangeListener(new ChangeListener() {
-//      @Override
-//      public void stateChanged(ChangeEvent e) {
-//        recognizeBtn.setEnabled(true);
-//        if (selectedObject.getFilteredImg() != null) {
-//          imgTabPane.setSelectedIndex(1);
-//          Mat tempThreshImg = recognizer.filterImage(selectedObject.getOriginalImg(), thrashSlider.getValue(), blurSlider.getValue());
-//          filteredPanel.loadImage(tempThreshImg);
-//        }
-//      }
-//    });
+    //thrash slider, live changes for temp filtered image
+    thrashSlider.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        recognizeBtn.setEnabled(true);
+        if (selectedObject.getFilteredImg() != null) {
+          imgTabPane.setSelectedIndex(1);
+          Mat tempThreshImg = recognizer.filterColoredImage(selectedObject.getOriginalImg(), thrashSlider.getValue(), blurSlider.getValue());
+          filteredPanel.loadImage(tempThreshImg);
+        }
+      }
+    });
 
 //    blurSlider.addChangeListener(new ChangeListener() {
 //      @Override
@@ -159,7 +160,7 @@ public class Page77 extends JPanel implements Pages {
 //        if (selectedObject.getShearedPlate() != null) {
 //          imgTabPane.setSelectedIndex(4);
 //          Mat tempShearedPlateImg = recognizer.shearImageFromSlider(selectedObject.getShearedPlate(), shearAngleSlider.getValue());
-//          shearedPlatePanel.loadImage(tempShearedPlateImg);
+//          platePanelSheared.loadImage(tempShearedPlateImg);
 //        }
 //      }
 //    });
@@ -170,7 +171,7 @@ public class Page77 extends JPanel implements Pages {
 //        if (selectedObject.getFilteredPlate() != null) {
 //          imgTabPane.setSelectedIndex(5);
 //          Mat tempThreshPlateImg = recognizer.filterPlate(selectedObject.getFilteredPlate(), thrashPlateSlider.getValue());
-//          filteredPlatePanel.loadImage(tempThreshPlateImg);
+//          platePanelFiltered.loadImage(tempThreshPlateImg);
 //        }
 //      }
 //    });
@@ -211,29 +212,33 @@ public class Page77 extends JPanel implements Pages {
     if (selectedObject.getContours().size() > 0) {
       if (contoursComboBox.getSelectedItem() != null) {
         int index = (int) contoursComboBox.getSelectedItem() - 1;
-
         if ((selectedObject.getContours().get(index).getPlateOriginal() != null)
                 && (!selectedObject.getContours().get(index).getPlateOriginal().empty())) {
-          platePanel.loadImage(selectedObject.getContours().get(index).getPlateOriginal());
+          platePanelOriginal.loadImage(selectedObject.getContours().get(index).getPlateOriginal());
         }
-
         if ((selectedObject.getContours().get(index).getPlateRotated() != null)
                 && (!selectedObject.getContours().get(index).getPlateRotated().empty())) {
-          plateRotatedPanel.loadImage(selectedObject.getContours().get(index).getPlateRotated());
+          platePanelRotated.loadImage(selectedObject.getContours().get(index).getPlateRotated());
         }
-
         if ((selectedObject.getContours().get(index).getPlateRotatedCutted() != null)
                 && (!selectedObject.getContours().get(index).getPlateRotatedCutted().empty())) {
-          plateRotatedCuttedPanel.loadImage(selectedObject.getContours().get(index).getPlateRotatedCutted());
+          platePanelRotatedCutted.loadImage(selectedObject.getContours().get(index).getPlateRotatedCutted());
         }
-
+        if ((selectedObject.getContours().get(index).getPlateFiltered() != null)
+                && (!selectedObject.getContours().get(index).getPlateFiltered().empty())) {
+          platePanelFiltered.loadImage(selectedObject.getContours().get(index).getPlateFiltered());
+        }
+        if ((selectedObject.getContours().get(index).getPlateSheared() != null)
+                && (!selectedObject.getContours().get(index).getPlateSheared().empty())) {
+          platePanelSheared.loadImage(selectedObject.getContours().get(index).getPlateSheared());
+        }
       }
     } else {
-      platePanel.clear();
-      plateRotatedPanel.clear();
-      plateRotatedCuttedPanel.clear();
-      filteredPlatePanel.clear();
-      shearedPlatePanel.clear();
+      platePanelOriginal.clear();
+      platePanelRotated.clear();
+      platePanelRotatedCutted.clear();
+      platePanelFiltered.clear();
+      platePanelSheared.clear();
     }
   }
 
@@ -260,19 +265,19 @@ public class Page77 extends JPanel implements Pages {
     originalPanel = new ImagePanel(width, height);
     filteredPanel = new ImagePanel(width, height);
     contoursPanel = new ImagePanel(width, height);
-    platePanel = new ImagePanel(width, height);
-    plateRotatedPanel = new ImagePanel(width, height);
-    plateRotatedCuttedPanel = new ImagePanel(width, height);
-    filteredPlatePanel = new ImagePanel(width, height);
-    shearedPlatePanel = new ImagePanel(width, height);
+    platePanelOriginal = new ImagePanel(width, height);
+    platePanelRotated = new ImagePanel(width, height);
+    platePanelRotatedCutted = new ImagePanel(width, height);
+    platePanelFiltered = new ImagePanel(width, height);
+    platePanelSheared = new ImagePanel(width, height);
     imgTabPane.add("Original", originalPanel);
     imgTabPane.add("Filtered", filteredPanel);
     imgTabPane.add("Contours", contoursPanel);
-    imgTabPane.add("P-Original", platePanel);
-    imgTabPane.add("P-Rotated", plateRotatedPanel);
-    imgTabPane.add("P-Cutted", plateRotatedCuttedPanel);
-    imgTabPane.add("P-Filtered", filteredPlatePanel);
-    imgTabPane.add("P-Sheared", shearedPlatePanel);
+    imgTabPane.add("P-Original", platePanelOriginal);
+    imgTabPane.add("P-Rotated", platePanelRotated);
+    imgTabPane.add("P-Cutted", platePanelRotatedCutted);
+    imgTabPane.add("P-Filtered", platePanelFiltered);
+    imgTabPane.add("P-Sheared", platePanelSheared);
     topLeft.add(imgTabPane);
 
     topLeft.add(contoursComboBox);

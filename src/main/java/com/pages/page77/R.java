@@ -18,6 +18,7 @@ import java.util.List;
 import static org.opencv.imgproc.Imgproc.RETR_TREE;
 
 public class R {
+
   public static String screenshotPath = Constants.imgPath + "222\\";
   private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
@@ -26,26 +27,7 @@ public class R {
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
   private boolean logger = true;
 
-//  public static void main(String[] args) {
-//    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//    R r = new R();
-////    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\111\\-30.jpg");
-////    Mat image2 = Imgcodecs.imread(Constants.imgPath + "cars\\111\\-60.jpg");
-//    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\regnums\\KKZ061.jpg");
-////    Mat image = Imgcodecs.imread(Constants.imgPath + "cars\\regnums\\COS799.jpg");
-//    r.lpr(image, 100);
-////    r.lpr(image2, 200);
-//  }
 
-  // Convert BufferedImage to Mat
-  public static Mat bufferedImageToMat(BufferedImage bi) {
-    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
-    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-    mat.put(0, 0, data);
-    return mat;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////////////
   public Screenshot recognize(File file, int thresh) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     Screenshot screenshot = new Screenshot(file);
@@ -57,7 +39,6 @@ public class R {
 
         Mat rotatedPlate = rotateImage(c.getPlateOriginal(), c.getRotatedRect());
         c.setPlateRotated(rotatedPlate);
-        //toDo no need c.plateGray
         Mat cuttedRotatedPlate = cutPlateFromRotatedPlate(rotatedPlate, c.getRotatedRect());
         Imgproc.putText(cuttedRotatedPlate, String.valueOf((int)c.getAngle()), new Point(10, 30), 1, 1, red, 1);
         c.setPlateRotatedCutted(cuttedRotatedPlate);
@@ -73,37 +54,12 @@ public class R {
     return screenshot;
   }
 
-  //shear cutted plate with rotated rectangle angle or slider
-  public Mat shearImage(Mat cuttedPlate, RotatedRect rotatedRect) {
-    Mat grayImg = new Mat();
-    Imgproc.cvtColor(cuttedPlate, grayImg, Imgproc.COLOR_RGB2GRAY);
-    double x = 0;
-
-      if (rotatedRect.size.width > rotatedRect.size.height) {
-        //System.out.println("plus");
-        x = 0.2;
-      } else {
-        //System.out.println("minus");
-        x = -0.45;
-      }
-    System.out.println("angle="+(int)rotatedRect.angle+", x="+x);
-    BufferedImage buffer = null;
-    try {
-      buffer = mat2BufferedImage(grayImg);
-      AffineTransform tx = new AffineTransform();
-      //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
-      tx.shear(x, 0);
-      //tx.shear(-0.4, 0);
-      //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
-      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-      BufferedImage shearedPLateBuffered = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
-      op.filter(buffer, shearedPLateBuffered);
-      Mat shearedPLate = bufferedImageToMat(shearedPLateBuffered);
-      return shearedPLate;
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return cuttedPlate;
+  // Convert BufferedImage to Mat
+  public static Mat bufferedImageToMat(BufferedImage bi) {
+    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
+    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+    mat.put(0, 0, data);
+    return mat;
   }
 
   // Convert Mat to BufferedImage
@@ -136,52 +92,58 @@ public class R {
     return thresholdImg;
   }
 
+  //shear cutted plate with rotated rectangle angle or slider
+  public Mat shearImage(Mat cuttedPlate, RotatedRect rotatedRect) {
+    Mat grayImg = new Mat();
+    Imgproc.cvtColor(cuttedPlate, grayImg, Imgproc.COLOR_RGB2GRAY);
+    double x = 0;
 
-  // Try to get contours from image
-  private void findContouts(Screenshot screenshot, int thresh) {
-    screenshot.setFilteredImg(filterImage(screenshot.getGrayImg(), thresh, 5));
-    Mat filteredImg = screenshot.getFilteredImg();
-    List<MatOfPoint> contours = new ArrayList<>();
-    Imgproc.findContours(filteredImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-    double imgArea = filteredImg.size().area();
-    Mat colorCopy = new Mat();
-    Mat filteredCopy = new Mat();
-    int i=1;
-    for (MatOfPoint c : contours) {
-      MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
-      RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
-      double rotRectArea = rotatedRectangle.size.area();
-      if ((rotRectArea > 0.01 * imgArea) && (rotRectArea < 0.4 * imgArea)) {
-        Point rotatedRectPoints[] = new Point[4];
-        rotatedRectangle.points(rotatedRectPoints);
-        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-        rect = cutRectIfOutOfImageArea(filteredImg, rect);
-        if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
-          //toDo, check average color in contour, if white >50%
-          Contour contour = new Contour(c,i, rotatedRectangle, rect);
-          screenshot.addContour(contour);
-          if(colorCopy.empty()){
-            screenshot.getOriginalImg().copyTo(colorCopy);
-            screenshot.getFilteredImg().copyTo(filteredCopy);
-          }
-          Imgproc.putText(colorCopy, String.valueOf(i), new Point(rect.tl().x+10, rect.tl().y+30), 2, 1, red, 1);
-          Imgproc.rectangle(colorCopy, rect.tl(), rect.br(), red, 2);
-          Imgproc.rectangle(filteredCopy, rect.tl(), rect.br(), red, 2);
-
-          Mat plateOriginal = new Mat(screenshot.getOriginalImg(), rect);
-          Mat plateGray = new Mat();
-          Imgproc.cvtColor(plateOriginal, plateGray, Imgproc.COLOR_RGB2GRAY);
-          contour.setPlateOriginal(plateOriginal);
-          contour.setPlateGray(plateGray);
-
-          i++;
-        }
+      if (rotatedRect.size.width > rotatedRect.size.height) {
+//        System.out.println("plus");
+        x = 0.2;
+      } else {
+//        System.out.println("minus");
+        x = -0.45;
       }
+    System.out.println("angle="+(int)rotatedRect.angle+", x="+x);
+    BufferedImage buffer = null;
+    try {
+      buffer = mat2BufferedImage(grayImg);
+      AffineTransform tx = new AffineTransform();
+      //tx.translate(buffer.getHeight() / 2, buffer.getWidth() / 2);
+      tx.shear(x, 0);
+      //tx.shear(-0.4, 0);
+      //tx.translate(-buffer.getWidth() / 2, -buffer.getHeight() / 2);
+      AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+      BufferedImage shearedPLateBuffered = new BufferedImage(buffer.getWidth(), buffer.getHeight(), buffer.getType());
+      op.filter(buffer, shearedPLateBuffered);
+      Mat shearedPLate = bufferedImageToMat(shearedPLateBuffered);
+      return shearedPLate;
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-    if(contours.size() > 0){
-      screenshot.setOriginalContoursImg(colorCopy);
-      screenshot.setFilteredContoursImg(filteredCopy);
-    }
+    return cuttedPlate;
+  }
+
+  // Filter colored image, thresh only
+  public Mat filterColoredImage(Mat img, int thresh, int blur) {
+    Mat grayImg = new Mat();
+//    gray.copyTo(grayImg);
+    Mat topHatImg = new Mat();
+    Mat blackHatImg = new Mat();
+    Mat grayPlusTopHatImg = new Mat();
+    Mat grayPlusTopHatMinusBlackHatImg = new Mat();
+    Mat blurImg = new Mat();
+    Mat thresholdImg = new Mat();
+    Mat kernel = new Mat(new Size(3, 3), CvType.CV_8U, new Scalar(255));
+    Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_RGB2GRAY);
+    Imgproc.morphologyEx(grayImg, topHatImg, Imgproc.MORPH_TOPHAT, kernel);
+    Imgproc.morphologyEx(grayImg, blackHatImg, Imgproc.MORPH_BLACKHAT, kernel);
+    Core.add(grayImg, topHatImg, grayPlusTopHatImg);
+    Core.subtract(grayPlusTopHatImg, blackHatImg, grayPlusTopHatMinusBlackHatImg);
+    Imgproc.GaussianBlur(grayPlusTopHatMinusBlackHatImg, blurImg, new Size(blur, blur), 1);
+    Imgproc.threshold(blurImg, thresholdImg, thresh, 255, Imgproc.THRESH_BINARY_INV);
+    return thresholdImg;
   }
 
 
@@ -261,4 +223,50 @@ public class R {
     }
     new File(path).mkdirs();
   }
+
+  // Try to get contours from image
+  private void findContouts(Screenshot screenshot, int thresh) {
+    screenshot.setFilteredImg(filterImage(screenshot.getGrayImg(), thresh, 5));
+    Mat filteredImg = screenshot.getFilteredImg();
+    List<MatOfPoint> contours = new ArrayList<>();
+    Imgproc.findContours(filteredImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    double imgArea = filteredImg.size().area();
+    Mat colorCopy = new Mat();
+    Mat filteredCopy = new Mat();
+    int i=1;
+    for (MatOfPoint c : contours) {
+      MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
+      RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
+      double rotRectArea = rotatedRectangle.size.area();
+      if ((rotRectArea > 0.01 * imgArea) && (rotRectArea < 0.4 * imgArea)) {
+        Point rotatedRectPoints[] = new Point[4];
+        rotatedRectangle.points(rotatedRectPoints);
+        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
+        rect = cutRectIfOutOfImageArea(filteredImg, rect);
+        if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
+          //toDo, check average color in contour, if white >50%
+          Contour contour = new Contour(c,i, rotatedRectangle, rect);
+          screenshot.addContour(contour);
+          if(colorCopy.empty()){
+            screenshot.getOriginalImg().copyTo(colorCopy);
+            screenshot.getFilteredImg().copyTo(filteredCopy);
+          }
+          Imgproc.putText(colorCopy, String.valueOf(i), new Point(rect.tl().x+10, rect.tl().y+30), 2, 1, blue, 1);
+          Imgproc.rectangle(colorCopy, rect.tl(), rect.br(), blue, 2);
+          Imgproc.rectangle(filteredCopy, rect.tl(), rect.br(), blue, 2);
+          Mat plateOriginal = new Mat(screenshot.getOriginalImg(), rect);
+          Mat plateGray = new Mat();
+          Imgproc.cvtColor(plateOriginal, plateGray, Imgproc.COLOR_RGB2GRAY);
+          contour.setPlateOriginal(plateOriginal);
+          contour.setPlateGray(plateGray);
+          i++;
+        }
+      }
+    }
+    if(contours.size() > 0){
+      screenshot.setOriginalContoursImg(colorCopy);
+      screenshot.setFilteredContoursImg(filteredCopy);
+    }
+  }
+
 }
