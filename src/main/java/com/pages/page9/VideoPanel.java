@@ -9,7 +9,6 @@ import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -37,6 +36,7 @@ public class VideoPanel extends JPanel {
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
 
+
   // Constructor
   public VideoPanel(int width, int height) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -50,6 +50,7 @@ public class VideoPanel extends JPanel {
     this.height = height;
   }
 
+
   // Play video
   public void play(File file, String screenshotPath) {
     capture = new VideoCapture(file.getAbsolutePath());
@@ -59,6 +60,7 @@ public class VideoPanel extends JPanel {
     myThread.runnable = true;
     t.start();
   }
+
 
   // Stop video
   public void stop() {
@@ -75,13 +77,14 @@ public class VideoPanel extends JPanel {
     Imgcodecs.imwrite(Constants.videoPath + "screenshots\\" + count + ".jpg", screenshot);
   }
 
+
   // Clear panel
   public void clear() {
     imageLabel.setIcon(null);
     removeAll();
     updateUI();
   }
-  /////////////////////////////////// DaemonThread end //////////////////////////////////////////
+
 
   // Converter Mat to BufferedImage
   static BufferedImage Mat2BufferedImage(Mat matrix) throws Exception {
@@ -96,15 +99,18 @@ public class VideoPanel extends JPanel {
     return bi;
   }
 
+
   // Update image
   public void updadeImage(final Image image) {
     imageLabel.setIcon(new ImageIcon(scaleImage(image)));
   }
 
+
   // Scale image
   private Image scaleImage(Image image) {
     return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
   }
+
 
   // Load image from file
   public void loadImage(File file) {
@@ -121,10 +127,13 @@ public class VideoPanel extends JPanel {
     private File file;
     private String screenshotPath;
 
+
+    // Constructor for video Threads
     public DaemonThread(File file, String screenshotPath) {
       this.file = file;
       this.screenshotPath = screenshotPath;
     }
+
 
     @Override
     public void run() {
@@ -132,14 +141,11 @@ public class VideoPanel extends JPanel {
         while (runnable) {
           if (capture.grab()) {
             try {
-/////////////////////////////////////////////////////////////////////
-              capture.retrieve(frame);
-              //Imgproc.rectangle(originalContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
+             capture.retrieve(frame);
 
               if (count % 20 == 0) {
                 Mat frameCopy = new Mat();
                 frame.copyTo(frameCopy);
-//                  System.out.println(count);
                 Recognizer recognizer = new Recognizer(frameCopy, count, screenshotPath);
                 Thread tr = new Thread(recognizer);
                 tr.setDaemon(true);
@@ -155,27 +161,13 @@ public class VideoPanel extends JPanel {
               BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
               graphics = VideoPanel.this.getGraphics();
               if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
-
-//                if (count % 20 == 0) {
-//                  Mat frameCopy = new Mat();
-//                  frame.copyTo(frameCopy);
-////                  System.out.println(count);
-//                  Recognizer recognizer = new Recognizer(frameCopy, count, screenshotPath);
-//                  Thread tr = new Thread(recognizer);
-//                  tr.setDaemon(true);
-//                  recognizer.runnable = true;
-//                  tr.start();
-//                }
                 if (runnable == false) {
                   System.out.println("Going to wait()");
                   VideoPanel.this.clear();
                   this.wait();
                 }
-
                 count++;
               }
-
-
             } catch (Exception e) {
               System.out.println("Error");
               e.printStackTrace();
@@ -186,6 +178,7 @@ public class VideoPanel extends JPanel {
     }
   }
 
+
   // Load image to ImagePanel without extra savers
   public void loadImage(opencv_core.IplImage filteredImage) {
     BufferedImage img1 = filteredImage.getBufferedImage();
@@ -193,6 +186,7 @@ public class VideoPanel extends JPanel {
     Image image = icon.getImage();
     updadeImage(image);
   }
+
 
   // Load image from Mat
   public void loadImage(Mat filteredImage) {
@@ -210,6 +204,7 @@ public class VideoPanel extends JPanel {
     updadeImage(image);
   }
 
+
   // Matrix image BlueGreenRed
   public boolean convertMatToImage(Mat matBGR) {
     int width = matBGR.width();
@@ -222,6 +217,7 @@ public class VideoPanel extends JPanel {
     System.arraycopy(sourcePixels, 0, targetPixel, 0, sourcePixels.length);
     return true;
   }
+
 
   // Paint components
   public void paintComponent(Graphics g) {

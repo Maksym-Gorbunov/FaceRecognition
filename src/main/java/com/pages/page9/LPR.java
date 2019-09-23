@@ -1,21 +1,19 @@
 package com.pages.page9;
 
 
-import com.constants.Constants;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.opencv.imgproc.Imgproc.RETR_TREE;
 
 
 public class LPR {
+
   private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
@@ -26,7 +24,6 @@ public class LPR {
   private String contourPath = "";
   private String platesPath = "";
   private boolean logger = false;
-
   private int thresh = 80;
 
   // Constructor
