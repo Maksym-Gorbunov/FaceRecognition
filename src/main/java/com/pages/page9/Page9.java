@@ -7,6 +7,8 @@ import com.pages.page7.ImgObject;
 import com.pages.page7.Recognizer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.opencv.core.Core;
+import org.opencv.core.Rect;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 // Simble webbcamera
@@ -36,8 +40,12 @@ public class Page9 extends JPanel implements Pages {
   private Recognizer recognizer = new Recognizer();
   private String outPath = Constants.videoPath + "screenshots\\";
 
+  public static List<String> results = new ArrayList<>();
+  public static Rect rect = null;
+
 
   public Page9(final Gui gui) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     this.gui = gui;
     tab9 = gui.getTab9();
     videoPanel = new VideoPanel(Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT);

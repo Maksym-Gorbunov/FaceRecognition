@@ -1,6 +1,7 @@
 package com.pages.page77;
 
 import com.constants.Constants;
+import javafx.scene.text.Text;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -40,11 +41,21 @@ public class R {
         Mat rotatedPlate = rotateImage(c.getPlateOriginal(), c.getRotatedRect());
         c.setPlateRotated(rotatedPlate);
         Mat cuttedRotatedPlate = cutPlateFromRotatedPlate(rotatedPlate, c.getRotatedRect());
-        Imgproc.putText(cuttedRotatedPlate, String.valueOf((int)c.getAngle()), new Point(10, 30), 1, 1, red, 1);
-        c.setPlateRotatedCutted(cuttedRotatedPlate);
 
         Mat shearedPlate = shearImage(cuttedRotatedPlate, c.getRotatedRect());
+        Imgproc.putText(cuttedRotatedPlate, String.valueOf((int)c.getAngle()), new Point(10, 30), 1, 1, red, 1);
+        c.setPlateRotatedCutted(cuttedRotatedPlate);
         c.setPlateSheared(shearedPlate);
+
+        ////////////////////////////////////////////////////////////////////////////
+//        Mat filtered = filter(shearedPlate);
+
+        String text = TextRecognizer.recognizeText(shearedPlate);
+        c.setText(text);
+        System.out.println(text);
+
+        ////////////////////////////////////////////////////////////////////////////
+
       }
     } else {
       System.out.println("Contours not found");

@@ -16,8 +16,9 @@ public class Contour {
   private Mat plateGray = new Mat();
   private Mat plateRotated = new Mat();
   private Mat plateRotatedCutted = new Mat();
-  private Mat plateFiltered = new Mat();
   private Mat plateSheared = new Mat();
+  private Mat plateFiltered = new Mat();
+  private String text = "";
 
   //Constructor
   public Contour(MatOfPoint contour, int index, RotatedRect rotatedRect, Rect rect) {
@@ -100,5 +101,13 @@ public class Contour {
 
   public void setPlateFiltered(Mat plateFiltered) {
     this.plateFiltered = plateFiltered;
+  }
+
+  public String getText() {
+    return text;
+  }
+
+  public void setText(String text) {
+    this.text = text;
   }
 }

@@ -5,7 +5,9 @@ import org.bytedeco.javacpp.opencv_core;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
 import javax.imageio.ImageIO;
@@ -31,7 +33,9 @@ public class VideoPanel extends JPanel {
   private Mat frame = new Mat();
   private MatOfByte mem = new MatOfByte();
   private Graphics graphics;
-
+  private Scalar blue = new Scalar(255, 0, 0, 255);
+  private Scalar green = new Scalar(0, 255, 0, 255);
+  private Scalar red = new Scalar(0, 0, 255, 255);
 
   // Constructor
   public VideoPanel(int width, int height) {
@@ -115,11 +119,11 @@ public class VideoPanel extends JPanel {
     protected volatile boolean runnable = false;
     private LPR lpr;
     private File file;
-    private String fileOutPath;
+    private String screenshotPath;
 
     public DaemonThread(File file, String screenshotPath) {
       this.file = file;
-      this.fileOutPath = screenshotPath;
+      this.screenshotPath = screenshotPath;
     }
 
     @Override
@@ -130,26 +134,48 @@ public class VideoPanel extends JPanel {
             try {
 /////////////////////////////////////////////////////////////////////
               capture.retrieve(frame);
+              //Imgproc.rectangle(originalContoursImg, c.getRect().tl(), c.getRect().br(), red, 3);
 
+              if (count % 20 == 0) {
+                Mat frameCopy = new Mat();
+                frame.copyTo(frameCopy);
+//                  System.out.println(count);
+                Recognizer recognizer = new Recognizer(frameCopy, count, screenshotPath);
+                Thread tr = new Thread(recognizer);
+                tr.setDaemon(true);
+                recognizer.runnable = true;
+                tr.start();
+              }
+
+              if(Page9.rect != null){
+                Imgproc.rectangle(frame, Page9.rect.tl(), Page9.rect.br(), blue, 3);
+              }
 
               Imgcodecs.imencode(".bmp", frame, mem);
               BufferedImage buff = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
               graphics = VideoPanel.this.getGraphics();
-              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null))
+              if (graphics.drawImage(buff, 0, 0, Constants.VIDEO_WIDTH, Constants.VIDEO_HEIGHT, 0, 0, buff.getWidth(), buff.getHeight(), null)) {
 
-                if (count%5 == 0) {
-//                  String screenshotPath = fileOutPath +"screenshot_"+count+"\\";
-//                  new File(screenshotPath).mkdirs();
-                  lpr = new LPR(fileOutPath);
-                  lpr.recognize(file, frame, count);
-                  System.out.println(count);
-                }
+//                if (count % 20 == 0) {
+//                  Mat frameCopy = new Mat();
+//                  frame.copyTo(frameCopy);
+////                  System.out.println(count);
+//                  Recognizer recognizer = new Recognizer(frameCopy, count, screenshotPath);
+//                  Thread tr = new Thread(recognizer);
+//                  tr.setDaemon(true);
+//                  recognizer.runnable = true;
+//                  tr.start();
+//                }
                 if (runnable == false) {
                   System.out.println("Going to wait()");
                   VideoPanel.this.clear();
                   this.wait();
                 }
-              count++;
+
+                count++;
+              }
+
+
             } catch (Exception e) {
               System.out.println("Error");
               e.printStackTrace();

@@ -99,12 +99,17 @@ public class Page77 extends JPanel implements Pages {
             selectedObject.setContours(new ArrayList<Contour>(result.getContours()));
             if (result.getContours().size() > 0) {
               for (int i = 0; i < result.getContours().size(); i++) {
-                selectedObject.getContours().get(i).setPlateOriginal(result.getContours().get(i).getPlateOriginal());
-                selectedObject.getContours().get(i).setPlateGray(result.getContours().get(i).getPlateGray());
-                selectedObject.getContours().get(i).setPlateRotated(result.getContours().get(i).getPlateRotated());
-                selectedObject.getContours().get(i).setPlateRotatedCutted(result.getContours().get(i).getPlateRotatedCutted());
-                selectedObject.getContours().get(i).setPlateFiltered(result.getContours().get(i).getPlateFiltered());
-                selectedObject.getContours().get(i).setPlateSheared(result.getContours().get(i).getPlateSheared());
+                Contour c = selectedObject.getContours().get(i);
+
+                //show text result
+                licenseNumberTextField.setText(selectedObject.getContours().get(0).getText());
+
+                c.setPlateOriginal(result.getContours().get(i).getPlateOriginal());
+                c.setPlateGray(result.getContours().get(i).getPlateGray());
+                c.setPlateRotated(result.getContours().get(i).getPlateRotated());
+                c.setPlateRotatedCutted(result.getContours().get(i).getPlateRotatedCutted());
+                c.setPlateFiltered(result.getContours().get(i).getPlateFiltered());
+                c.setPlateSheared(result.getContours().get(i).getPlateSheared());
               }
               updateContoursComboBox(selectedObject.getContours().size());
               imgTabPane.setSelectedIndex(2);
@@ -132,6 +137,11 @@ public class Page77 extends JPanel implements Pages {
       @Override
       public void itemStateChanged(ItemEvent e) {
         updatePlateImages();
+        if (contoursComboBox.getItemCount() > 0) {
+          licenseNumberTextField.setText(selectedObject.getContours().get(contoursComboBox.getSelectedIndex()).getText());
+        } else {
+          licenseNumberTextField.setText("");
+        }
       }
     });
     //thrash slider, live changes for temp filtered image
@@ -276,8 +286,8 @@ public class Page77 extends JPanel implements Pages {
     imgTabPane.add("P-Original", platePanelOriginal);
     imgTabPane.add("P-Rotated", platePanelRotated);
     imgTabPane.add("P-Cutted", platePanelRotatedCutted);
-    imgTabPane.add("P-Filtered", platePanelFiltered);
     imgTabPane.add("P-Sheared", platePanelSheared);
+    imgTabPane.add("P-Filtered", platePanelFiltered);
     topLeft.add(imgTabPane);
 
     topLeft.add(contoursComboBox);

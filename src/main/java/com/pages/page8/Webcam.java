@@ -170,7 +170,7 @@ public class Webcam extends JPanel implements Runnable {
 
           CvBox2D box1 = cvFitEllipse2(contour3);
           RotatedRect rotatedRect = new RotatedRect(box1);
-                                  // B, R, G
+                                  // B, Recognizer, G
           Scalar color1 = new Scalar(255,0, 0,0);
           ellipse(cvarrToMat(img), rotatedRect, color1, -1, 0);
 
