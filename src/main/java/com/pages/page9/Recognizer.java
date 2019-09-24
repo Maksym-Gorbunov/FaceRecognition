@@ -1,7 +1,6 @@
 package com.pages.page9;
 
 import com.constants.Constants;
-import com.pages.page8.Webcam;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -45,100 +44,65 @@ public class Recognizer implements Runnable {
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     String pth = Constants.imgPath + "aaa\\";
-    Mat frame = Imgcodecs.imread(pth + "33.jpg");
-//    Mat frame1 = Imgcodecs.imread(pth + "1.jpg");
-//    Mat frame2 = Imgcodecs.imread(pth + "2.jpg");
-//    Mat frame3 = Imgcodecs.imread(pth + "color.jpg");
+    Mat frame = Imgcodecs.imread(pth + "2.jpg");
     Recognizer r = new Recognizer(frame, 0, pth);
     Mat gray = new Mat();
     Imgproc.cvtColor(frame, gray, Imgproc.COLOR_BGR2GRAY);
     Mat filtered = r.filterImage(gray,100,5);
     Imgcodecs.imwrite(pth+"filtered.jpg", filtered);
-
-    r.getContoursFromPlate(frame,filtered);
-
-
-
-//    //Scalar lowerBlue = new Scalar(15, 30, 110);
-//    //Scalar upperBlue = new Scalar(150, 255, 255);
-//    Scalar lowerBlue = new Scalar(20, 100, 100);
-//    Scalar upperBlue = new Scalar(255, 255, 255);
-//
-//
-//    Mat result1 = r.removeColor(frame1, lowerBlue, upperBlue);
-//    Imgcodecs.imwrite(pth+"result1.jpg", result1);
-//
-//    frame2.convertTo(frame2,-1,1,80);
-//    Mat result2 = r.removeColor(frame2, lowerBlue, upperBlue);
-//    Imgcodecs.imwrite(pth+"result2.jpg", result2);
-//
-//    Mat result3 = r.removeColor(frame3, lowerBlue, upperBlue);
-//    Imgcodecs.imwrite(pth+"result3.jpg", result3);
-//
-//
-////    Mat brigth = new Mat();
-////    frame2.convertTo(brigth,-1,1,100);
-////    Imgcodecs.imwrite(pth+"result1_bright.jpg", brigth);
-
+    filtered = r.getContoursFromPlate(frame,filtered);
   }
 
-  private void getContoursFromPlate(Mat colorPlate, Mat filteredPlate){
-    List<MatOfPoint> tempContours = new ArrayList<>();
+  private Mat getContoursFromPlate(Mat src, Mat srcFiltered){
+    List<MatOfPoint> contours = new ArrayList<>();
     Mat colorPlateCopy = new Mat();
-    colorPlate.copyTo(colorPlateCopy);
-    Imgproc.findContours(filteredPlate, tempContours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-    int i = 1;
-    double startX = colorPlate.width();
-    double startY = colorPlate.height();
+    src.copyTo(colorPlateCopy);
+    Imgproc.findContours(srcFiltered, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    if(contours.size()==0){
+      return src;
+    }
+    double startX = src.width();
+    double startY = src.height();
     double endX = 0;
     double endY = 0;
-    for (MatOfPoint c : tempContours) {
+    boolean exist = false;
+    for (MatOfPoint c : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
       Point rotatedRectPoints[] = new Point[4];
       rotatedRectangle.points(rotatedRectPoints);
       Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-
-      rect = cutRectIfOutOfImageArea(filteredPlate, rect);
-
-
-
-        if( (rect.height>0.5*filteredPlate.height()) && (rect.height<0.95*filteredPlate.height()) ) {
-
-          Imgproc.rectangle(colorPlate, rect.tl(), rect.br(), blue, 1);
-          System.out.println(rotatedRectangle.angle);
-
+      rect = cutRectIfOutOfImageArea(srcFiltered, rect);
+        if( (rect.height>0.5*srcFiltered.height()) && (rect.height<0.95*srcFiltered.height()) ) {
+          Imgproc.rectangle(src, rect.tl(), rect.br(), blue, 1);
+          //System.out.println(rotatedRectangle.angle);
           if(rect.tl().x<startX){
             startX = rect.tl().x;
           }
           if(rect.tl().y<startY){
             startY = rect.tl().y;
           }
-
           if(rect.br().x>endX){
             endX = rect.br().x;
           }
           if(rect.br().y>endY){
             endY = rect.br().y;
           }
-
-
+          exist = true;
         }
-
     }
-    String pth = Constants.imgPath + "aaa\\";
-    Imgcodecs.imwrite(pth+"contours.jpg", colorPlate);
-
-    Point start = new Point(startX, startY);
-    Point end = new Point(endX, endY);
-
-    Imgproc.rectangle(colorPlate, start, end, red, 2);
-    Imgcodecs.imwrite(pth+"contours2.jpg", colorPlate);
-
-    Mat result = new Mat(colorPlateCopy, new Rect(start, end));
-    Imgcodecs.imwrite(pth+"result.jpg", result);
-
-
+    if(exist){
+      String pth = Constants.imgPath + "aaa\\";
+      Imgcodecs.imwrite(pth+"contours.jpg", src);
+      Point start = new Point(startX, startY);
+      Point end = new Point(endX, endY);
+      Imgproc.rectangle(src, start, end, red, 2);
+      Imgcodecs.imwrite(pth+"contours2.jpg", src);
+      Mat result = new Mat(colorPlateCopy, new Rect(start, end));
+      Imgcodecs.imwrite(pth+"result.jpg", result);
+      return result;
+    }
+    return src;
   }
 
   private Mat removeColor(Mat src, Scalar lowerColor, Scalar upperColor){
@@ -192,24 +156,24 @@ public class Recognizer implements Runnable {
 //    new File(contourPath).mkdirs();
     int i = 0;
     for (Contour c : contours) {
-//      Mat plate = new Mat(frameGray, c.getRect());
-      Mat plate = new Mat(frame, c.getRect());
+      Mat plate = new Mat(frameGray, c.getRect());
+//      Mat plate = new Mat(frame, c.getRect());
       Mat rotatedPlate = rotateImage(plate, c.getRotatedRect());
       Mat cuttedRotatedPlate = cutPlateFromRotatedPlate(rotatedPlate, c.getRotatedRect());
 
-      ////
-//      cuttedRotatedPlate = removeBlueColor(cuttedRotatedPlate);
-
+      /////////////////////////////////////////////////////////////
+      Mat filteredPlate = filterImage(cuttedRotatedPlate,100,5);
+      Mat result = getContoursFromPlate(cuttedRotatedPlate, filteredPlate);
 
       //recognize v 1.0
-      String text = TextRecognizer.recognizeText(cuttedRotatedPlate);
+      String text = TextRecognizer.recognizeText(result);
       if (text.length() > 5) {
 //        System.out.println(text);
         if (!Page9.results.contains(text)) {
           Page9.results.add(text);
           Page9.rect = c.getRect();
           System.out.println(text);
-          Imgcodecs.imwrite(screenshotPath + "plate_"+frameCount+"_" + i + ".jpg", cuttedRotatedPlate);
+          Imgcodecs.imwrite(screenshotPath + "plate_"+frameCount+"_" + i + ".jpg", result);
 
         }
 
