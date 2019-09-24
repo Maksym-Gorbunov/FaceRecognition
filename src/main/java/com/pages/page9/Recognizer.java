@@ -1,6 +1,6 @@
 package com.pages.page9;
 
-import com.pages.page8.Webcam;
+import com.constants.Constants;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -19,14 +19,14 @@ import java.util.List;
 
 import static org.opencv.imgproc.Imgproc.RETR_TREE;
 
-public class Recognizer implements Runnable{
+public class Recognizer implements Runnable {
 
   public static String screenshotPath = "";
   protected volatile boolean runnable = false;
   private Scalar blue = new Scalar(255, 0, 0, 255);
   private Scalar green = new Scalar(0, 255, 0, 255);
   private Scalar red = new Scalar(0, 0, 255, 255);
-//  private Scalar gray = new Scalar(20, 20, 20, 255);
+  //private Scalar gray = new Scalar(20, 20, 20, 255);
   private Scalar randomColor = new Scalar(Math.random() * 255, Math.random() * 255, Math.random() * 255, 0);
   private boolean logger = true;
   private List<Contour> contours = null;
@@ -34,10 +34,37 @@ public class Recognizer implements Runnable{
   private Mat frameGray = new Mat();
   private int frameCount;
 
-  public Recognizer(Mat frame, int frameCount, String screenshotPath){
+
+  public Recognizer(Mat frame, int frameCount, String screenshotPath) {
     this.screenshotPath = screenshotPath;
     this.frame = frame;
     this.frameCount = frameCount;
+  }
+
+  public static void main(String[] args) {
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    String pth = Constants.imgPath + "filterColor\\";
+    Mat frame = Imgcodecs.imread(pth + "1.jpg");
+//    Mat frame = Imgcodecs.imread(pth + "color.jpg");
+    Recognizer r = new Recognizer(frame, 0, pth);
+
+    Scalar lowerBlue = new Scalar(100, 0, 0);
+    Scalar upperBlue = new Scalar(255, 255, 255);
+
+    Mat result = r.filterColor(frame, lowerBlue, upperBlue);
+    Imgcodecs.imwrite(pth+"result.jpg", result);
+
+
+  }
+
+  private Mat filterColor(Mat src, Scalar lowerColor, Scalar upperColor){
+    Mat mask = new Mat();
+    Core.inRange(src, lowerColor, upperColor, mask);
+    Imgproc.cvtColor(mask, mask, Imgproc.COLOR_GRAY2RGB);
+    Mat result = new Mat();
+    Core.subtract(mask, src, result);
+    Core.subtract(mask, result, result);
+    return result;
   }
 
   // Convert BufferedImage to Mat
@@ -57,37 +84,38 @@ public class Recognizer implements Runnable{
     }
   }
 
-  public void recognize(){
+  public void recognize() {
 //    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 //    this.screenshotPath = screenshotPath;
 //    this.frame = frame;
     Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_RGB2GRAY);
 
     contours = findContouts(100);
-    if(contours == null){
+    if (contours == null) {
       return;
     }
 
-    String contourPath = screenshotPath+frameCount+"\\";
+    String contourPath = screenshotPath + frameCount + "\\";
     new File(contourPath).mkdirs();
-    int i=0;
-    for(Contour c : contours){
+    int i = 0;
+    for (Contour c : contours) {
       Mat plate = new Mat(frameGray, c.getRect());
       Mat rotatedPlate = rotateImage(plate, c.getRotatedRect());
       Mat cuttedRotatedPlate = cutPlateFromRotatedPlate(rotatedPlate, c.getRotatedRect());
-      //Imgcodecs.imwrite(contourPath+"plate"+i+".jpg", cuttedRotatedPlate);
 
       //recognize v 1.0
       String text = TextRecognizer.recognizeText(cuttedRotatedPlate);
-      if(text.length()>5 ){
+      if (text.length() > 5) {
 //        System.out.println(text);
-        if(!Page9.results.contains(text)){
+        if (!Page9.results.contains(text)) {
           Page9.results.add(text);
           Page9.rect = c.getRect();
           System.out.println(text);
+          Imgcodecs.imwrite(screenshotPath + "plate" + i + ".jpg", cuttedRotatedPlate);
+
         }
 
-      } else{
+      } else {
         System.out.println("---");
         Page9.rect = null;
       }
@@ -133,14 +161,14 @@ public class Recognizer implements Runnable{
     Imgproc.cvtColor(cuttedPlate, grayImg, Imgproc.COLOR_RGB2GRAY);
     double x = 0;
 
-      if (rotatedRect.size.width > rotatedRect.size.height) {
+    if (rotatedRect.size.width > rotatedRect.size.height) {
 //        System.out.println("plus");
-        x = 0.2;
-      } else {
+      x = 0.2;
+    } else {
 //        System.out.println("minus");
-        x = -0.45;
-      }
-    System.out.println("angle="+(int)rotatedRect.angle+", x="+x);
+      x = -0.45;
+    }
+    System.out.println("angle=" + (int) rotatedRect.angle + ", x=" + x);
     BufferedImage buffer = null;
     try {
       buffer = mat2BufferedImage(grayImg);
@@ -266,7 +294,7 @@ public class Recognizer implements Runnable{
     List<Contour> contours = null;
     Imgproc.findContours(filteredImg, tempContours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     double imgArea = filteredImg.size().area();
-    int i=1;
+    int i = 1;
     for (MatOfPoint c : tempContours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
@@ -277,7 +305,7 @@ public class Recognizer implements Runnable{
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         rect = cutRectIfOutOfImageArea(filteredImg, rect);
         if ((rect.width > rect.height) && (rect.width < 6 * rect.height)) {
-          if(contours == null){
+          if (contours == null) {
             contours = new ArrayList<>();
           }
           Contour contour = new Contour(c, rotatedRectangle, rect);
@@ -286,7 +314,7 @@ public class Recognizer implements Runnable{
         }
       }
     }
-    if(contours != null){
+    if (contours != null) {
       return contours;
     }
     return null;
