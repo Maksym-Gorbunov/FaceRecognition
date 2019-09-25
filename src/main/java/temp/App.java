@@ -1,4 +1,4 @@
-package Temp;
+package temp;
 
 class MyTask extends Thread{
   @Override

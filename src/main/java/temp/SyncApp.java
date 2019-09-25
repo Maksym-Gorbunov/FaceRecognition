@@ -1,4 +1,4 @@
-package Temp;
+package temp;
 
 
 // Synchronization need when few threads work with the same singe object
