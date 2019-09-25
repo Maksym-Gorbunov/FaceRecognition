@@ -144,6 +144,7 @@ public class Recognizer implements Runnable {
     }
   }
 
+  //find and recognize license numbers from video frames
   public void recognize() {
     Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_RGB2GRAY);
 
