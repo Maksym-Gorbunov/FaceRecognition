@@ -2,15 +2,14 @@ package temp;
 
 import com.constants.Constants;
 import com.pages.page9.Page9;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.bytedeco.javacpp.opencv_imgproc.RETR_TREE;
 
 public class ColorBlind {
 
@@ -21,7 +20,7 @@ public class ColorBlind {
     ColorBlind c = new ColorBlind();
 //    Mat src = Imgcodecs.imread(path + "color.jpg");
 //
-    Mat src = Imgcodecs.imread(path + "1.png");
+    Mat src = Imgcodecs.imread(path + "2.jpg");
 //    Mat gray = new Mat();
 //    Imgproc.cvtColor(src1, gray, Imgproc.COLOR_RGB2GRAY);
 //    Imgcodecs.imwrite(path + "gray.jpg", gray);
@@ -33,23 +32,36 @@ public class ColorBlind {
     Mat matrix = new Mat();
     img.copyTo(matrix);
 
+    List<Point> neighboursList = new ArrayList<>();
+    Mat whiteImage = new Mat(matrix.rows(), matrix.cols(), CvType.CV_8UC1, new Scalar(255));
+
     for (int row = 0; row < matrix.rows(); row++) {
       for (int col = 0; col < matrix.cols(); col++) {
-        double[] pointGBR = matrix.get(row,col);
+        double[] pointGBR = matrix.get(row, col);
         String pointColorName = getColorName(pointGBR);
 
-        if(pointColorName.equals("Red")){
-          Point point = new Point(col, row);
-          List<Point> neighborhoods = getNeighborhoods(matrix,point);
-          for(Point n : neighborhoods){
-            double[] neighborBGR = matrix.get((int)n.y, (int)n.x);
-            String neighborColorName = getColorName(neighborBGR);
-            if(pointColorName.equals(neighborColorName)){
 
-              matrix.put((int)n.y, (int)n.x, new double[]{0, 0, 0});
+        if (pointColorName.equals("Red")) {
+          Point point = new Point(col, row);
+          List<Point> neighborhoods = getNeighborhoods(matrix, point);
+          for (Point neighborPoint : neighborhoods) {
+            double[] neighborBGR = matrix.get((int) neighborPoint.y, (int) neighborPoint.x);
+            String neighborColorName = getColorName(neighborBGR);
+
+            //match red/green conflict
+            if (neighborColorName.equals("Green")) {
+
+//              //add all neighbours in one list without repeats
+//              if (!neighboursList.contains(neighborPoint)) {
+//                neighboursList.add(neighborPoint);
+//
+//              }
+              whiteImage.put((int) neighborPoint.y, (int) neighborPoint.x, new double[]{0, 0, 0});
+              matrix.put((int) neighborPoint.y, (int) neighborPoint.x, new double[]{0, 0, 0});
             }
           }
 
+          // create neighbours families
 
 
         }
@@ -57,26 +69,79 @@ public class ColorBlind {
     }
 
     Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result1.jpg", matrix);
+    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\white.jpg", whiteImage);
+
+
+    List<Rect> rectList = new ArrayList<>();
+    rectList = getRectangles(whiteImage);
+    if(rectList.size()>0){
+      //draw rects
+      for(Rect rect : rectList){
+        Imgproc.rectangle(matrix, rect.tl(), rect.br(), new Scalar(0,0,0), 1);
+
+      }
+    }
+
+    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result2.jpg", matrix);
+
+  }
+
+  private List<Rect> getRectangles(Mat whiteImage) {
+    List<Rect> rectList = new ArrayList<>();
+    List<MatOfPoint> contours = new ArrayList<>();
+    Imgproc.findContours(whiteImage, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    for (MatOfPoint c : contours) {
+      MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
+      RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
+      Point rotatedRectPoints[] = new Point[4];
+      rotatedRectangle.points(rotatedRectPoints);
+      Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
+      rect = cutRectIfOutOfImageArea(whiteImage, rect);
+      rectList.add(rect);
+    }
+    return rectList;
+  }
+
+  // Cut off contours rectangle if out off image area
+  private Rect cutRectIfOutOfImageArea(Mat image, Rect rect) {
+    double startX = rect.tl().x;
+    double startY = rect.tl().y;
+    double endX = rect.br().x;
+    double endY = rect.br().y;
+    if (startX < 0) {
+      startX = 0;
+    }
+    if (startY < 0) {
+      startY = 0;
+    }
+    if (endX > image.width()) {
+      endX = image.width();
+    }
+    if (endY > image.height()) {
+      endY = image.height();
+    }
+    Rect cuttedRect = new Rect(new Point(startX, startY), new Point(endX, endY));
+    return cuttedRect;
   }
 
   private List<Point> getNeighborhoods(Mat src, Point point) {
     List<Point> points = new ArrayList<>();
-      if(point.y != 0){
-        Point top = new Point(point.x, point.y-1);
-        points.add(top);
-      }
-      if(point.y != src.height()-1){
-        Point bottom = new Point(point.x, point.y+1);
-        points.add(bottom);
-      }
-      if(point.x != 0) {
-        Point left = new Point(point.x - 1, point.y);
-        points.add(left);
-      }
-      if(point.x != src.width()-1) {
-        Point right = new Point(point.x + 1, point.y);
-        points.add(right);
-      }
+    if (point.y != 0) {
+      Point top = new Point(point.x, point.y - 1);
+      points.add(top);
+    }
+    if (point.y != src.height() - 1) {
+      Point bottom = new Point(point.x, point.y + 1);
+      points.add(bottom);
+    }
+    if (point.x != 0) {
+      Point left = new Point(point.x - 1, point.y);
+      points.add(left);
+    }
+    if (point.x != src.width() - 1) {
+      Point right = new Point(point.x + 1, point.y);
+      points.add(right);
+    }
     return points;
   }
 
@@ -152,6 +217,9 @@ public class ColorBlind {
     if ((red > blue) && (red > green)) {
       name = "Red";
     }
+//    if((red == green) && (red > blue)){
+//      name = "Yellow";
+//    }
     return name;
   }
 
