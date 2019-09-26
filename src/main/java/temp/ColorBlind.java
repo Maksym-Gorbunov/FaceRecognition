@@ -19,9 +19,9 @@ public class ColorBlind {
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorBlind c = new ColorBlind();
-    Mat src = Imgcodecs.imread(path + "color.jpg");
+//    Mat src = Imgcodecs.imread(path + "color.jpg");
 //
-//    Mat src1 = Imgcodecs.imread(path + "1.png");
+    Mat src = Imgcodecs.imread(path + "1.png");
 //    Mat gray = new Mat();
 //    Imgproc.cvtColor(src1, gray, Imgproc.COLOR_RGB2GRAY);
 //    Imgcodecs.imwrite(path + "gray.jpg", gray);
@@ -35,24 +35,28 @@ public class ColorBlind {
 
     for (int row = 0; row < matrix.rows(); row++) {
       for (int col = 0; col < matrix.cols(); col++) {
-        double[] pixelGBR = matrix.get(row,col);
+        double[] pointGBR = matrix.get(row,col);
+        String pointColorName = getColorName(pointGBR);
 
-        if(getColorName(pixelGBR).equals("Red")){
+        if(pointColorName.equals("Red")){
           Point point = new Point(col, row);
           List<Point> neighborhoods = getNeighborhoods(matrix,point);
           for(Point n : neighborhoods){
-            double[] neighborBGR = matrix.get(n.y, n.x);
-            String neighborName = getColorName(neighborBGR);
+            double[] neighborBGR = matrix.get((int)n.y, (int)n.x);
+            String neighborColorName = getColorName(neighborBGR);
+            if(pointColorName.equals(neighborColorName)){
+
+              matrix.put((int)n.y, (int)n.x, new double[]{0, 0, 0});
+            }
           }
 
 
 
-          matrix.put(row, col, new double[]{0, 0, 0});
         }
       }
     }
 
-//    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result1.jpg", matrix);
+    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result1.jpg", matrix);
   }
 
   private List<Point> getNeighborhoods(Mat src, Point point) {
