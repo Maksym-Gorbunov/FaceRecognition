@@ -1,4 +1,10 @@
 package temp;
+/*
+System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+Imgproc.cvtColor(src1, gray, Imgproc.COLOR_RGB2GRAY);
+Imgproc.rectangle(frame, Page9.rect.tl(), Page9.rect.br(), blue, 3);
+Imgproc.putText(cuttedRotatedPlate, String.valueOf((int)c.getAngle()), new Point(10, 30), 1, 1, red, 1);
+*/
 
 import com.constants.Constants;
 import org.opencv.core.*;
@@ -12,14 +18,36 @@ import static org.bytedeco.javacpp.opencv_imgproc.RETR_TREE;
 
 public class ColorBlind {
 
+  Scalar blue = new Scalar(255,0,0);
+  Scalar green = new Scalar(0,255,0);
+  Scalar red = new Scalar(0,0,255);
   public static String path = Constants.imgPath + "colorblind\\";
 
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorBlind c = new ColorBlind();
-    Mat src = Imgcodecs.imread(path + "test2.png");
+    Mat src = Imgcodecs.imread(path + "1.jpg");
     c.findColor(src);
+    //Mat src = Imgcodecs.imread(path + "2.jpg");
+    //c.filter(src);
   }
+
+
+
+
+
+  private void filter(Mat src) {
+    Mat filtered = new Mat();
+    src.copyTo(filtered);
+
+//    Imgproc.putText(filtered, "filtered", new Point(200, 300), 1, 1, red, 1);
+    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\filtered.jpg", filtered);
+  }
+
+
+
+
+
 
   private void findColor(Mat img) {
     Mat matrix = new Mat();
@@ -45,8 +73,8 @@ public class ColorBlind {
         }
       }
     }
-    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result1.jpg", matrix);
-    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\white.jpg", whiteImage);
+    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result_1.jpg", matrix);
+    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result_2.jpg", whiteImage);
     List<Rect> rectList = new ArrayList<>();
     rectList = getRectangles(whiteImage);
     if(rectList.size()>0){
@@ -56,7 +84,7 @@ public class ColorBlind {
 
       }
     }
-    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result2.jpg", matrix);
+    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result_3.jpg", matrix);
   }
 
   private List<Rect> getRectangles(Mat whiteImage) {
@@ -103,10 +131,26 @@ public class ColorBlind {
     if (point.y != 0) {
       Point top = new Point(point.x, point.y - 1);
       points.add(top);
+      if (point.x != 0) {
+        Point tl = new Point(point.x - 1, point.y-1);
+        points.add(tl);
+      }
+      if (point.x != src.width()-1) {
+        Point tr = new Point(point.x + 1, point.y-1);
+        points.add(tr);
+      }
     }
     if (point.y != src.height() - 1) {
       Point bottom = new Point(point.x, point.y + 1);
       points.add(bottom);
+      if (point.x != 0) {
+        Point bl = new Point(point.x - 1, point.y+1);
+        points.add(bl);
+      }
+      if (point.x != src.width()-1) {
+        Point br = new Point(point.x + 1, point.y+1);
+        points.add(br);
+      }
     }
     if (point.x != 0) {
       Point left = new Point(point.x - 1, point.y);
@@ -116,6 +160,12 @@ public class ColorBlind {
       Point right = new Point(point.x + 1, point.y);
       points.add(right);
     }
+
+
+
+
+
+
     return points;
   }
 
