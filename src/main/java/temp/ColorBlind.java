@@ -9,6 +9,9 @@ import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ColorBlind {
 
   public static String path = Constants.imgPath + "colorblind\\";
@@ -17,16 +20,62 @@ public class ColorBlind {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorBlind c = new ColorBlind();
     Mat src = Imgcodecs.imread(path + "color.jpg");
+//
+//    Mat src1 = Imgcodecs.imread(path + "1.png");
+//    Mat gray = new Mat();
+//    Imgproc.cvtColor(src1, gray, Imgproc.COLOR_RGB2GRAY);
+//    Imgcodecs.imwrite(path + "gray.jpg", gray);
 
-    Mat src1 = Imgcodecs.imread(path + "1.png");
-    Mat gray = new Mat();
-    Imgproc.cvtColor(src1, gray, Imgproc.COLOR_RGB2GRAY);
-    Imgcodecs.imwrite(path + "gray.jpg", gray);
-
-
-//    Mat src = Imgcodecs.imread(path+"button1.jpg");
-    c.temp(src);
+    c.findColor(src);
   }
+
+  private void findColor(Mat img) {
+    Mat matrix = new Mat();
+    img.copyTo(matrix);
+
+    for (int row = 0; row < matrix.rows(); row++) {
+      for (int col = 0; col < matrix.cols(); col++) {
+        double[] pixelGBR = matrix.get(row,col);
+
+        if(getColorName(pixelGBR).equals("Red")){
+          Point point = new Point(col, row);
+          List<Point> neighborhoods = getNeighborhoods(matrix,point);
+          for(Point n : neighborhoods){
+            double[] neighborBGR = matrix.get(n.y, n.x);
+            String neighborName = getColorName(neighborBGR);
+          }
+
+
+
+          matrix.put(row, col, new double[]{0, 0, 0});
+        }
+      }
+    }
+
+//    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result1.jpg", matrix);
+  }
+
+  private List<Point> getNeighborhoods(Mat src, Point point) {
+    List<Point> points = new ArrayList<>();
+      if(point.y != 0){
+        Point top = new Point(point.x, point.y-1);
+        points.add(top);
+      }
+      if(point.y != src.height()-1){
+        Point bottom = new Point(point.x, point.y+1);
+        points.add(bottom);
+      }
+      if(point.x != 0) {
+        Point left = new Point(point.x - 1, point.y);
+        points.add(left);
+      }
+      if(point.x != src.width()-1) {
+        Point right = new Point(point.x + 1, point.y);
+        points.add(right);
+      }
+    return points;
+  }
+
 
   private void temp(Mat image) {
 //    Mat imageCopy = new Mat();
@@ -41,9 +90,9 @@ public class ColorBlind {
 //    for(double field: point1){
 //      System.out.println(field);
 //    }
-    double[] blue =  {255, 0, 0};
+    double[] blue = {255, 0, 0};
     double[] green = {0, 255, 0};
-    double[] red =   {0, 0, 255};
+    double[] red = {0, 0, 255};
 
     Point pointA = new Point(10, 10);
     Point pointB = new Point(100, 10);
@@ -74,10 +123,10 @@ public class ColorBlind {
     System.out.println("_________________________________");
 
 
-    Imgproc.putText(image, aColorName, new Point(pointA.x-10, pointA.y+20), 1, 0.8, new Scalar(0,0,0), 1);
-    Imgproc.putText(image, bColorName, new Point(pointB.x-10, pointB.y+20), 1, 0.8, new Scalar(0,0,0), 1);
-    Imgproc.putText(image, cColorName, new Point(pointC.x-10, pointC.y+20), 1, 0.8, new Scalar(0,0,0), 1);
-    Imgproc.putText(image, dColorName, new Point(pointD.x-10, pointD.y+20), 1, 0.8, new Scalar(0,0,0), 1);
+    Imgproc.putText(image, aColorName, new Point(pointA.x - 10, pointA.y + 20), 1, 0.8, new Scalar(0, 0, 0), 1);
+    Imgproc.putText(image, bColorName, new Point(pointB.x - 10, pointB.y + 20), 1, 0.8, new Scalar(0, 0, 0), 1);
+    Imgproc.putText(image, cColorName, new Point(pointC.x - 10, pointC.y + 20), 1, 0.8, new Scalar(0, 0, 0), 1);
+    Imgproc.putText(image, dColorName, new Point(pointD.x - 10, pointD.y + 20), 1, 0.8, new Scalar(0, 0, 0), 1);
 
     Imgcodecs.imwrite(path + "colorCopy.jpg", image);
   }
