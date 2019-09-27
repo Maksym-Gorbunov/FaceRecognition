@@ -7,10 +7,12 @@ Imgproc.putText(cuttedRotatedPlate, String.valueOf((int)c.getAngle()), new Point
 */
 
 import com.constants.Constants;
+import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class ColorBlind {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorBlind c = new ColorBlind();
     Mat src = Imgcodecs.imread(path + "1.jpg");
-    c.findColor(src);
+//    c.findColorConflict(src);
     //Mat src = Imgcodecs.imread(path + "2.jpg");
     //c.filter(src);
   }
@@ -49,7 +51,14 @@ public class ColorBlind {
 
 
 
-  private void findColor(Mat img) {
+  public void findColorConflict(String imgPath, String resultsPath) {
+    File f = new File(imgPath);
+    String fileName = f.getName();
+    String filenameWithoutExt = FilenameUtils.removeExtension(fileName);
+    String ext = FilenameUtils.getExtension(fileName);
+
+
+    Mat img = Imgcodecs.imread(imgPath);
     Mat matrix = new Mat();
     img.copyTo(matrix);
     //List<Point> neighboursList = new ArrayList<>();
@@ -73,8 +82,8 @@ public class ColorBlind {
         }
       }
     }
-    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result_1.jpg", matrix);
-    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result_2.jpg", whiteImage);
+    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_1."+ext, matrix);
+    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_2."+ext, whiteImage);
     List<Rect> rectList = new ArrayList<>();
     rectList = getRectangles(whiteImage);
     if(rectList.size()>0){
@@ -84,7 +93,7 @@ public class ColorBlind {
 
       }
     }
-    Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result_3.jpg", matrix);
+    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_3."+ext, matrix);
   }
 
 
