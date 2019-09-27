@@ -87,6 +87,7 @@ public class ColorBlind {
     Imgcodecs.imwrite(Constants.imgPath + "colorblind\\result_3.jpg", matrix);
   }
 
+
   private List<Rect> getRectangles(Mat whiteImage) {
     List<Rect> rectList = new ArrayList<>();
     List<MatOfPoint> contours = new ArrayList<>();
@@ -124,6 +125,7 @@ public class ColorBlind {
     Rect cuttedRect = new Rect(new Point(startX, startY), new Point(endX, endY));
     return cuttedRect;
   }
+
 
   // Get all pointer neighbours from matrix image
   private List<Point> getNeighbours(Mat src, Point point) {
