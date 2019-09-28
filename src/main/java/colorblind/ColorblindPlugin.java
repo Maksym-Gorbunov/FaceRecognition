@@ -5,6 +5,11 @@ import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,13 +24,19 @@ public class ColorblindPlugin {
   private Scalar blue = new Scalar(255, 0, 0);
   private boolean logger = true;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin c = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.jpg");
+    //Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.jpg");
     //check time
     //long startTime = System.nanoTime();
-    c.findColorConflict(image);
+
+    BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
+
+    Mat img = bufferedImageToMat(bufferedImage);
+    Imgcodecs.imwrite(path + "ddd.jpg", img);
+
+    //c.findColorConflict(img);
     //long endTime = System.nanoTime();
     //long duration = (endTime - startTime);
     //System.out.println(duration / 1000000);
@@ -224,4 +235,13 @@ public class ColorblindPlugin {
     return channel;
   }
 
+
+  // Convert BufferedImage to Mat
+  public static Mat bufferedImageToMat(BufferedImage bi) {
+    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC4);
+//    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
+    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+    mat.put(0, 0, data);
+    return mat;
+  }
 }
