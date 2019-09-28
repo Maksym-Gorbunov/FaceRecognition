@@ -36,7 +36,7 @@ public class ColorblindPlugin {
 //    String filenameWithoutExt = FilenameUtils.removeExtension(fileName);
 //    String ext = FilenameUtils.getExtension(fileName);
     //List<Point> neighboursList = new ArrayList<>();
-    Mat monoImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(255));
+    Mat monoImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
 
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
@@ -54,8 +54,8 @@ public class ColorblindPlugin {
             // match 'red/green' conflict
             if (neighbourColorChannel == 2) {
               conflict = true;
-              monoImg.put((int) neighbor.y, (int) neighbor.x, new double[]{0, 0, 0});
-              img.put((int) neighbor.y, (int) neighbor.x, new double[]{0, 0, 0});
+              monoImg.put((int) neighbor.y, (int) neighbor.x, new double[]{255, 255, 255});
+              img.put((int) neighbor.y, (int) neighbor.x, new double[]{255, 0, 0});
             }
           }
         }
@@ -78,57 +78,47 @@ public class ColorblindPlugin {
 
 
   private List<Rect> getRectangles(Mat monoImg) {
-    List<Rect> tempRectList = new ArrayList<>();
-    List<MatOfPoint> tempContours = new ArrayList<>();
-    Imgproc.findContours(monoImg, tempContours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-    for (MatOfPoint c : tempContours) {
-
-
-
+    List<Rect> rectList = new ArrayList<>();
+    List<MatOfPoint> contours = new ArrayList<>();
+    //Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 1,1);
+    Imgcodecs.imwrite(path + "mono_blur.jpg", monoImg);
+    Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+    for (MatOfPoint c : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
       if (rotatedRectangle.size.area() < 0.5 * monoImg.size().area()) {
-
-
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-        //rect = cutRectIfOutOfImageArea(monoImg, rect);
-        // fill small contours with color for easy family grouping
-        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), new Scalar(0, 0, 0), -1);
-
-        //Imgproc.fillPoly(monoImg, Arrays.asList(c), new Scalar(0,0,0));
-//        MatOfPoint m = new MatOfPoint(rect);
-//        Imgproc.fillConvexPoly(monoImg, new MatOfPoint(rotatedRectPoints), new Scalar(0,0,0));
-
-        tempRectList.add(rect);
+        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), new Scalar(255, 255, 255), -1);
+        rectList.add(rect);
       }
     }
-//    Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 1);
-    Imgcodecs.imwrite(path + "mono1.jpg", monoImg);
-
-
-    // group rectangles, collect neighbouring small contours in one larger
-    if (tempRectList.size() > 0) {
-      List<Rect> rectList = new ArrayList<>();
-      List<MatOfPoint> contours = new ArrayList<>();
-      Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-      for (MatOfPoint c : tempContours) {
-        MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
-        RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
-        //if(rotatedRectangle.size.area() < 0.5*monoImg.size().area()){
-        Point rotatedRectPoints[] = new Point[4];
-        rotatedRectangle.points(rotatedRectPoints);
-        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-        //rect = cutRectIfOutOfImageArea(monoImg, rect);
-        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), new Scalar(0, 0, 0), 1);
-        rectList.add(rect);
-        //}
-      }
-      Imgcodecs.imwrite(path + "mono2.jpg", monoImg);
+    Imgcodecs.imwrite(path + "mono_rects.jpg", monoImg);
+    if (rectList.size() > 0) {
+      groupRects(rectList);
+      System.out.println("total: " + rectList.size());
       return rectList;
     }
     return null;
+
+  }
+
+  // Group mini rects groups in larger rects
+  private void groupRects(List<Rect> list) {
+    for (int i = 0; i < list.size(); i++) {
+      Rect rectA = list.get(i);
+      for (int j = i + 1; j < list.size(); j++) {
+        Rect rectB = list.get(j);
+        Point tl = rectB.tl();
+        Point tr = new Point(rectB.br().x, rectB.tl().y);
+        Point bl = new Point(rectB.tl().x, rectB.br().y);
+        Point br = rectB.br();
+        if (rectA.contains(tl) || rectA.contains(tr) || rectA.contains(bl) || rectA.contains(br)) {
+          //rect cross another rect
+        }
+      }
+    }
   }
 
 
