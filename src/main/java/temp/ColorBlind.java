@@ -172,12 +172,6 @@ public class ColorBlind {
       Point right = new Point(point.x + 1, point.y);
       points.add(right);
     }
-
-
-
-
-
-
     return points;
   }
 
