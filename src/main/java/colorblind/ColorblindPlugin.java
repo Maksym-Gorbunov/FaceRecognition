@@ -27,16 +27,20 @@ public class ColorblindPlugin {
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin c = new ColorblindPlugin();
-    //Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.jpg");
+    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.jpg");
     //check time
     //long startTime = System.nanoTime();
 
-    BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
+    //BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
 
-    Mat img = bufferedImageToMat(bufferedImage);
-    Imgcodecs.imwrite(path + "ddd.jpg", img);
+    //Mat img = bufferedImageToMat(bufferedImage);
 
-    //c.findColorConflict(img);
+    //Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
+
+
+    //Imgcodecs.imwrite(path + "ddd.jpg", img);
+
+    c.findColorConflict(image);
     //long endTime = System.nanoTime();
     //long duration = (endTime - startTime);
     //System.out.println(duration / 1000000);
@@ -238,7 +242,7 @@ public class ColorblindPlugin {
 
   // Convert BufferedImage to Mat
   public static Mat bufferedImageToMat(BufferedImage bi) {
-    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC4);
+    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8SC(4));
 //    Mat mat = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
     byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
     mat.put(0, 0, data);
