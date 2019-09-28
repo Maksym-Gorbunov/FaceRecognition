@@ -94,15 +94,16 @@ public class ColorblindPlugin {
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         //rect = cutRectIfOutOfImageArea(monoImg, rect);
-        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
+        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), new Scalar(0, 0, 0), -1);
 
         //Imgproc.fillPoly(monoImg, Arrays.asList(c), new Scalar(0,0,0));
-        //Imgproc.fillConvexPoly(monoImg, rect, new Scalar(0,0,0));
+//        MatOfPoint m = new MatOfPoint(rect);
+//        Imgproc.fillConvexPoly(monoImg, new MatOfPoint(rotatedRectPoints), new Scalar(0,0,0));
 
         tempRectList.add(rect);
       }
     }
-    Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 1);
+//    Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 1);
     Imgcodecs.imwrite(path + "mono1.jpg", monoImg);
 
 
