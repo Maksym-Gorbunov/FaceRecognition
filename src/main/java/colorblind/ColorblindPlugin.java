@@ -94,6 +94,7 @@ public class ColorblindPlugin {
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
         //rect = cutRectIfOutOfImageArea(monoImg, rect);
+        // fill small contours with color for easy family grouping
         Imgproc.rectangle(monoImg, rect.tl(), rect.br(), new Scalar(0, 0, 0), -1);
 
         //Imgproc.fillPoly(monoImg, Arrays.asList(c), new Scalar(0,0,0));
