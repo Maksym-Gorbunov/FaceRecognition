@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="byte-buddy-1.8.15">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/byte-buddy-1.8.15.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/client-combined-3.141.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/commons-exec-1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/guava-25.0-jre.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/htmlunit-driver-2.35.1-jar-with-dependencies (1).jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/okhttp-3.11.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/okio-1.14.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/selenium-server-standalone-3.141.59.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/selenium/seleniumjars/htmlunit-driver-2.35.1-jar-with-dependencies (1).jar!/" />
+    </SOURCES>
+  </library>
+</component>
