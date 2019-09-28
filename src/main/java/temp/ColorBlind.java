@@ -59,6 +59,7 @@ public class ColorBlind {
 
 
     Mat img = Imgcodecs.imread(imgPath);
+    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_1."+ext, img);
     Mat matrix = new Mat();
     img.copyTo(matrix);
     //List<Point> neighboursList = new ArrayList<>();
@@ -82,8 +83,8 @@ public class ColorBlind {
         }
       }
     }
-    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_1."+ext, matrix);
-    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_2."+ext, whiteImage);
+    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_2."+ext, matrix);
+    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_3."+ext, whiteImage);
     List<Rect> rectList = new ArrayList<>();
     rectList = getRectangles(whiteImage);
     if(rectList.size()>0){
@@ -93,7 +94,7 @@ public class ColorBlind {
 
       }
     }
-    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_3."+ext, matrix);
+    Imgcodecs.imwrite(resultsPath+filenameWithoutExt+"_4."+ext, matrix);
   }
 
 
