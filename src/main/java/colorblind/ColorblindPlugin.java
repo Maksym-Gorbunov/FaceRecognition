@@ -5,10 +5,8 @@ import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +38,76 @@ public class ColorblindPlugin {
 
     //Imgcodecs.imwrite(path + "ddd.jpg", img);
 
-    c.findColorConflict(image);
+    //c.findColorConflict(image);
+    Mat filtered = c.colorblindFilter(image);
+
+
     //long endTime = System.nanoTime();
     //long duration = (endTime - startTime);
     //System.out.println(duration / 1000000);
   }
 
+
+
+
+
+  // Simulate colorblind filter
+  private Mat colorblindFilter(Mat img){
+    Mat filtered = new Mat();
+    img.copyTo(filtered);
+
+    for (int row = 0; row < img.rows(); row++) {
+      for (int col = 0; col < img.cols(); col++) {
+        double[] pointGBR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pointGBR);
+        //if pixel in red color family
+        if (pixelColorChannel == 3) {
+          Point point = new Point(col, row);
+          List<Point> neighbours = getNeighborPixels(img, point);
+
+          boolean conflict = false;
+
+          for (Point neighbor : neighbours) {
+            int totalRed = 0;
+            int totalGreen = 0;
+            double[] neighborBGR = img.get((int) neighbor.y, (int) neighbor.x);
+            int neighbourColorChannel = getColorChannel(neighborBGR);
+            // match 'red/green' conflict
+            if (neighbourColorChannel == 2) {
+              for(Point n : neighbours){
+                double[] nBGR = img.get((int) neighbor.y, (int) neighbor.x);
+                int nColorChannel = getColorChannel(neighborBGR);
+                //if neighbour pixel green
+                if(nColorChannel == 2){
+                  totalGreen++;
+                }
+                if(nColorChannel == 3){
+                  totalRed++;
+                }
+              }
+              System.out.println("red: " +totalRed + ", green: "+totalGreen);
+              if(totalGreen>totalRed){
+                filtered.put((int) neighbor.y, (int) neighbor.x, new double[]{0, 255, 0});
+
+              }
+            }
+          }
+        }
+      }
+    }
+    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
+    return filtered;
+  }
+
+
+
+
+
+
+
+
+
+  // find color conflict ('Red/Green') on Mat image(BGR-format)
   public void findColorConflict(Mat img) {
     boolean conflict = false;
 //    File f = new File(imgPath);
