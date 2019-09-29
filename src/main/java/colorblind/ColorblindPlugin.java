@@ -48,50 +48,31 @@ public class ColorblindPlugin {
   }
 
 
-
-
-
   // Simulate colorblind filter
-  private Mat colorblindFilter(Mat img){
+  private Mat colorblindFilter(Mat img) {
     Mat filtered = new Mat();
     img.copyTo(filtered);
 
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
-        double[] pointGBR = img.get(row, col);
-        int pixelColorChannel = getColorChannel(pointGBR);
+        double[] pixelBGR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pixelBGR);
         //if pixel in red color family
         if (pixelColorChannel == 3) {
           Point point = new Point(col, row);
           List<Point> neighbours = getNeighborPixels(img, point);
 
-          boolean conflict = false;
+          int mainColorChannel = getMainColor(neighbours, img);
 
-          for (Point neighbor : neighbours) {
-            int totalRed = 0;
-            int totalGreen = 0;
-            double[] neighborBGR = img.get((int) neighbor.y, (int) neighbor.x);
-            int neighbourColorChannel = getColorChannel(neighborBGR);
-            // match 'red/green' conflict
-            if (neighbourColorChannel == 2) {
-              for(Point n : neighbours){
-                double[] nBGR = img.get((int) neighbor.y, (int) neighbor.x);
-                int nColorChannel = getColorChannel(neighborBGR);
-                //if neighbour pixel green
-                if(nColorChannel == 2){
-                  totalGreen++;
-                }
-                if(nColorChannel == 3){
-                  totalRed++;
-                }
-              }
-              System.out.println("red: " +totalRed + ", green: "+totalGreen);
-              if(totalGreen>totalRed){
-                filtered.put((int) neighbor.y, (int) neighbor.x, new double[]{0, 255, 0});
-
-              }
-            }
+          if(mainColorChannel == 2){
+            filtered.put(row, col, new double[]{0, 255, 0});
           }
+          if(mainColorChannel == 3){
+            filtered.put(row, col, new double[]{0, 0, 255});
+          }
+
+
+
         }
       }
     }
@@ -99,12 +80,23 @@ public class ColorblindPlugin {
     return filtered;
   }
 
-
-
-
-
-
-
+  // Get main color from neighbours
+  private char getMainColor(List<Point> points, Mat img) {
+    int redTotal = 1; // center pixel already red
+    int greenTotal = 0;
+    for(Point p : points){
+      if(getColorChannel(img.get((int)p.y, (int)p.x)) == 2){  // if pixel green
+        greenTotal++;
+      }
+      if(getColorChannel(img.get((int)p.y, (int)p.x)) == 3){  //if pixel red
+        greenTotal++;
+      }
+    }
+    if(greenTotal > redTotal){
+      return 2;
+    }
+    return 1;
+  }
 
 
   // find color conflict ('Red/Green') on Mat image(BGR-format)
@@ -123,8 +115,8 @@ public class ColorblindPlugin {
     }
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
-        double[] pointGBR = img.get(row, col);
-        int pixelColorChannel = getColorChannel(pointGBR);
+        double[] pixelBGR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pixelBGR);
         //if pixel in red color family
         if (pixelColorChannel == 3) {
           Point point = new Point(col, row);
