@@ -25,7 +25,7 @@ public class ColorblindPlugin {
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.jpg");
+    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\2.jpg");
     //BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
     //Mat img = bufferedImageToMat(bufferedImage);
     //Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
@@ -75,7 +75,7 @@ public class ColorblindPlugin {
 
   // Get main color from neighbours
   private char getMainColor(List<Point> points, Mat img) {
-    int redTotal = 1; // center pixel already red
+    int redTotal = 0;
     int greenTotal = 0;
     for (Point p : points) {
       if (getColorChannel(img.get((int) p.y, (int) p.x)) == 2) {  // if pixel green
@@ -85,7 +85,7 @@ public class ColorblindPlugin {
         greenTotal++;
       }
     }
-    if (greenTotal > redTotal) {
+    if ((greenTotal != 0) && (redTotal != 0) && (greenTotal > redTotal)) {
       return 2;
     }
     return 1;
@@ -277,13 +277,13 @@ public class ColorblindPlugin {
     double red = bgr[2];
     int coefficient = 40;
     int channel = 0;
-    if ((blue > green+coefficient) && (blue > red)) {
+    if ((blue > green + coefficient) && (blue > red + coefficient)) {
       channel = 1;
     }
-    if ((green > blue) && (green > red)) {
+    if ((green > blue + coefficient) && (green > red + coefficient)) {
       channel = 2;
     }
-    if ((red > blue) && (red > green)) {
+    if ((red > blue + coefficient) && (red > green + coefficient)) {
       channel = 3;
     }
     return channel;
