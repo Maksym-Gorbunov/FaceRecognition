@@ -20,31 +20,25 @@ public class ColorblindPlugin {
   private double[] whitePixel = new double[]{255, 255, 255};
   private Scalar black = new Scalar(0, 0, 0);
   private Scalar blue = new Scalar(255, 0, 0);
-  private boolean logger = true;
+  private boolean logger = false;
 
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    ColorblindPlugin c = new ColorblindPlugin();
+    ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
     Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.jpg");
-    //check time
-    //long startTime = System.nanoTime();
-
     //BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
-
     //Mat img = bufferedImageToMat(bufferedImage);
-
     //Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
-
-
     //Imgcodecs.imwrite(path + "ddd.jpg", img);
-
-    //c.findColorConflict(image);
-    Mat filtered = c.colorblindFilter(image);
-
-
-    //long endTime = System.nanoTime();
-    //long duration = (endTime - startTime);
-    //System.out.println(duration / 1000000);
+    Mat filtered = colorblindPlugin.colorblindFilter(image);
+    /*
+    long startTime = System.nanoTime();
+    colorblindPlugin.findColorConflict(image);    // my code
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime);
+    double seconds = (double)duration / 1_000_000_000.0;
+    System.out.println("Execution time: " + seconds);
+    */
   }
 
 
@@ -64,13 +58,12 @@ public class ColorblindPlugin {
 
           int mainColorChannel = getMainColor(neighbours, img);
 
-          if(mainColorChannel == 2){
+          if (mainColorChannel == 2) {
             filtered.put(row, col, new double[]{0, 255, 0});
           }
-          if(mainColorChannel == 3){
+          if (mainColorChannel == 3) {
             filtered.put(row, col, new double[]{0, 0, 255});
           }
-
 
 
         }
@@ -84,15 +77,15 @@ public class ColorblindPlugin {
   private char getMainColor(List<Point> points, Mat img) {
     int redTotal = 1; // center pixel already red
     int greenTotal = 0;
-    for(Point p : points){
-      if(getColorChannel(img.get((int)p.y, (int)p.x)) == 2){  // if pixel green
+    for (Point p : points) {
+      if (getColorChannel(img.get((int) p.y, (int) p.x)) == 2) {  // if pixel green
         greenTotal++;
       }
-      if(getColorChannel(img.get((int)p.y, (int)p.x)) == 3){  //if pixel red
+      if (getColorChannel(img.get((int) p.y, (int) p.x)) == 3) {  //if pixel red
         greenTotal++;
       }
     }
-    if(greenTotal > redTotal){
+    if (greenTotal > redTotal) {
       return 2;
     }
     return 1;
@@ -128,6 +121,7 @@ public class ColorblindPlugin {
             if (neighbourColorChannel == 2) {
               conflict = true;
               monoImg.put((int) neighbor.y, (int) neighbor.x, whitePixel);
+              //img.put((int) neighbor.y, (int) neighbor.x, whitePixel);
               if (logger) {
                 tempImg.put((int) neighbor.y, (int) neighbor.x, whitePixel);
               }
@@ -143,12 +137,13 @@ public class ColorblindPlugin {
       }
       //draw rects
       List<Rect> rectList = getRectangles(monoImg, img);
-      if ((rectList != null) && (rectList.size() > 0)) {
-        for (Rect rect : rectList) {
-          Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(255, 255, 255), 1);
-        }
-        Imgcodecs.imwrite(path + "rectangles.jpg", img);
-      }
+      System.out.println(rectList.size());
+//      if ((rectList != null) && (rectList.size() > 0)) {
+//        for (Rect rect : rectList) {
+//          Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(255, 255, 255), 1);
+//        }
+//        Imgcodecs.imwrite(path + "rectangles.jpg", img);
+//      }
     } else {
       System.out.println("Color conflict not found");
     }
@@ -280,8 +275,9 @@ public class ColorblindPlugin {
     double blue = bgr[0];
     double green = bgr[1];
     double red = bgr[2];
+    int coefficient = 40;
     int channel = 0;
-    if ((blue > green) && (blue > red)) {
+    if ((blue > green+coefficient) && (blue > red)) {
       channel = 1;
     }
     if ((green > blue) && (green > red)) {
