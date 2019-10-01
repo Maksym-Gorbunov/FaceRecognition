@@ -25,7 +25,7 @@ public class ColorblindPlugin {
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.png");
+    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\2.jpg");
     //colorblindPlugin.findColorConflict(image);    // my code
     //BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
     //Mat img = bufferedImageToMat(bufferedImage);
@@ -56,16 +56,20 @@ public class ColorblindPlugin {
         if (pixelColorChannel == 3) {
           Point point = new Point(col, row);
           List<Point> neighbours = getNeighborPixels(img, point);
-          boolean conflict = isConflict(img, neighbours);
-
 
           int mainColorChannel = getMainColor(neighbours, img);
+
           if (mainColorChannel == 2) {
             filtered.put(row, col, new double[]{0, 255, 0});
           }
           if (mainColorChannel == 3) {
             filtered.put(row, col, new double[]{0, 0, 255});
           }
+
+
+//          if (mainColorChannel == 3) {
+//            filtered.put(row, col, new double[]{0, 0, 255});
+//          }
         }
       }
     }
@@ -75,40 +79,40 @@ public class ColorblindPlugin {
 
   // Check if exist 'red/green' color conflict
   private boolean isConflict(Mat img, List<Point> neighbours) {
-    for(Point p : neighbours){
-      int channel = getColorChannel(img.get((int)p.y, (int)p.x));
-      if(channel == 2){
+    for (Point p : neighbours) {
+      int channel = getColorChannel(img.get((int) p.y, (int) p.x));
+      if (channel == 2) {
         return true;
       }
     }
     return false;
   }
 
-  // Simulate colorblind filter
-  private Mat colorblindFilter(Mat img) {
-    Mat filtered = new Mat();
-    img.copyTo(filtered);
-    for (int row = 0; row < img.rows(); row++) {
-      for (int col = 0; col < img.cols(); col++) {
-        double[] pixelBGR = img.get(row, col);
-        int pixelColorChannel = getColorChannel(pixelBGR);
-        //if pixel in red color family
-        if (pixelColorChannel == 3) {
-          Point point = new Point(col, row);
-          List<Point> neighbours = getNeighborPixels(img, point);
-          int mainColorChannel = getMainColor(neighbours, img);
-          if (mainColorChannel == 2) {
-            filtered.put(row, col, new double[]{0, 255, 0});
-          }
-          if (mainColorChannel == 3) {
-            filtered.put(row, col, new double[]{0, 0, 255});
-          }
-        }
-      }
-    }
-    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
-    return filtered;
-  }
+//  // Simulate colorblind filter
+//  private Mat colorblindFilter(Mat img) {
+//    Mat filtered = new Mat();
+//    img.copyTo(filtered);
+//    for (int row = 0; row < img.rows(); row++) {
+//      for (int col = 0; col < img.cols(); col++) {
+//        double[] pixelBGR = img.get(row, col);
+//        int pixelColorChannel = getColorChannel(pixelBGR);
+//        //if pixel in red color family
+//        if (pixelColorChannel == 3) {
+//          Point point = new Point(col, row);
+//          List<Point> neighbours = getNeighborPixels(img, point);
+//          int mainColorChannel = getMainColor(neighbours, img);
+//          if (mainColorChannel == 2) {
+//            filtered.put(row, col, new double[]{0, 255, 0});
+//          }
+//          if (mainColorChannel == 3) {
+//            filtered.put(row, col, new double[]{0, 0, 255});
+//          }
+//        }
+//      }
+//    }
+//    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
+//    return filtered;
+//  }
 
   // Get main color from neighbours
   private char getMainColor(List<Point> points, Mat img) {
@@ -139,11 +143,6 @@ public class ColorblindPlugin {
   // find color conflict ('Red/Green') on Mat image(BGR-format)
   public void findColorConflict(Mat img) {
     boolean conflict = false;
-//    File f = new File(imgPath);
-//    String fileName = f.getName();
-//    String filenameWithoutExt = FilenameUtils.removeExtension(fileName);
-//    String ext = FilenameUtils.getExtension(fileName);
-    //List<Point> neighboursList = new ArrayList<>();
     Mat monoImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
     Mat tempImg = null;
     if (logger) {
@@ -319,7 +318,7 @@ public class ColorblindPlugin {
     double blue = bgr[0];
     double green = bgr[1];
     double red = bgr[2];
-    int coefficient = 1;
+    int coefficient = 30;
     int channel = 0;
     if ((blue > green + coefficient) && (blue > red + coefficient)) {
       channel = 1;
@@ -418,7 +417,7 @@ public class ColorblindPlugin {
           inside = true;
         }
       }
-      if (!inside && rect.area()>500) {
+      if (!inside && rect.area() > 500) {
         cleanedRects.add(rect);
       }
     }
