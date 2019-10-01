@@ -20,7 +20,7 @@ public class ColorblindPlugin {
   private double[] whitePixel = new double[]{255, 255, 255};
   private Scalar black = new Scalar(0, 0, 0);
   private Scalar blue = new Scalar(255, 0, 0);
-  private boolean logger = false;
+  private boolean logger = true;
 
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -28,12 +28,15 @@ public class ColorblindPlugin {
     Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\colors.jpg");
 
     List<Rect> rectList = colorblindPlugin.findColorConflict(image);    // takes 1.2sec
+    //colorblindPlugin.saveAllFilteredImages(image, rectList);      // takes 1.8sec
 
     long startTime = System.nanoTime();
-    colorblindPlugin.saveAllFilteredImages(image, rectList);      // takes 1.8sec
+    colorblindPlugin.getFilteredImage(image, rectList, new Point(150, 100));
+    colorblindPlugin.getFilteredImage(image, rectList, new Point(600, 100));
+    colorblindPlugin.getFilteredImage(image, rectList, new Point(300, 600));
     long endTime = System.nanoTime();
     long duration = (endTime - startTime);
-    double seconds = (double)duration / 1_000_000_000.0;
+    double seconds = (double) duration / 1_000_000_000.0;
     System.out.println("Execution time: " + seconds);
 
   }
@@ -80,7 +83,7 @@ public class ColorblindPlugin {
 
 
   // Save all filtered mini images from rectangles, and one large image(all in one) with all mini
-  private void saveAllFilteredImages(Mat img, List<Rect> rectList){
+  private void saveAllFilteredImages(Mat img, List<Rect> rectList) {
     int i = 0;
     if ((rectList != null) && (rectList.size() > 0)) {
       Mat filtered = new Mat();
@@ -91,18 +94,48 @@ public class ColorblindPlugin {
         Imgcodecs.imwrite(path + "result\\" + i + "_mask.jpg", mask);
         Imgcodecs.imwrite(path + "result\\" + i + "_mask_filtered.jpg", maskFiltered);
         Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
-
         Imgproc.rectangle(filtered, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
-
         maskFiltered.copyTo(filtered
                 .rowRange((int) rect.tl().y, (int) (rect.tl().y + rect.height))
                 .colRange((int) rect.tl().x, (int) rect.tl().x + rect.width));
-
         i++;
       }
       Imgcodecs.imwrite(path + "result\\rectangles.jpg", img);
       Imgcodecs.imwrite(path + "result\\filtered.jpg", filtered);
     }
+  }
+
+
+  // Get filtered mini image from rectangle,
+  // Mouse click => new Point => if(point on one of rectangles) => create mini filtered image and return it
+  private Mat getFilteredImage(Mat img, List<Rect> rectList, Point point) {
+    if ((rectList != null) && (rectList.size() > 0)) {
+      int i = 1;
+      for (Rect rect : rectList) {
+        if (rect.contains(point)) {
+          Mat mask = new Mat(img, rect);
+          Mat maskFiltered = colorblindFilter(mask);
+          if (logger) {
+            Mat filteredImg = new Mat();
+            img.copyTo(filteredImg);
+            Mat imgCopy = new Mat();
+            img.copyTo(imgCopy);
+            maskFiltered.copyTo(filteredImg
+                    .rowRange((int) rect.tl().y, (int) (rect.tl().y + rect.height))
+                    .colRange((int) rect.tl().x, (int) rect.tl().x + rect.width));
+            Imgproc.circle(imgCopy, point, 10, new Scalar(0, 0, 0), -1);
+            Imgproc.circle(filteredImg, point, 10, new Scalar(0, 0, 0), -1);
+            Imgproc.rectangle(filteredImg, rect.tl(), rect.br(), new Scalar(255, 0, 0), 2);
+            Imgcodecs.imwrite(path + "result\\"+i+"_originalWithClick.jpg", imgCopy);
+            Imgcodecs.imwrite(path + "result\\"+i+"_selectedConflictImg.jpg", filteredImg);
+            Imgcodecs.imwrite(path + "result\\"+i+"_selectedConflictMini.jpg", maskFiltered);
+          }
+          return maskFiltered;
+        }
+        i++;
+      }
+    }
+    return null;
   }
 
 
@@ -197,9 +230,6 @@ public class ColorblindPlugin {
     }
     return 1;
   }
-
-
-
 
 
   // Cut off contours rectangle if out off image area, fix bug of OpenCV library
