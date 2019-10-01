@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2HSV;
 import static org.bytedeco.javacpp.opencv_imgproc.RETR_TREE;
 
 public class ColorblindPlugin {
@@ -25,13 +26,13 @@ public class ColorblindPlugin {
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\2.jpg");
+    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\aaa.jpg");
     //colorblindPlugin.findColorConflict(image);    // my code
     //BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
     //Mat img = bufferedImageToMat(bufferedImage);
     //Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
     //Imgcodecs.imwrite(path + "ddd.jpg", img);
-    Mat filtered = colorblindPlugin.colorblindFilter2(image);
+    Mat filtered = colorblindPlugin.colorblindFilter3(image);
 //    long startTime = System.nanoTime();
 //    colorblindPlugin.findColorConflict(image);    // my code
 //    long endTime = System.nanoTime();
@@ -39,6 +40,93 @@ public class ColorblindPlugin {
 //    double seconds = (double)duration / 1_000_000_000.0;
 //    System.out.println("Execution time: " + seconds);
   }
+
+
+  private Mat colorblindFilter3(Mat img) {
+    Mat filtered = new Mat();
+    img.copyTo(filtered);
+    Mat RedImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
+    Mat GreenImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
+    int redTotal = 0;
+    int greenTotal = 0;
+
+    double redChannelValue = 0;
+    double greenChannelValue = 0;
+
+    for (int row = 0; row < img.rows(); row++) {
+      for (int col = 0; col < img.cols(); col++) {
+        double[] pixelBGR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pixelBGR);
+        //if red
+        if (pixelColorChannel == 3) {
+          //RedImg.put(row, col, new double[]{255, 255, 255});
+          redChannelValue += img.get(row,col)[2];
+          redTotal++;
+        }
+        //if green
+        if (pixelColorChannel == 2) {
+          //GreenImg.put(row, col, new double[]{255, 255, 255});
+          greenChannelValue += img.get(row,col)[1];
+          greenTotal++;
+        }
+      }
+    }
+
+    double redAvarageColor = redChannelValue/redTotal;
+    double greenAvarageColor = greenChannelValue/greenTotal;
+
+    System.out.println("green: "+greenTotal);
+    System.out.println("red: "+redTotal);
+    for (int row = 0; row < img.rows(); row++) {
+      for (int col = 0; col < img.cols(); col++) {
+        double[] pixelBGR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pixelBGR);
+        if (redTotal > greenTotal) {
+          if (pixelColorChannel == 2) {
+            //filtered.put(row, col, new double[]{0, 0, 255});
+            filtered.put(row, col, new double[]{0, 0, redAvarageColor});
+            greenTotal++;
+          }
+        }
+        if (greenTotal > redTotal) {
+          if (pixelColorChannel == 3) {
+            //filtered.put(row, col, new double[]{0, 255, 0});
+            filtered.put(row, col, new double[]{0, greenAvarageColor, 0});
+            greenTotal++;
+          }
+        }
+
+
+      }
+    }
+
+
+    Mat grayImg = new Mat();
+    Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_BGR2GRAY);
+
+    Imgcodecs.imwrite(path + "gray.jpg", grayImg);
+    Imgcodecs.imwrite(path + "red.jpg", RedImg);
+    Imgcodecs.imwrite(path + "green.jpg", GreenImg);
+    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
+    return filtered;
+  }
+
+
+//  private Mat colorblindFilter3(Mat img) {
+//    Mat filtered = new Mat();
+//    //img.copyTo(filtered);
+//    Mat hsv = new Mat();
+//    Imgproc.cvtColor(img, hsv, COLOR_BGR2HSV);
+//    // Red 160-180
+//    // Green 40-80
+//    // Blue 95-145
+//    Scalar greenMin = new Scalar(150, 150, 75);
+//    Scalar greenMax = new Scalar(190, 255, 200);
+//    Core.inRange(hsv, greenMin, greenMax, filtered);
+//    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
+//    return filtered;
+//  }
+
 
   // Simulate colorblind filter
   private Mat colorblindFilter2(Mat img) {
@@ -65,11 +153,19 @@ public class ColorblindPlugin {
           if (mainColorChannel == 3) {
             filtered.put(row, col, new double[]{0, 0, 255});
           }
+        }
+        if (pixelColorChannel == 2) {
+          Point point = new Point(col, row);
+          List<Point> neighbours = getNeighborPixels(img, point);
 
+          int mainColorChannel = getMainColor(neighbours, img);
 
-//          if (mainColorChannel == 3) {
-//            filtered.put(row, col, new double[]{0, 0, 255});
-//          }
+          if (mainColorChannel == 2) {
+            filtered.put(row, col, new double[]{0, 255, 0});
+          }
+          if (mainColorChannel == 3) {
+            filtered.put(row, col, new double[]{0, 0, 255});
+          }
         }
       }
     }
@@ -88,52 +184,25 @@ public class ColorblindPlugin {
     return false;
   }
 
-//  // Simulate colorblind filter
-//  private Mat colorblindFilter(Mat img) {
-//    Mat filtered = new Mat();
-//    img.copyTo(filtered);
-//    for (int row = 0; row < img.rows(); row++) {
-//      for (int col = 0; col < img.cols(); col++) {
-//        double[] pixelBGR = img.get(row, col);
-//        int pixelColorChannel = getColorChannel(pixelBGR);
-//        //if pixel in red color family
-//        if (pixelColorChannel == 3) {
-//          Point point = new Point(col, row);
-//          List<Point> neighbours = getNeighborPixels(img, point);
-//          int mainColorChannel = getMainColor(neighbours, img);
-//          if (mainColorChannel == 2) {
-//            filtered.put(row, col, new double[]{0, 255, 0});
-//          }
-//          if (mainColorChannel == 3) {
-//            filtered.put(row, col, new double[]{0, 0, 255});
-//          }
-//        }
-//      }
-//    }
-//    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
-//    return filtered;
-//  }
 
   // Get main color from neighbours
-  private char getMainColor(List<Point> points, Mat img) {
-    int redTotal = 0;
+  private char getMainColor(List<Point> neighbours, Mat img) {
+    int redTotal = 1;
     int greenTotal = 0;
-    for (Point p : points) {
+    for (Point p : neighbours) {
       if (getColorChannel(img.get((int) p.y, (int) p.x)) == 2) {  // if pixel green
-        System.out.println(getColorChannel(img.get((int) p.y, (int) p.x)));
         greenTotal++;
+        System.out.println("-------");
       }
       if (getColorChannel(img.get((int) p.y, (int) p.x)) == 3) {  //if pixel red
-        System.out.println(getColorChannel(img.get((int) p.y, (int) p.x)));
-        greenTotal++;
+        redTotal++;
       }
     }
+    System.out.println(greenTotal + " : " + redTotal);
     if (greenTotal > redTotal) {
-      System.out.println("green");
       return 2;
     }
     if (redTotal > greenTotal) {
-      System.out.println("red");
       return 3;
     }
     return 1;
@@ -318,7 +387,7 @@ public class ColorblindPlugin {
     double blue = bgr[0];
     double green = bgr[1];
     double red = bgr[2];
-    int coefficient = 30;
+    int coefficient = 0;
     int channel = 0;
     if ((blue > green + coefficient) && (blue > red + coefficient)) {
       channel = 1;
