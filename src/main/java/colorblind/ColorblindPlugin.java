@@ -27,34 +27,27 @@ public class ColorblindPlugin {
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
     Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.png");
     //colorblindPlugin.findColorConflict(image);    // my code
-
     //BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
     //Mat img = bufferedImageToMat(bufferedImage);
     //Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
     //Imgcodecs.imwrite(path + "ddd.jpg", img);
-    //Mat filtered = colorblindPlugin.colorblindFilter2(image);
-
-    long startTime = System.nanoTime();
-    colorblindPlugin.findColorConflict(image);    // my code
-    long endTime = System.nanoTime();
-    long duration = (endTime - startTime);
-    double seconds = (double)duration / 1_000_000_000.0;
-    System.out.println("Execution time: " + seconds);
-
+    Mat filtered = colorblindPlugin.colorblindFilter2(image);
+//    long startTime = System.nanoTime();
+//    colorblindPlugin.findColorConflict(image);    // my code
+//    long endTime = System.nanoTime();
+//    long duration = (endTime - startTime);
+//    double seconds = (double)duration / 1_000_000_000.0;
+//    System.out.println("Execution time: " + seconds);
   }
 
   // Simulate colorblind filter
   private Mat colorblindFilter2(Mat img) {
     Mat filtered = new Mat();
     img.copyTo(filtered);
-
-
     double blue = 0;
     double green = 0;
     double red = 0;
-
     //List<Point>
-
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
         double[] pixelBGR = img.get(row, col);
@@ -63,17 +56,16 @@ public class ColorblindPlugin {
         if (pixelColorChannel == 3) {
           Point point = new Point(col, row);
           List<Point> neighbours = getNeighborPixels(img, point);
+          boolean conflict = isConflict(img, neighbours);
+
 
           int mainColorChannel = getMainColor(neighbours, img);
-
           if (mainColorChannel == 2) {
             filtered.put(row, col, new double[]{0, 255, 0});
           }
           if (mainColorChannel == 3) {
             filtered.put(row, col, new double[]{0, 0, 255});
           }
-
-
         }
       }
     }
@@ -81,11 +73,21 @@ public class ColorblindPlugin {
     return filtered;
   }
 
+  // Check if exist 'red/green' color conflict
+  private boolean isConflict(Mat img, List<Point> neighbours) {
+    for(Point p : neighbours){
+      int channel = getColorChannel(img.get((int)p.y, (int)p.x));
+      if(channel == 2){
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Simulate colorblind filter
   private Mat colorblindFilter(Mat img) {
     Mat filtered = new Mat();
     img.copyTo(filtered);
-
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
         double[] pixelBGR = img.get(row, col);
@@ -94,17 +96,13 @@ public class ColorblindPlugin {
         if (pixelColorChannel == 3) {
           Point point = new Point(col, row);
           List<Point> neighbours = getNeighborPixels(img, point);
-
           int mainColorChannel = getMainColor(neighbours, img);
-
           if (mainColorChannel == 2) {
             filtered.put(row, col, new double[]{0, 255, 0});
           }
           if (mainColorChannel == 3) {
             filtered.put(row, col, new double[]{0, 0, 255});
           }
-
-
         }
       }
     }
