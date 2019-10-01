@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2HSV;
 import static org.bytedeco.javacpp.opencv_imgproc.RETR_TREE;
 
 public class ColorblindPlugin {
@@ -27,46 +26,136 @@ public class ColorblindPlugin {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
     Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\colors.jpg");
-    colorblindPlugin.findColorConflict(image);
+
+    List<Rect> rectList = colorblindPlugin.findColorConflict(image);    // takes 1.2sec
+
+    long startTime = System.nanoTime();
+    colorblindPlugin.saveAllFilteredImages(image, rectList);      // takes 1.8sec
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime);
+    double seconds = (double)duration / 1_000_000_000.0;
+    System.out.println("Execution time: " + seconds);
+
   }
 
 
-  private Mat colorblindFilter3(Mat img) {
+  // find color conflict ('Red/Green') on Mat image(BGR-format)
+  public List<Rect> findColorConflict(Mat img) {
+    boolean conflict = false;
+    Mat monoImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
+    for (int row = 0; row < img.rows(); row++) {
+      for (int col = 0; col < img.cols(); col++) {
+        double[] pixelBGR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pixelBGR);
+        //if pixel in red color family
+        if (pixelColorChannel == 3) {
+          Point point = new Point(col, row);
+          List<Point> neighbours = getNeighborPixels(img, point);
+          for (Point neighbor : neighbours) {
+            double[] neighborBGR = img.get((int) neighbor.y, (int) neighbor.x);
+            int neighbourColorChannel = getColorChannel(neighborBGR);
+            // match 'red/green' conflict
+            if (neighbourColorChannel == 2) {
+              conflict = true;
+              monoImg.put((int) neighbor.y, (int) neighbor.x, whitePixel);
+            }
+          }
+        }
+      }
+    }
+    if (conflict) {
+      if (logger) {
+        Imgcodecs.imwrite(path + "conflicts.jpg", img);
+        Imgcodecs.imwrite(path + "mono.jpg", monoImg);
+      }
+      //draw rects
+      List<Rect> rectList = getRectangles(monoImg, img);
+      return rectList;
+      // cutted code
+    } else {
+      System.out.println("Color conflict not found");
+      return null;
+    }
+  }
+
+
+  // Save all filtered mini images from rectangles, and one large image(all in one) with all mini
+  private void saveAllFilteredImages(Mat img, List<Rect> rectList){
+    int i = 0;
+    if ((rectList != null) && (rectList.size() > 0)) {
+      Mat filtered = new Mat();
+      img.copyTo(filtered);
+      for (Rect rect : rectList) {
+        Mat mask = new Mat(img, rect);
+        Mat maskFiltered = colorblindFilter(mask);
+        Imgcodecs.imwrite(path + "result\\" + i + "_mask.jpg", mask);
+        Imgcodecs.imwrite(path + "result\\" + i + "_mask_filtered.jpg", maskFiltered);
+        Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
+
+        Imgproc.rectangle(filtered, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
+
+        maskFiltered.copyTo(filtered
+                .rowRange((int) rect.tl().y, (int) (rect.tl().y + rect.height))
+                .colRange((int) rect.tl().x, (int) rect.tl().x + rect.width));
+
+        i++;
+      }
+      Imgcodecs.imwrite(path + "result\\rectangles.jpg", img);
+      Imgcodecs.imwrite(path + "result\\filtered.jpg", filtered);
+    }
+  }
+
+
+  private Mat colorblindFilter(Mat img) {
     Mat filtered = new Mat();
     img.copyTo(filtered);
     int redTotal = 0;
     int greenTotal = 0;
-    double redChannelValue = 0;
-    double greenChannelValue = 0;
+
+    double redChannelValue1 = 0;
+    double redChannelValue2 = 0;
+    double redChannelValue3 = 0;
+    double greenChannelValue1 = 0;
+    double greenChannelValue2 = 0;
+    double greenChannelValue3 = 0;
+
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
         double[] pixelBGR = img.get(row, col);
         int pixelColorChannel = getColorChannel(pixelBGR);
         if (pixelColorChannel == 3) {
-          redChannelValue += img.get(row, col)[2];
+          redChannelValue1 += img.get(row, col)[0];
+          redChannelValue2 += img.get(row, col)[1];
+          redChannelValue3 += img.get(row, col)[2];
           redTotal++;
         }
         if (pixelColorChannel == 2) {
-          greenChannelValue += img.get(row, col)[1];
+          greenChannelValue1 += img.get(row, col)[0];
+          greenChannelValue2 += img.get(row, col)[1];
+          greenChannelValue3 += img.get(row, col)[2];
           greenTotal++;
         }
       }
     }
-    double redAvarageColor = redChannelValue / redTotal;
-    double greenAvarageColor = greenChannelValue / greenTotal;
+    double redAvarageColor1 = redChannelValue1 / redTotal;
+    double redAvarageColor2 = redChannelValue2 / redTotal;
+    double redAvarageColor3 = redChannelValue3 / redTotal;
+    double greenAvarageColor1 = greenChannelValue1 / greenTotal;
+    double greenAvarageColor2 = greenChannelValue2 / greenTotal;
+    double greenAvarageColor3 = greenChannelValue3 / greenTotal;
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
         double[] pixelBGR = img.get(row, col);
         int pixelColorChannel = getColorChannel(pixelBGR);
         if (redTotal > greenTotal) {
           if (pixelColorChannel == 2) {
-            filtered.put(row, col, new double[]{0, 0, redAvarageColor});
+            filtered.put(row, col, new double[]{redAvarageColor1, redAvarageColor2, redAvarageColor3});
             greenTotal++;
           }
         }
         if (greenTotal > redTotal) {
           if (pixelColorChannel == 3) {
-            filtered.put(row, col, new double[]{0, greenAvarageColor, 0});
+            filtered.put(row, col, new double[]{greenAvarageColor1, greenAvarageColor2, greenAvarageColor3});
             greenTotal++;
           }
         }
@@ -75,44 +164,6 @@ public class ColorblindPlugin {
     return filtered;
   }
 
-
-  // Simulate colorblind filter
-  private Mat colorblindFilter2(Mat img) {
-    Mat filtered = new Mat();
-    img.copyTo(filtered);
-    double blue = 0;
-    double green = 0;
-    double red = 0;
-    for (int row = 0; row < img.rows(); row++) {
-      for (int col = 0; col < img.cols(); col++) {
-        double[] pixelBGR = img.get(row, col);
-        int pixelColorChannel = getColorChannel(pixelBGR);
-        if (pixelColorChannel == 3) {
-          Point point = new Point(col, row);
-          List<Point> neighbours = getNeighborPixels(img, point);
-          int mainColorChannel = getMainColor(neighbours, img);
-          if (mainColorChannel == 2) {
-            filtered.put(row, col, new double[]{0, 255, 0});
-          }
-          if (mainColorChannel == 3) {
-            filtered.put(row, col, new double[]{0, 0, 255});
-          }
-        }
-        if (pixelColorChannel == 2) {
-          Point point = new Point(col, row);
-          List<Point> neighbours = getNeighborPixels(img, point);
-          int mainColorChannel = getMainColor(neighbours, img);
-          if (mainColorChannel == 2) {
-            filtered.put(row, col, new double[]{0, 255, 0});
-          }
-          if (mainColorChannel == 3) {
-            filtered.put(row, col, new double[]{0, 0, 255});
-          }
-        }
-      }
-    }
-    return filtered;
-  }
 
   // Check if exist 'red/green' color conflict
   private boolean isConflict(Mat img, List<Point> neighbours) {
@@ -133,13 +184,11 @@ public class ColorblindPlugin {
     for (Point p : neighbours) {
       if (getColorChannel(img.get((int) p.y, (int) p.x)) == 2) {  // if pixel green
         greenTotal++;
-        System.out.println("-------");
       }
       if (getColorChannel(img.get((int) p.y, (int) p.x)) == 3) {  //if pixel red
         redTotal++;
       }
     }
-    System.out.println(greenTotal + " : " + redTotal);
     if (greenTotal > redTotal) {
       return 2;
     }
@@ -150,62 +199,7 @@ public class ColorblindPlugin {
   }
 
 
-  // find color conflict ('Red/Green') on Mat image(BGR-format)
-  public void findColorConflict(Mat img) {
-    boolean conflict = false;
-    Mat monoImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
-    Mat tempImg = null;
-    if (logger) {
-      tempImg = new Mat();
-      img.copyTo(tempImg);
-    }
-    for (int row = 0; row < img.rows(); row++) {
-      for (int col = 0; col < img.cols(); col++) {
-        double[] pixelBGR = img.get(row, col);
-        int pixelColorChannel = getColorChannel(pixelBGR);
-        //if pixel in red color family
-        if (pixelColorChannel == 3) {
-          Point point = new Point(col, row);
-          List<Point> neighbours = getNeighborPixels(img, point);
-          for (Point neighbor : neighbours) {
-            double[] neighborBGR = img.get((int) neighbor.y, (int) neighbor.x);
-            int neighbourColorChannel = getColorChannel(neighborBGR);
-            // match 'red/green' conflict
-            if (neighbourColorChannel == 2) {
-              conflict = true;
-              monoImg.put((int) neighbor.y, (int) neighbor.x, whitePixel);
-              if (logger) {
-                tempImg.put((int) neighbor.y, (int) neighbor.x, whitePixel);
-              }
-            }
-          }
-        }
-      }
-    }
-    if (conflict) {
-      if (logger) {
-        Imgcodecs.imwrite(path + "conflicts.jpg", img);
-        Imgcodecs.imwrite(path + "mono.jpg", monoImg);
-      }
-      //draw rects
-      List<Rect> rectList = getRectangles(monoImg, img);
-      System.out.println(rectList.size());
-      int i = 0;
-      if ((rectList != null) && (rectList.size() > 0)) {
-        for (Rect rect : rectList) {
-          Mat mask = new Mat(img, rect);
-          Mat maskFiltered = colorblindFilter3(mask);
-          Imgcodecs.imwrite(path + "result\\" + i + "_mask.jpg", mask);
-          Imgcodecs.imwrite(path + "result\\" + i + "_mask_filtered.jpg", maskFiltered);
-          Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
-          i++;
-        }
-        Imgcodecs.imwrite(path + "result\\rectangles.jpg", img);
-      }
-    } else {
-      System.out.println("Color conflict not found");
-    }
-  }
+
 
 
   // Cut off contours rectangle if out off image area, fix bug of OpenCV library
