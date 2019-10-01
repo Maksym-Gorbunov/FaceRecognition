@@ -26,106 +26,54 @@ public class ColorblindPlugin {
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\aaa.jpg");
-    //colorblindPlugin.findColorConflict(image);    // my code
-    //BufferedImage bufferedImage = ImageIO.read(new File(Constants.imgPath + "colorblind\\1.jpg"));
-    //Mat img = bufferedImageToMat(bufferedImage);
-    //Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
-    //Imgcodecs.imwrite(path + "ddd.jpg", img);
-    Mat filtered = colorblindPlugin.colorblindFilter3(image);
-//    long startTime = System.nanoTime();
-//    colorblindPlugin.findColorConflict(image);    // my code
-//    long endTime = System.nanoTime();
-//    long duration = (endTime - startTime);
-//    double seconds = (double)duration / 1_000_000_000.0;
-//    System.out.println("Execution time: " + seconds);
+    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.png");
+    colorblindPlugin.findColorConflict(image);
   }
 
 
   private Mat colorblindFilter3(Mat img) {
     Mat filtered = new Mat();
     img.copyTo(filtered);
-    Mat RedImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
-    Mat GreenImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
     int redTotal = 0;
     int greenTotal = 0;
-
     double redChannelValue = 0;
     double greenChannelValue = 0;
-
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
         double[] pixelBGR = img.get(row, col);
         int pixelColorChannel = getColorChannel(pixelBGR);
-        //if red
         if (pixelColorChannel == 3) {
-          //RedImg.put(row, col, new double[]{255, 255, 255});
-          redChannelValue += img.get(row,col)[2];
+          redChannelValue += img.get(row, col)[2];
           redTotal++;
         }
-        //if green
         if (pixelColorChannel == 2) {
-          //GreenImg.put(row, col, new double[]{255, 255, 255});
-          greenChannelValue += img.get(row,col)[1];
+          greenChannelValue += img.get(row, col)[1];
           greenTotal++;
         }
       }
     }
-
-    double redAvarageColor = redChannelValue/redTotal;
-    double greenAvarageColor = greenChannelValue/greenTotal;
-
-    System.out.println("green: "+greenTotal);
-    System.out.println("red: "+redTotal);
+    double redAvarageColor = redChannelValue / redTotal;
+    double greenAvarageColor = greenChannelValue / greenTotal;
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
         double[] pixelBGR = img.get(row, col);
         int pixelColorChannel = getColorChannel(pixelBGR);
         if (redTotal > greenTotal) {
           if (pixelColorChannel == 2) {
-            //filtered.put(row, col, new double[]{0, 0, 255});
             filtered.put(row, col, new double[]{0, 0, redAvarageColor});
             greenTotal++;
           }
         }
         if (greenTotal > redTotal) {
           if (pixelColorChannel == 3) {
-            //filtered.put(row, col, new double[]{0, 255, 0});
             filtered.put(row, col, new double[]{0, greenAvarageColor, 0});
             greenTotal++;
           }
         }
-
-
       }
     }
-
-
-    Mat grayImg = new Mat();
-    Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_BGR2GRAY);
-
-    Imgcodecs.imwrite(path + "gray.jpg", grayImg);
-    Imgcodecs.imwrite(path + "red.jpg", RedImg);
-    Imgcodecs.imwrite(path + "green.jpg", GreenImg);
-    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
     return filtered;
   }
-
-
-//  private Mat colorblindFilter3(Mat img) {
-//    Mat filtered = new Mat();
-//    //img.copyTo(filtered);
-//    Mat hsv = new Mat();
-//    Imgproc.cvtColor(img, hsv, COLOR_BGR2HSV);
-//    // Red 160-180
-//    // Green 40-80
-//    // Blue 95-145
-//    Scalar greenMin = new Scalar(150, 150, 75);
-//    Scalar greenMax = new Scalar(190, 255, 200);
-//    Core.inRange(hsv, greenMin, greenMax, filtered);
-//    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
-//    return filtered;
-//  }
 
 
   // Simulate colorblind filter
@@ -135,18 +83,14 @@ public class ColorblindPlugin {
     double blue = 0;
     double green = 0;
     double red = 0;
-    //List<Point>
     for (int row = 0; row < img.rows(); row++) {
       for (int col = 0; col < img.cols(); col++) {
         double[] pixelBGR = img.get(row, col);
         int pixelColorChannel = getColorChannel(pixelBGR);
-        //if pixel in red color family
         if (pixelColorChannel == 3) {
           Point point = new Point(col, row);
           List<Point> neighbours = getNeighborPixels(img, point);
-
           int mainColorChannel = getMainColor(neighbours, img);
-
           if (mainColorChannel == 2) {
             filtered.put(row, col, new double[]{0, 255, 0});
           }
@@ -157,9 +101,7 @@ public class ColorblindPlugin {
         if (pixelColorChannel == 2) {
           Point point = new Point(col, row);
           List<Point> neighbours = getNeighborPixels(img, point);
-
           int mainColorChannel = getMainColor(neighbours, img);
-
           if (mainColorChannel == 2) {
             filtered.put(row, col, new double[]{0, 255, 0});
           }
@@ -169,7 +111,6 @@ public class ColorblindPlugin {
         }
       }
     }
-    Imgcodecs.imwrite(path + "filtered.jpg", filtered);
     return filtered;
   }
 
@@ -233,7 +174,6 @@ public class ColorblindPlugin {
             if (neighbourColorChannel == 2) {
               conflict = true;
               monoImg.put((int) neighbor.y, (int) neighbor.x, whitePixel);
-              //img.put((int) neighbor.y, (int) neighbor.x, whitePixel);
               if (logger) {
                 tempImg.put((int) neighbor.y, (int) neighbor.x, whitePixel);
               }
@@ -250,9 +190,15 @@ public class ColorblindPlugin {
       //draw rects
       List<Rect> rectList = getRectangles(monoImg, img);
       System.out.println(rectList.size());
+      int i = 0;
       if ((rectList != null) && (rectList.size() > 0)) {
         for (Rect rect : rectList) {
+          Mat mask = new Mat(img, rect);
+          Mat maskFiltered = colorblindFilter3(mask);
+          Imgcodecs.imwrite(path + "result\\" + i + "_mask.jpg", mask);
+          Imgcodecs.imwrite(path + "result\\" + i + "_mask_filtered.jpg", maskFiltered);
           Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
+          i++;
         }
         Imgcodecs.imwrite(path + "rectangles.jpg", img);
       }
@@ -260,61 +206,6 @@ public class ColorblindPlugin {
       System.out.println("Color conflict not found");
     }
   }
-
-
-//  private List<Rect> getRectangles(Mat monoImg, Mat img) {
-//    Mat copy = new Mat();
-//    img.copyTo(copy);
-//    List<Rect> rectList = new ArrayList<>();
-//    List<MatOfPoint> contours = new ArrayList<>();
-//    Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-//    for (MatOfPoint c : contours) {
-//      MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
-//      RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
-//      if (rotatedRectangle.size.area() < 0.5 * monoImg.size().area()) {
-//        Point rotatedRectPoints[] = new Point[4];
-//        rotatedRectangle.points(rotatedRectPoints);
-//        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-//        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), white, -1);
-//        Imgproc.rectangle(copy, rect.tl(), rect.br(), white, 1);
-//        rectList.add(rect);
-//      }
-//    }
-//    if (logger) {
-//      Imgcodecs.imwrite(path + "mono_rects1.jpg", monoImg);
-//      Imgcodecs.imwrite(path + "color_rects1.jpg", copy);
-//    }
-//    if (rectList.size() > 0) {
-//      return groupRectangles(monoImg);
-//    }
-//    return null;
-//  }
-//
-//  // Group mini rects groups in larger rects, combine intersecting bounding rectangles
-//  private List<Rect> groupRectangles(Mat monoImg) {
-//    List<Rect> rectList = new ArrayList<>();
-//    List<MatOfPoint> contours = new ArrayList<>();
-//    Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 1, 1);
-//    Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-//    for (MatOfPoint c : contours) {
-//      MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
-//      RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
-//      if (rotatedRectangle.size.area() < 0.5 * monoImg.size().area()) {
-//        Point rotatedRectPoints[] = new Point[4];
-//        rotatedRectangle.points(rotatedRectPoints);
-//        Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-//        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), white, -1);
-//        rectList.add(rect);
-//      }
-//    }
-//    if (contours.size() > 0) {
-//      if (logger) {
-//        Imgcodecs.imwrite(path + "mono_rects2.jpg", monoImg);
-//      }
-//      return rectList;
-//    }
-//    return null;
-//  }
 
 
   // Cut off contours rectangle if out off image area, fix bug of OpenCV library
@@ -452,18 +343,14 @@ public class ColorblindPlugin {
     for (MatOfPoint c : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
       RotatedRect rotatedRectangle = Imgproc.minAreaRect(pointsArea);
-//      if ( (rotatedRectangle.size.area() > 500)
-//             && (rotatedRectangle.size.area() < 0.5 * monoImg.size().area())) {
       Point rotatedRectPoints[] = new Point[4];
       rotatedRectangle.points(rotatedRectPoints);
       Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
       Imgproc.rectangle(monoImg, rect.tl(), rect.br(), white, -1);
+      rect = cutRectIfOutOfImageArea(monoImg, rect);
       rectList.add(rect);
     }
-
     rectList = removeInnerRects(rectList);
-
-    //}
     if (contours.size() > 0) {
       if (logger) {
         Imgcodecs.imwrite(path + "mono_rects2.jpg", monoImg);
@@ -473,15 +360,13 @@ public class ColorblindPlugin {
     return null;
   }
 
+
+  // Remove inner rects from rects
   private List<Rect> removeInnerRects(List<Rect> rectList) {
     List<Rect> cleanedRects = new ArrayList<>();
     for (Rect rect : rectList) {
       boolean inside = false;
       for (Rect r : rectList) {
-//        Point tl = r.tl();
-//        Point br = rect.br();
-//        Point tr = new Point(tl.x+rect.width,tl.y);
-//        Point bl = new Point(br.x-rect.width, br.y);
         if ((r.contains(rect.tl())) && (r.contains(rect.br()))) {
           inside = true;
         }
