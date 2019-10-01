@@ -26,7 +26,7 @@ public class ColorblindPlugin {
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\1.png");
+    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\colors.jpg");
     colorblindPlugin.findColorConflict(image);
   }
 
@@ -200,7 +200,7 @@ public class ColorblindPlugin {
           Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
           i++;
         }
-        Imgcodecs.imwrite(path + "rectangles.jpg", img);
+        Imgcodecs.imwrite(path + "result\\rectangles.jpg", img);
       }
     } else {
       System.out.println("Color conflict not found");
