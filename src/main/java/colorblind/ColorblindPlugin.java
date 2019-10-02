@@ -25,12 +25,13 @@ public class ColorblindPlugin {
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\colors.jpg");
+    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\scout2.png");
 
     List<Rect> rectList = colorblindPlugin.findColorConflict(image);    // takes 1.2sec
     //colorblindPlugin.saveAllFilteredImages(image, rectList);      // takes 1.8sec
 
     long startTime = System.nanoTime();
+    colorblindPlugin.getFilteredImage(image, rectList, new Point(100, 50));
     colorblindPlugin.getFilteredImage(image, rectList, new Point(150, 100));
     colorblindPlugin.getFilteredImage(image, rectList, new Point(600, 100));
     colorblindPlugin.getFilteredImage(image, rectList, new Point(300, 600));
@@ -67,12 +68,16 @@ public class ColorblindPlugin {
       }
     }
     if (conflict) {
+      //draw rects
+      List<Rect> rectList = getRectangles(monoImg, img);
+      System.out.println("Total conflicts: " + rectList.size());
       if (logger) {
+        for (Rect rect : rectList) {
+          Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(255, 0, 0), 2);
+        }
         Imgcodecs.imwrite(path + "conflicts.jpg", img);
         Imgcodecs.imwrite(path + "mono.jpg", monoImg);
       }
-      //draw rects
-      List<Rect> rectList = getRectangles(monoImg, img);
       return rectList;
       // cutted code
     } else {
@@ -126,9 +131,9 @@ public class ColorblindPlugin {
             Imgproc.circle(imgCopy, point, 10, new Scalar(0, 0, 0), -1);
             Imgproc.circle(filteredImg, point, 10, new Scalar(0, 0, 0), -1);
             Imgproc.rectangle(filteredImg, rect.tl(), rect.br(), new Scalar(255, 0, 0), 2);
-            Imgcodecs.imwrite(path + "result\\"+i+"_originalWithClick.jpg", imgCopy);
-            Imgcodecs.imwrite(path + "result\\"+i+"_selectedConflictImg.jpg", filteredImg);
-            Imgcodecs.imwrite(path + "result\\"+i+"_selectedConflictMini.jpg", maskFiltered);
+            Imgcodecs.imwrite(path + "result\\" + i + "_originalWithClick.jpg", imgCopy);
+            Imgcodecs.imwrite(path + "result\\" + i + "_selectedConflictImg.jpg", filteredImg);
+            Imgcodecs.imwrite(path + "result\\" + i + "_selectedConflictMini.jpg", maskFiltered);
           }
           return maskFiltered;
         }
@@ -302,7 +307,7 @@ public class ColorblindPlugin {
     double blue = bgr[0];
     double green = bgr[1];
     double red = bgr[2];
-    int coefficient = 0;
+    int coefficient = 2;
     int channel = 0;
     if ((blue > green + coefficient) && (blue > red + coefficient)) {
       channel = 1;
@@ -340,11 +345,9 @@ public class ColorblindPlugin {
         Point rotatedRectPoints[] = new Point[4];
         rotatedRectangle.points(rotatedRectPoints);
         Rect rect = Imgproc.boundingRect(new MatOfPoint(rotatedRectPoints));
-        if (rect.area() > 0) {
-          Imgproc.rectangle(monoImg, rect.tl(), rect.br(), white, -1);
-          Imgproc.rectangle(copy, rect.tl(), rect.br(), black, 2);
-          rectList.add(rect);
-        }
+        Imgproc.rectangle(monoImg, rect.tl(), rect.br(), white, -1);
+        Imgproc.rectangle(copy, rect.tl(), rect.br(), black, 2);
+        rectList.add(rect);
       }
     }
     if (logger) {
