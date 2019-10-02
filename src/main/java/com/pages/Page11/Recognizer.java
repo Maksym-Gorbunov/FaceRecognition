@@ -50,8 +50,8 @@ public class Recognizer extends Thread {
 //    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 //
 //
-//    Mat bg = Imgcodecs.imread(Constants.imgPath + "Horse\\bg.jpg");
-//    Mat frame = Imgcodecs.imread(Constants.imgPath + "Horse\\frame.jpg");
+//    Mat bg = Imgcodecs.imread(Constants.imgOutPathForConflicts + "Horse\\bg.jpg");
+//    Mat frame = Imgcodecs.imread(Constants.imgOutPathForConflicts + "Horse\\frame.jpg");
 //
 //    Recognizer r = new Recognizer(frame, 0, bg);
 //    r.recognize();

@@ -104,7 +104,7 @@ public class ImageFiltering {
   //Edge filter
   public Mat edgeFilter(String filePath){
     Mat imgMat = Imgcodecs.imread(filePath);
-//    Mat imgMat = Imgcodecs.imread(Constants.imgPath+"car3.png");
+//    Mat imgMat = Imgcodecs.imread(Constants.imgOutPathForConflicts+"car3.png");
 
     Mat grayMat = new Mat();
     Mat drawMat = new Mat();
