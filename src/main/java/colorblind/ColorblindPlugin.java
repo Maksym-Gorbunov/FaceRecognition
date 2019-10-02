@@ -15,31 +15,35 @@ import static org.bytedeco.javacpp.opencv_imgproc.RETR_TREE;
 
 public class ColorblindPlugin {
 
-  public static String path = Constants.imgPath + "colorblind\\";
+  public static String path = "c:\\java\\FaceRecognition\\data\\img\\colorblind\\";
   private Scalar white = new Scalar(255, 255, 255);
   private double[] whitePixel = new double[]{255, 255, 255};
   private Scalar black = new Scalar(0, 0, 0);
   private Scalar blue = new Scalar(255, 0, 0);
-  private boolean logger = true;
+  private boolean logger = false;
+  private int minRectArea = 2500;   // increase this value to ignore small rectangles
+
 
   public static void main(String[] args) throws IOException {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     ColorblindPlugin colorblindPlugin = new ColorblindPlugin();
-    Mat image = Imgcodecs.imread(Constants.imgPath + "colorblind\\scout2.png");
+    Mat image = Imgcodecs.imread(path + "scout3.png");
 
+    long startTime = System.nanoTime();
     List<Rect> rectList = colorblindPlugin.findColorConflict(image);    // takes 1.2sec
     //colorblindPlugin.saveAllFilteredImages(image, rectList);      // takes 1.8sec
 
-    long startTime = System.nanoTime();
-    colorblindPlugin.getFilteredImage(image, rectList, new Point(100, 50));
-    colorblindPlugin.getFilteredImage(image, rectList, new Point(150, 100));
-    colorblindPlugin.getFilteredImage(image, rectList, new Point(600, 100));
-    colorblindPlugin.getFilteredImage(image, rectList, new Point(300, 600));
+    //colorblindPlugin.findColorConflict(image);
+//    colorblindPlugin.getFilteredImage(image, rectList, new Point(100, 50));
+//    colorblindPlugin.getFilteredImage(image, rectList, new Point(150, 100));
+//    colorblindPlugin.getFilteredImage(image, rectList, new Point(600, 100));
+//    colorblindPlugin.getFilteredImage(image, rectList, new Point(300, 600));
     long endTime = System.nanoTime();
     long duration = (endTime - startTime);
     double seconds = (double) duration / 1_000_000_000.0;
     System.out.println("Execution time: " + seconds);
 
+//    colorblindPlugin.saveAllFilteredImages(image, rectList);
   }
 
 
@@ -67,9 +71,9 @@ public class ColorblindPlugin {
         }
       }
     }
-    if (conflict) {
+    List<Rect> rectList = getRectangles(monoImg, img);
+    if (conflict && rectList != null) {
       //draw rects
-      List<Rect> rectList = getRectangles(monoImg, img);
       System.out.println("Total conflicts: " + rectList.size());
       if (logger) {
         for (Rect rect : rectList) {
@@ -337,6 +341,7 @@ public class ColorblindPlugin {
     img.copyTo(copy);
     List<Rect> rectList = new ArrayList<>();
     List<MatOfPoint> contours = new ArrayList<>();
+    Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 3, 3);
     Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     for (MatOfPoint c : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
@@ -365,7 +370,7 @@ public class ColorblindPlugin {
   private List<Rect> groupRectangles(Mat monoImg) {
     List<Rect> rectList = new ArrayList<>();
     List<MatOfPoint> contours = new ArrayList<>();
-    Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 1, 1);
+    Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 3, 3);
     Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     for (MatOfPoint c : contours) {
       MatOfPoint2f pointsArea = new MatOfPoint2f(c.toArray());
@@ -398,10 +403,15 @@ public class ColorblindPlugin {
           inside = true;
         }
       }
-      if (!inside && rect.area() > 500) {
+      if (!inside && rect.area() > minRectArea) {
         cleanedRects.add(rect);
       }
     }
     return cleanedRects;
   }
+
+
+
+
+
 }
