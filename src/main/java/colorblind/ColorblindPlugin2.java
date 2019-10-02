@@ -13,6 +13,7 @@ public class ColorblindPlugin2 {
 
   public static String imgPath = "c:\\java\\FaceRecognition\\data\\img\\colorblind2\\";
   private int minRectArea = 2500;   // increase this value to ignore small rectangles
+  private boolean logger = false;   // true -> save images to 'imgPath' for easy debugging
 
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -70,8 +71,6 @@ public class ColorblindPlugin2 {
   private List<Rect> findContours(Mat monoImg) {
     List<Rect> rectList = new ArrayList<>();
     List<MatOfPoint> contours = new ArrayList<>();
-    //Imgproc.GaussianBlur(monoImg, monoImg, new Size(5, 5), 3, 3);
-    //Mat filteredImg = filterImage(monoImg, 100, 5);
 
     Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
     for (MatOfPoint c : contours) {
@@ -85,7 +84,6 @@ public class ColorblindPlugin2 {
         //rectList.add(rect);
       }
     }
-    System.out.println(rectList.size());
     Imgcodecs.imwrite(imgPath + "3.jpg", monoImg);
 
     Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -100,7 +98,6 @@ public class ColorblindPlugin2 {
         //rectList.add(rect);
       }
     }
-    System.out.println(rectList.size());
     Imgcodecs.imwrite(imgPath + "4.jpg", monoImg);
 
     Imgproc.findContours(monoImg, contours, new Mat(), RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
