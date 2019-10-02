@@ -4,6 +4,7 @@ import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,14 +14,22 @@ public class ColorblindPlugin2 {
 
   public static String imgPath = "c:\\java\\FaceRecognition\\data\\img\\colorblind2\\";
   private int minRectArea = 2500;   // increase this value to ignore small rectangles
-  private boolean logger = false;   // true -> save images to 'imgPath' for easy debugging
+  private boolean logger = true;   // true -> save images to 'imgPath' for easy debugging
 
   public static void main(String[] args) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    new File(imgPath + "filtered\\").mkdirs();
     ColorblindPlugin2 c = new ColorblindPlugin2();
-    Mat img = Imgcodecs.imread(imgPath + "colors.jpg");
+
     long startTime = System.nanoTime();
-    c.findConflict(img);
+
+    Mat img = Imgcodecs.imread(imgPath + "colors.jpg");
+    List<Rect> rectList = c.findConflict(img);
+
+    c.getFilteredImage(img, rectList, new Point(150, 100));
+    c.getFilteredImage(img, rectList, new Point(600, 100));
+    c.getFilteredImage(img, rectList, new Point(300, 600));
+
     long endTime = System.nanoTime();
     long duration = (endTime - startTime);
     double seconds = (double) duration / 1_000_000_000.0;
@@ -30,7 +39,7 @@ public class ColorblindPlugin2 {
 
   // Find color conflict (Red/Green) and identify areas as rectangles
   // Mark area, draw and save if 'logger' is true
-  private void findConflict(Mat img) {
+  private List<Rect> findConflict(Mat img) {
     Mat monoImg = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(255));
     boolean conflict = false;
     for (int row = 0; row < img.rows(); row++) {
@@ -70,10 +79,11 @@ public class ColorblindPlugin2 {
           Imgcodecs.imwrite(imgPath + "5.jpg", img);
         }
         System.out.println("Total: " + rectList.size());
+        return rectList;
       }
-    } else {
-      System.out.println("Color conflict not found");
     }
+    System.out.println("Color conflict not found");
+    return null;
   }
 
 
@@ -206,6 +216,102 @@ public class ColorblindPlugin2 {
       }
     }
     return cleanedRects;
+  }
+
+
+  ///////////////////////////////////////// COLORBLIND FILTER (Simulator) ////////////////////////////////////////////
+
+  // Get filtered mini image from rectangle
+  // , run after 'findConflict()', else rectList is empty
+  // Mouse click => new Point => if(point match one of rectangles) => create mini filtered image and return it
+  // if 'logger' is true => save all filtered mini images and one main image with clicked filtered mini image
+  private Mat getFilteredImage(Mat img, List<Rect> rectList, Point point) {
+    if (rectList != null) {
+      int i = 1;
+      for (Rect rect : rectList) {
+        if (rect.contains(point)) {
+          Mat mask = new Mat(img, rect);
+          Mat maskFiltered = colorblindFilter(mask);
+          if (logger) {
+            Mat filteredImg = new Mat();
+            img.copyTo(filteredImg);
+            Mat imgCopy = new Mat();
+            img.copyTo(imgCopy);
+            maskFiltered.copyTo(filteredImg
+                    .rowRange((int) rect.tl().y, (int) (rect.tl().y + rect.height))
+                    .colRange((int) rect.tl().x, (int) rect.tl().x + rect.width));
+            Imgproc.circle(imgCopy, point, 10, new Scalar(0, 0, 0), -1);
+            Imgproc.circle(filteredImg, point, 10, new Scalar(0, 0, 0), -1);
+            Imgproc.rectangle(filteredImg, rect.tl(), rect.br(), new Scalar(255, 0, 0), 2);
+            Imgcodecs.imwrite(imgPath + "filtered\\" + i + "_originalWithClick.jpg", imgCopy);
+            Imgcodecs.imwrite(imgPath + "filtered\\" + i + "_selectedConflictImg.jpg", filteredImg);
+            Imgcodecs.imwrite(imgPath + "filtered\\" + i + "_selectedConflictMini.jpg", maskFiltered);
+          }
+          return maskFiltered;
+        }
+        i++;
+      }
+    }
+    return null;
+  }
+
+
+  private Mat colorblindFilter(Mat img) {
+    Mat filtered = new Mat();
+    img.copyTo(filtered);
+    int redTotal = 0;
+    int greenTotal = 0;
+
+    double redChannelValue1 = 0;
+    double redChannelValue2 = 0;
+    double redChannelValue3 = 0;
+    double greenChannelValue1 = 0;
+    double greenChannelValue2 = 0;
+    double greenChannelValue3 = 0;
+
+    for (int row = 0; row < img.rows(); row++) {
+      for (int col = 0; col < img.cols(); col++) {
+        double[] pixelBGR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pixelBGR);
+        if (pixelColorChannel == 3) {
+          redChannelValue1 += img.get(row, col)[0];
+          redChannelValue2 += img.get(row, col)[1];
+          redChannelValue3 += img.get(row, col)[2];
+          redTotal++;
+        }
+        if (pixelColorChannel == 2) {
+          greenChannelValue1 += img.get(row, col)[0];
+          greenChannelValue2 += img.get(row, col)[1];
+          greenChannelValue3 += img.get(row, col)[2];
+          greenTotal++;
+        }
+      }
+    }
+    double redAvarageColor1 = redChannelValue1 / redTotal;
+    double redAvarageColor2 = redChannelValue2 / redTotal;
+    double redAvarageColor3 = redChannelValue3 / redTotal;
+    double greenAvarageColor1 = greenChannelValue1 / greenTotal;
+    double greenAvarageColor2 = greenChannelValue2 / greenTotal;
+    double greenAvarageColor3 = greenChannelValue3 / greenTotal;
+    for (int row = 0; row < img.rows(); row++) {
+      for (int col = 0; col < img.cols(); col++) {
+        double[] pixelBGR = img.get(row, col);
+        int pixelColorChannel = getColorChannel(pixelBGR);
+        if (redTotal > greenTotal) {
+          if (pixelColorChannel == 2) {
+            filtered.put(row, col, new double[]{redAvarageColor1, redAvarageColor2, redAvarageColor3});
+            greenTotal++;
+          }
+        }
+        if (greenTotal > redTotal) {
+          if (pixelColorChannel == 3) {
+            filtered.put(row, col, new double[]{greenAvarageColor1, greenAvarageColor2, greenAvarageColor3});
+            greenTotal++;
+          }
+        }
+      }
+    }
+    return filtered;
   }
 
 }
