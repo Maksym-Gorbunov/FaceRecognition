@@ -28,8 +28,10 @@ public class ColorblindPlugin {
     long startTime = System.nanoTime();
 
     Mat img = Imgcodecs.imread("c:\\java\\FaceRecognition\\data\\img\\colorblind\\colors.jpg");
+    //Mat img = Imgcodecs.imread("c:\\java\\FaceRecognition\\data\\img\\colorblind\\1.jpg");
     List<Rect> rectList = c.findConflict(img);
 
+    // test mouseClick
     c.getFilteredImage(img, rectList, new Point(150, 100));
     c.getFilteredImage(img, rectList, new Point(600, 100));
     c.getFilteredImage(img, rectList, new Point(300, 600));
@@ -77,7 +79,7 @@ public class ColorblindPlugin {
         if (logger) {
           if (rectList != null) {
             for (Rect rect : rectList) {
-              Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(0, 0, 0), 2);
+              Imgproc.rectangle(img, rect.tl(), rect.br(), new Scalar(255, 0, 0), 5);
             }
           }
           Imgcodecs.imwrite(imgOutPathForConflicts + "5.jpg", img);
@@ -256,8 +258,8 @@ public class ColorblindPlugin {
         }
         i++;
       }
+      System.out.println("Point ("+(int)point.x+","+(int)point.y+") - miss");
       if (logger) {
-        System.out.println("Point ("+(int)point.x+","+(int)point.y+") - miss");
         Imgproc.circle(imgCopy, point, 10, new Scalar(0, 0, 0), -1);
         Imgcodecs.imwrite(imgOutPathForFiltered + i + "_originalWithClick.jpg", imgCopy);
       }
@@ -323,5 +325,4 @@ public class ColorblindPlugin {
     }
     return filtered;
   }
-
 }
