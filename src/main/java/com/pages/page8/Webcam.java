@@ -237,7 +237,7 @@ public class Webcam extends JPanel implements Runnable {
     if (posX > 0 && posY > 0) {
       System.out.println("x = " + posX + ", y= " + posY);
     }
-    cvCircle(img, cvPoint(posX, posY), 5, cvScalar(0, 255, 0, 0), 20, 0, 0);
+    cvCircle(img, cvPoint(posX, posY), 5, cvScalar(0, 0, 255, 0), 20, 0, 0);
     buffImg = img.getBufferedImage();
   }
 

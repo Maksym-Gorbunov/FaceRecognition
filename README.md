@@ -1,6 +1,6 @@
 # Java development with focus on computer vision
 
-* OpenCv
+* OpenCv, Java
 * Optical Character Recognition
 * Machine Vision 
 * Artificial Intelligence
@@ -20,12 +20,8 @@
 # Face Detection, Eyes, Smile
 ![](info/faceDetection.gif)
 
+# Video Tracking
+![](info/tracking.gif)
+
 # Text Recognition
 ![](info/textRecognition.jpg)
-
-
-
-![](info/page2.PNG)
-![](info/page3.PNG)
-![](info/page4.PNG)
-![](info/page5.PNG)
