@@ -8,20 +8,21 @@
 * ANPR
 * Tesseract and Tess4J
 * MongoDB 
-* Java 
 * Swing
 * Python
 
-* Text Recognition
-
-* License Plate Recognition	
+# License Plate Recognition	
 ![](info/LPR.gif)
 
 # Image filtering and transformation 
 ![](info/imageFiltering.gif)
 
-* Face Detection, Eyes, Smile
+# Face Detection, Eyes, Smile
 ![](info/faceDetection.gif)
+
+# Text Recognition
+![](info/textRecognition.jpg)
+
 
 
 ![](info/page2.PNG)
