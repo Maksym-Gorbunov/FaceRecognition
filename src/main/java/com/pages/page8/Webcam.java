@@ -241,7 +241,7 @@ public class Webcam extends JPanel implements Runnable {
     buffImg = img.getBufferedImage();
   }
 
-
+  // find contours
   private void contours() {
     hsvImg = cvCreateImage(cvSize(width, height), 8, 3);
     binImg = cvCreateImage(cvSize(width, height), 8, 1);
